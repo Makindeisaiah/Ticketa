@@ -1,0 +1,54 @@
+{
+  "entities": {
+    "events": {
+      "title": "Events",
+      "description": "Platform events listed by organizers",
+      "properties": {
+        "title": { "type": "string", "description": "Title of the event" },
+        "organizer": { "type": "string", "description": "Organizer name" },
+        "date": { "type": "string", "description": "Event date" },
+        "time": { "type": "string", "description": "Event time" },
+        "venue": { "type": "string", "description": "Venue name" },
+        "city": { "type": "string", "description": "City" },
+        "category": { "type": "string", "description": "Category" },
+        "description": { "type": "string", "description": "Event description" },
+        "image": { "type": "string", "description": "Thumbnail image URL" },
+        "bannerImage": { "type": "string", "description": "Banner image URL" },
+        "status": { "type": "string", "description": "Status (Published, Draft, Ended)" },
+        "ticketsSold": { "type": "number", "description": "Total tickets sold" },
+        "totalCapacity": { "type": "number", "description": "Total capacity" },
+        "grossRevenue": { "type": "number", "description": "Gross revenue in Naira" }
+      }
+    },
+    "orders": {
+      "title": "Orders",
+      "description": "Ticket purchase orders made by attendees",
+      "properties": {
+        "eventId": { "type": "string", "description": "ID of the event" },
+        "eventTitle": { "type": "string", "description": "Title of the event" },
+        "customerName": { "type": "string", "description": "Customer name" },
+        "customerEmail": { "type": "string", "description": "Customer email" },
+        "customerPhone": { "type": "string", "description": "Customer phone" },
+        "ticketsCount": { "type": "number", "description": "Number of tickets" },
+        "totalPaid": { "type": "number", "description": "Total amount paid" },
+        "orderDate": { "type": "string", "description": "Order date" },
+        "paymentMethod": { "type": "string", "description": "Payment method" },
+        "status": { "type": "string", "description": "Order status" }
+      }
+    },
+    "tickets": {
+      "title": "Tickets",
+      "description": "Issued event tickets for check-in",
+      "properties": {
+        "orderId": { "type": "string", "description": "Associated order ID" },
+        "eventId": { "type": "string", "description": "Event ID" },
+        "eventTitle": { "type": "string", "description": "Event title" },
+        "tierName": { "type": "string", "description": "Ticket tier name" },
+        "attendeeName": { "type": "string", "description": "Attendee full name" },
+        "attendeeEmail": { "type": "string", "description": "Attendee email" },
+        "ticketCode": { "type": "string", "description": "Unique ticket code" },
+        "isCheckedIn": { "type": "boolean", "description": "Check-in status" }
+      }
+    }
+  }
+}

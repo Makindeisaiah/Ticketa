@@ -1,0 +1,153 @@
+import React, { useState } from 'react';
+import { Search, Bell, Menu, X, ArrowLeft, ChevronDown, Sparkles, Plus } from 'lucide-react';
+
+interface OrganizerHeaderProps {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  onOpenMobileMenu?: () => void;
+  breadcrumb?: string[];
+  onBreadcrumbClick?: (index: number) => void;
+  onCreateEventClick?: () => void;
+  onSeedLiveSales?: () => void;
+}
+
+export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
+  searchQuery,
+  setSearchQuery,
+  onOpenMobileMenu,
+  breadcrumb,
+  onBreadcrumbClick,
+  onCreateEventClick,
+  onSeedLiveSales
+}) => {
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications] = useState([
+    { id: 1, title: 'New Ticket Purchased', desc: 'Elena R. bought 2x VIP Pass for Davido Live', time: '2 mins ago', unread: true },
+    { id: 2, title: 'Gate Check-In Peak', desc: 'Over 500 tickets scanned at Main Gate in last 15m', time: '12 mins ago', unread: true },
+    { id: 3, title: 'Payout Scheduled', desc: '₦ 1,466,866,000 ready for bank processing', time: '1 hour ago', unread: false },
+    { id: 4, title: 'Promo Code Applied', desc: 'Code VIP2026 used for 15% discount', time: '3 hours ago', unread: false },
+  ]);
+
+  return (
+    <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-6 py-3">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        
+        {/* Left Side: Mobile Menu Button & Breadcrumbs / Search Input */}
+        <div className="flex items-center space-x-3 flex-1 min-w-0">
+          <button
+            onClick={onOpenMobileMenu}
+            className="lg:hidden p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          {/* Breadcrumbs or Search */}
+          {breadcrumb && breadcrumb.length > 0 ? (
+            <div className="flex items-center space-x-2 text-xs text-slate-600 font-semibold overflow-x-auto py-1">
+              <button 
+                onClick={() => onBreadcrumbClick && onBreadcrumbClick(0)} 
+                className="hover:text-[#00C896] flex items-center gap-1 text-slate-500 font-bold"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back</span>
+              </button>
+              <span className="text-slate-300">/</span>
+              {breadcrumb.map((crumb, idx) => (
+                <React.Fragment key={idx}>
+                  <button
+                    onClick={() => onBreadcrumbClick && onBreadcrumbClick(idx)}
+                    className={`${idx === breadcrumb.length - 1 ? 'text-slate-900 font-extrabold' : 'hover:text-[#00C896]'}`}
+                  >
+                    {crumb}
+                  </button>
+                  {idx < breadcrumb.length - 1 && <span className="text-slate-300">/</span>}
+                </React.Fragment>
+              ))}
+            </div>
+          ) : (
+            <div className="relative max-w-xs sm:max-w-sm w-full">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 bg-slate-100/80 focus:bg-white border border-slate-200 focus:border-[#00C896] rounded-xl text-xs text-slate-800 placeholder-slate-400 outline-none transition"
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Right Side: Quick Actions & Profile */}
+        <div className="flex items-center space-x-3">
+          
+          {/* Quick Simulation Live Sales trigger */}
+          {onSeedLiveSales && (
+            <button
+              onClick={onSeedLiveSales}
+              className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-50 text-[#00C896] hover:bg-emerald-100 rounded-xl text-xs font-bold transition border border-emerald-200/60"
+              title="Simulate Live Order Purchase"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Simulate Sale</span>
+            </button>
+          )}
+
+          {/* Create New Event Button */}
+          {onCreateEventClick && (
+            <button
+              onClick={onCreateEventClick}
+              className="hidden sm:flex items-center space-x-1.5 px-3.5 py-1.5 bg-[#00C896] hover:bg-[#00b386] text-white rounded-xl text-xs font-bold shadow-md shadow-[#00C896]/20 transition"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create New Event</span>
+            </button>
+          )}
+
+          {/* Notifications Bell Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="p-2 text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 relative transition"
+            >
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-amber-500 border-2 border-white rounded-full"></span>
+            </button>
+
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-4 space-y-3">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                  <h4 className="text-xs font-bold text-slate-900">Platform Notifications</h4>
+                  <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">5 New</span>
+                </div>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {notifications.map(n => (
+                    <div key={n.id} className="p-2.5 bg-slate-50 hover:bg-slate-100 rounded-xl text-xs space-y-0.5 border border-slate-200/60">
+                      <div className="flex justify-between font-bold text-slate-900 text-[11px]">
+                        <span>{n.title}</span>
+                        <span className="text-[9px] text-slate-400 font-normal">{n.time}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-600 leading-snug">{n.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Profile User Badge */}
+          <div className="flex items-center space-x-2 pl-2 border-l border-slate-200">
+            <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center border-2 border-[#00C896] shadow-sm">
+              FF
+            </div>
+            <span className="hidden md:inline text-xs font-extrabold text-slate-800">
+              Flytimefest
+            </span>
+          </div>
+
+        </div>
+
+      </div>
+    </header>
+  );
+};

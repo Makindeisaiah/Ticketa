@@ -1,0 +1,6 @@
+{
+  "name": "Event Ticketing Platform",
+  "description": "Comprehensive event ticketing platform with Attendee Web App, Attendee Mobile App, Organizer Dashboard, and Staff Check-in Scanner.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

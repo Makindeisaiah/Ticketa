@@ -1,0 +1,336 @@
+import React, { useState } from 'react';
+import { EventItem } from '../../types';
+import { 
+  Plus, 
+  Search, 
+  Calendar, 
+  MapPin, 
+  MoreHorizontal, 
+  Zap, 
+  TrendingUp, 
+  Flame, 
+  DollarSign, 
+  Ticket, 
+  CheckCircle2, 
+  ChevronLeft, 
+  ChevronRight,
+  Edit,
+  ExternalLink,
+  Eye,
+  ArrowUpRight
+} from 'lucide-react';
+
+interface EventsTabProps {
+  events: EventItem[];
+  onCreateEventClick: () => void;
+  onSelectEvent: (eventId: string) => void;
+  onViewRevenue: (eventId: string) => void;
+  onEditEvent: (event: EventItem) => void;
+}
+
+export const EventsTab: React.FC<EventsTabProps> = ({
+  events,
+  onCreateEventClick,
+  onSelectEvent,
+  onViewRevenue,
+  onEditEvent
+}) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+
+  const formatNaira = (amount: number) => {
+    return '₦ ' + amount.toLocaleString('en-US');
+  };
+
+  const filteredEvents = events.filter(e => 
+    e.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    e.venueName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    e.category.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Status badge config
+  const getSalesVelocityBadge = (index: number) => {
+    if (index % 3 === 0) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-emerald-50 text-[#00C896] border border-emerald-200">
+          <Zap className="w-3 h-3 fill-[#00C896]" />
+          Selling Fast
+        </span>
+      );
+    } else if (index % 3 === 1) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-amber-50 text-amber-600 border border-amber-200">
+          <TrendingUp className="w-3 h-3" />
+          Average Sales
+        </span>
+      );
+    } else {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-rose-50 text-rose-600 border border-rose-200">
+          <Flame className="w-3 h-3" />
+          Low Sales
+        </span>
+      );
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Events</h1>
+          <p className="text-xs font-semibold text-slate-500 mt-0.5">
+            Here are your event seats, ticket tiers, and sales stats
+          </p>
+        </div>
+
+        <button
+          onClick={onCreateEventClick}
+          className="px-4 py-2 bg-[#00C896] hover:bg-[#00b386] text-white rounded-xl text-xs font-extrabold shadow-md shadow-[#00C896]/20 transition flex items-center gap-1.5"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Create New Event</span>
+        </button>
+      </div>
+
+      {/* Top 4 Summary Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 font-bold">
+            <Calendar className="w-6 h-6" />
+          </div>
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              Total Event
+            </span>
+            <div className="text-2xl font-black text-slate-900 mt-0.5">12</div>
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#00C896] flex items-center justify-center shrink-0 font-bold border border-emerald-100">
+            <Zap className="w-6 h-6" />
+          </div>
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              Active Events
+            </span>
+            <div className="text-2xl font-black text-slate-900 mt-0.5">8</div>
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+          <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 font-bold border border-teal-100">
+            <Ticket className="w-6 h-6" />
+          </div>
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              Total Ticket Sold
+            </span>
+            <div className="text-2xl font-black text-slate-900 mt-0.5 font-mono">65,892</div>
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#00C896] flex items-center justify-center shrink-0 font-bold border border-emerald-100">
+            <DollarSign className="w-6 h-6" />
+          </div>
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+              Net Revenue
+            </span>
+            <div className="text-base font-black text-slate-900 mt-0.5 font-mono">
+              ₦ 3,134,963,500
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Search Input Filter */}
+      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm">
+        <div className="relative max-w-md w-full">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search events..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] focus:bg-white rounded-xl text-xs text-slate-900 placeholder-slate-400 outline-none transition"
+          />
+        </div>
+      </div>
+
+      {/* Events List Cards */}
+      <div className="space-y-4">
+        {filteredEvents.map((evt, idx) => {
+          const totalTierCap = evt.ticketTiers.reduce((acc, t) => acc + t.availableQuantity, 0);
+          const totalTierSold = evt.ticketTiers.reduce((acc, t) => acc + t.soldQuantity, 0);
+          const percentage = totalTierCap > 0 ? Math.round((totalTierSold / totalTierCap) * 100) : (idx === 0 ? 83 : idx === 1 ? 52 : 35);
+          const eventRevenue = evt.ticketTiers.reduce((acc, t) => acc + (t.price * t.soldQuantity), 0);
+          const displayRev = eventRevenue > 0 ? eventRevenue : (idx === 0 ? 2329909900 : idx === 1 ? 10545000 : 5358000);
+
+          return (
+            <div 
+              key={evt.id} 
+              className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative transition hover:border-[#00C896]/50"
+            >
+              
+              {/* Event Poster & Title */}
+              <div className="flex items-center space-x-4 min-w-0 flex-1">
+                <img 
+                  src={evt.image} 
+                  alt={evt.title} 
+                  className="w-20 h-24 rounded-xl object-cover shrink-0 shadow-md"
+                />
+                <div className="min-w-0 space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold text-teal-700 bg-teal-50 border border-teal-200">
+                      Upcoming
+                    </span>
+                    <h3 className="text-base font-black text-slate-900 truncate">
+                      {evt.title}
+                    </h3>
+                  </div>
+
+                  <p className="text-xs text-slate-500 font-medium truncate">
+                    {evt.venueName}
+                  </p>
+                  
+                  <p className="text-xs text-slate-400 font-mono">
+                    {evt.date} - {evt.time}
+                  </p>
+
+                  {/* Progress bar */}
+                  <div className="pt-2 w-full max-w-xs">
+                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-[#00C896] rounded-full transition-all duration-500" 
+                        style={{ width: `${percentage}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-[10px] font-bold text-slate-500 mt-1 block">
+                      ({percentage}%)
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Middle Stats & Sales Velocity Pill */}
+              <div className="flex items-center space-x-6 shrink-0">
+                <div>
+                  {getSalesVelocityBadge(idx)}
+                  <div className="mt-2 text-xs font-bold text-slate-800 space-y-0.5">
+                    <div className="font-mono text-slate-900 font-extrabold">
+                      {totalTierCap > 0 ? totalTierCap.toLocaleString() : '20,000'} <span className="text-[10px] text-slate-500 font-sans">Tickets</span>
+                    </div>
+                    <div className="text-[11px] text-slate-500">
+                      {totalTierSold > 0 ? totalTierSold.toLocaleString() : '16,692'} Check-ins
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                    Revenue
+                  </span>
+                  <span className="text-sm font-black text-[#00C896] font-mono">
+                    {formatNaira(displayRev)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center space-x-2 shrink-0 self-end lg:self-center">
+                <button
+                  onClick={() => onViewRevenue(evt.id)}
+                  className="px-4 py-2 bg-[#00C896] hover:bg-[#00b386] text-white rounded-xl text-xs font-bold transition shadow-sm"
+                >
+                  Revenue
+                </button>
+
+                {/* 3 dots action menu */}
+                <div className="relative">
+                  <button
+                    onClick={() => setOpenDropdownId(openDropdownId === evt.id ? null : evt.id)}
+                    className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 transition"
+                  >
+                    <MoreHorizontal className="w-4 h-4" />
+                  </button>
+
+                  {openDropdownId === evt.id && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-1 z-50 text-xs font-bold text-slate-700">
+                      <button
+                        onClick={() => {
+                          onSelectEvent(evt.id);
+                          setOpenDropdownId(null);
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-[#00C896]" />
+                        Manage Event
+                      </button>
+                      <button
+                        onClick={() => {
+                          onEditEvent(evt);
+                          setOpenDropdownId(null);
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2"
+                      >
+                        <Edit className="w-3.5 h-3.5 text-blue-500" />
+                        Edit Event
+                      </button>
+                      <button
+                        onClick={() => {
+                          onViewRevenue(evt.id);
+                          setOpenDropdownId(null);
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2"
+                      >
+                        <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500" />
+                        Withdraw Earnings
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-4">
+        <span className="text-xs text-slate-500 font-semibold">
+          Showing 1 to {filteredEvents.length} of 12 events
+        </span>
+
+        <div className="flex items-center space-x-1.5 text-xs font-bold">
+          <button className="p-2 rounded-xl border border-slate-200 text-slate-400 hover:text-slate-800 disabled:opacity-50">
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button className="w-8 h-8 rounded-xl bg-[#00C896] text-white flex items-center justify-center font-bold">
+            1
+          </button>
+          <button className="w-8 h-8 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 flex items-center justify-center">
+            2
+          </button>
+          <button className="w-8 h-8 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 flex items-center justify-center">
+            3
+          </button>
+          <button className="w-8 h-8 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 flex items-center justify-center">
+            4
+          </button>
+          <button className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100">
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+    </div>
+  );
+};
