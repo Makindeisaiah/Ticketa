@@ -61,6 +61,12 @@ export const SettingsTab: React.FC = () => {
     { id: '5', name: 'Makinde Isaiah', email: 'info@makindeisaiah.com', role: 'Support', status: 'Active' },
   ]);
 
+  // Flutterwave Config State
+  const [showFlwModal, setShowFlwModal] = useState(false);
+  const [flwPublicKey, setFlwPublicKey] = useState('FLWPUBK_TEST-SANDBOXDEMOKEY-X');
+  const [flwSecretKey, setFlwSecretKey] = useState('FLWSECK_TEST-••••••••••••••••');
+  const [flwMode, setFlwMode] = useState<'Test' | 'Live'>('Test');
+
   // Toast / notification state
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const showToast = (msg: string) => {
@@ -676,28 +682,136 @@ export const SettingsTab: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
-              { name: 'QuickPay', status: 'Connected', desc: 'Accept card & bank payments' },
-              { name: 'Paystack', status: 'Not Connected', desc: 'African payment gateway' },
-              { name: 'Flutterwave', status: 'Not Connected', desc: 'Global card & mobile money' },
-              { name: 'Zoom', status: 'Connected', desc: 'Virtual event livestreaming' },
-              { name: 'Google Meet', status: 'Not Connected', desc: 'Online webinar integration' },
-              { name: 'Google Analytics', status: 'Connected', desc: 'Track attendee conversion' },
+              { id: 'flutterwave', name: 'Flutterwave', status: 'Connected', desc: 'Accept Cards, Bank Transfer, USSD, Mobile Money & NQR globally', featured: true },
+              { id: 'quickpay', name: 'QuickPay', status: 'Connected', desc: 'Accept local card & bank payments' },
+              { id: 'paystack', name: 'Paystack', status: 'Connected', desc: 'African payment gateway integration' },
+              { id: 'zoom', name: 'Zoom', status: 'Connected', desc: 'Virtual event livestreaming' },
+              { id: 'meet', name: 'Google Meet', status: 'Not Connected', desc: 'Online webinar integration' },
+              { id: 'analytics', name: 'Google Analytics', status: 'Connected', desc: 'Track attendee conversion' },
             ].map((it, idx) => (
-              <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+              <div key={idx} className={`p-5 rounded-2xl border shadow-sm space-y-3 relative ${
+                it.featured ? 'bg-gradient-to-br from-amber-500/5 via-white to-orange-500/5 border-amber-500/40' : 'bg-white border-slate-200/80'
+              }`}>
+                {it.featured && (
+                  <span className="absolute -top-2.5 right-4 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-[9px] uppercase px-2 py-0.5 rounded-full shadow-sm">
+                    Primary Gateway
+                  </span>
+                )}
                 <div className="flex justify-between items-center">
-                  <h4 className="font-extrabold text-slate-900 text-sm">{it.name}</h4>
+                  <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                    {it.name}
+                  </h4>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
                     it.status === 'Connected' ? 'bg-emerald-100 text-[#00C896]' : 'bg-slate-100 text-slate-500'
                   }`}>
                     {it.status}
                   </span>
                 </div>
-                <p className="text-xs text-slate-500">{it.desc}</p>
-                <button className="w-full py-1.5 border border-slate-200 hover:bg-slate-50 rounded-xl text-xs font-bold text-slate-800">
-                  {it.status === 'Connected' ? 'Configure' : 'Connect'}
+                <p className="text-xs text-slate-500 leading-relaxed">{it.desc}</p>
+                <button
+                  onClick={() => {
+                    if (it.id === 'flutterwave') {
+                      setShowFlwModal(true);
+                    } else {
+                      showToast(`${it.name} settings updated`);
+                    }
+                  }}
+                  className={`w-full py-2 rounded-xl text-xs font-extrabold transition ${
+                    it.id === 'flutterwave'
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 shadow-sm'
+                      : 'border border-slate-200 hover:bg-slate-50 text-slate-800'
+                  }`}
+                >
+                  {it.id === 'flutterwave' ? '⚡ Configure Flutterwave' : (it.status === 'Connected' ? 'Configure' : 'Connect')}
                 </button>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Flutterwave Gateway Configuration Modal */}
+      {showFlwModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 text-white flex justify-between items-center">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 font-black text-sm flex items-center justify-center shadow-lg">
+                  FW
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-white">Flutterwave Gateway Settings</h3>
+                  <p className="text-[11px] text-amber-400 font-medium">Inline Checkout & Settlement Config</p>
+                </div>
+              </div>
+              <button onClick={() => setShowFlwModal(false)} className="p-1.5 text-slate-400 hover:text-white rounded-lg">
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 text-xs font-semibold">
+              <div className="flex items-center justify-between p-3 bg-amber-50 rounded-2xl border border-amber-200 text-amber-900">
+                <div>
+                  <span className="font-extrabold block">Environment Mode</span>
+                  <span className="text-[10px] text-amber-700">Toggle between Sandbox Test Key and Production Live Key</span>
+                </div>
+                <div className="flex bg-white p-1 rounded-xl border border-amber-200">
+                  <button
+                    onClick={() => setFlwMode('Test')}
+                    className={`px-3 py-1 rounded-lg font-bold text-[11px] ${flwMode === 'Test' ? 'bg-amber-500 text-slate-950' : 'text-slate-600'}`}
+                  >
+                    Test Sandbox
+                  </button>
+                  <button
+                    onClick={() => setFlwMode('Live')}
+                    className={`px-3 py-1 rounded-lg font-bold text-[11px] ${flwMode === 'Live' ? 'bg-emerald-600 text-white' : 'text-slate-600'}`}
+                  >
+                    Live Production
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 mb-1">Flutterwave Public Key</label>
+                <input
+                  type="text"
+                  value={flwPublicKey}
+                  onChange={e => setFlwPublicKey(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono text-xs focus:border-amber-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-700 mb-1">Flutterwave Secret Key</label>
+                <input
+                  type="password"
+                  value={flwSecretKey}
+                  onChange={e => setFlwSecretKey(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono text-xs focus:border-amber-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                <span className="text-[10px] text-slate-400 font-bold uppercase block">Supported Payment Options</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {['Bank Cards', 'Bank Transfer', 'USSD (*737#)', 'Mobile Money (GH, UG, KE)', 'NQR Code'].map(opt => (
+                    <span key={opt} className="bg-emerald-100 text-[#00C896] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      ✓ {opt}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setShowFlwModal(false);
+                  showToast('Flutterwave gateway credentials saved successfully!');
+                }}
+                className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black rounded-xl text-xs shadow-lg transition"
+              >
+                Save Flutterwave Settings
+              </button>
+            </div>
           </div>
         </div>
       )}

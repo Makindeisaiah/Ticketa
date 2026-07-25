@@ -1,6 +1,105 @@
 import { EventItem, Order, PromoCode } from '../types';
+import asakePosterImage from '../assets/images/asake_live_lagos_1784992291299.jpg';
+import davidoCrystalPalaceImage from '../assets/images/davido_crystal_palace_1784993903943.jpg';
+import saintSaviorTourImage from '../assets/images/saint_savior_tour_1784994063607.jpg';
 
 export const INITIAL_EVENTS: EventItem[] = [
+  {
+    id: 'evt-1300saint-savior-tour',
+    title: '1300SAINT - The Savior Tour',
+    organizerName: 'Saint Music Group',
+    category: 'Concerts',
+    date: 'Sun, Mar 8, 2026',
+    time: '20:00 PST',
+    location: 'Brick & Mortar, San Francisco, CA (11 City US Tour)',
+    venueName: 'Brick & Mortar / The Roxy / Baby\'s All Right',
+    address: '1710 Mission St, San Francisco, CA 94103',
+    image: saintSaviorTourImage,
+    bannerImage: saintSaviorTourImage,
+    description: '1300SAINT presents THE SAVIOR TOUR! Live performance hitting 11 major cities across San Francisco, Los Angeles (The Roxy), Phoenix, Dallas, Houston, New York City (Baby\'s All Right), Philadelphia, Toronto, Chicago, Charlotte, and Washington DC.',
+    featured: true,
+    tags: ['Hip-Hop', 'Underground', '1300SAINT', 'Rap', 'US Tour'],
+    expectations: [
+      'Raw energetic live performance',
+      'Exclusive Savior Tour apparel & vinyl merchandise',
+      'Meet & Greet packages available for VIP holders',
+      'Intimate club atmosphere with booming acoustics'
+    ],
+    refundPolicy: 'Tickets are non-refundable except in the event of official cancellation.',
+    importantInfo: [
+      'Doors open at 7:00 PM',
+      '18+ Event with valid Government photo ID',
+      'Digital e-ticket scanning at entrance'
+    ],
+    ticketTiers: [
+      {
+        id: 'tier-1300saint-ga',
+        name: 'General Admission Pass',
+        price: 15000,
+        description: 'Standing room floor pass to The Savior Tour.',
+        availableQuantity: 300,
+        soldQuantity: 185,
+        maxPerOrder: 4
+      },
+      {
+        id: 'tier-1300saint-vip',
+        name: 'VIP Savior Meet & Greet Pass',
+        price: 45000,
+        description: 'Early door access, Meet & Greet photo with 1300SAINT, signed tour poster.',
+        availableQuantity: 50,
+        soldQuantity: 32,
+        maxPerOrder: 2
+      }
+    ]
+  },
+  {
+    id: 'evt-davido-crystal-palace',
+    title: 'Davido Live in Crystal Palace Bowl',
+    organizerName: 'Palace Bowl Presents',
+    category: 'Concerts',
+    date: 'Fri, Aug 14, 2026',
+    time: '18:00 BST',
+    location: 'Crystal Palace Bowl, London, UK',
+    venueName: 'Crystal Palace Bowl, London',
+    address: 'Crystal Palace Park, Thicket Rd, London SE20 8DT',
+    image: davidoCrystalPalaceImage,
+    bannerImage: davidoCrystalPalaceImage,
+    description: 'Palace Bowl Presents DAVIDO & FRIENDS Live at Crystal Palace Bowl, London! Featuring special guest Omah Lay, Black Sherif, Gabzy, TxC, Jazzwrld & Thukuthela, ECool, Morravey, Boi Chase.',
+    featured: true,
+    tags: ['Afrobeats', 'London', 'Davido', 'Sold Out', 'Live Music'],
+    expectations: [
+      'Live orchestra & full band setup',
+      'Special guest performances by Omah Lay & Black Sherif',
+      'Outdoor amphitheatre summer festival atmosphere',
+      'VIP lounge access & fast-track entry'
+    ],
+    refundPolicy: 'Tickets are non-refundable except in the case of event cancellation by the organizer.',
+    importantInfo: [
+      'Gates open at 4:30 PM BST',
+      'Valid photo ID required at gate',
+      'All attendees must present e-ticket barcode'
+    ],
+    ticketTiers: [
+      {
+        id: 'tier-dav-cp-reg',
+        name: 'General Admission',
+        price: 45000,
+        description: 'Access to the main arena bowl lawn.',
+        availableQuantity: 5000,
+        soldQuantity: 5000,
+        maxPerOrder: 4
+      },
+      {
+        id: 'tier-dav-cp-vip',
+        name: 'VIP Front Pit Pass',
+        price: 120000,
+        description: 'Priority front row pit pass with exclusive bar access.',
+        availableQuantity: 500,
+        soldQuantity: 500,
+        maxPerOrder: 2
+      }
+    ]
+  },
   {
     id: 'evt-davido',
     title: 'Davido Live in Lagos',
@@ -213,13 +312,13 @@ export const INITIAL_EVENTS: EventItem[] = [
     category: 'Concerts',
     date: 'Mon, Dec 29, 2025',
     time: '19:00 WAT',
-    location: 'Johannesburg Stadium, SA',
-    venueName: 'Johannesburg Stadium, SA',
+    location: 'Eko Convention Center, Victoria Island, Lagos',
+    venueName: 'Eko Convention Center, VI',
     address: 'Eko Convention Center, VI, Lagos',
-    image: 'https://images.unsplash.com/photo-1543807535-eceef0bc6599?auto=format&fit=crop&w=1000&q=80',
-    bannerImage: 'https://images.unsplash.com/photo-1543807535-eceef0bc6599?auto=format&fit=crop&w=1600&q=80',
+    image: asakePosterImage,
+    bannerImage: asakePosterImage,
     description: 'Mr Money With The Vibe brings the Lungu Boy Tour live to Lagos!',
-    featured: false,
+    featured: true,
     tags: ['Amapiano', 'Afrobeats'],
     ticketTiers: [
       {

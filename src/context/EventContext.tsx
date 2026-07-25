@@ -90,7 +90,29 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   
   const [events, setEvents] = useState<EventItem[]>(() => {
     const saved = localStorage.getItem('tix_events');
-    return saved ? JSON.parse(saved) : INITIAL_EVENTS;
+    if (!saved) return INITIAL_EVENTS;
+    try {
+      const parsed = JSON.parse(saved) as EventItem[];
+      const mapped = parsed.map(data => {
+        const defaultEvt = INITIAL_EVENTS.find(i => i.id === data.id);
+        if (defaultEvt) {
+          return {
+            ...data,
+            image: defaultEvt.image,
+            bannerImage: defaultEvt.bannerImage,
+            title: defaultEvt.title,
+            location: defaultEvt.location,
+            venueName: defaultEvt.venueName,
+          };
+        }
+        return data;
+      });
+      // Append any new initial events not present in stored state
+      const missingInitial = INITIAL_EVENTS.filter(initEvt => !mapped.some(m => m.id === initEvt.id));
+      return [...missingInitial, ...mapped];
+    } catch {
+      return INITIAL_EVENTS;
+    }
   });
 
   const [orders, setOrders] = useState<Order[]>(() => {
@@ -126,8 +148,23 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const eventsCol = collection(db, 'events');
       unsubscribeEvents = onSnapshot(eventsCol, (snapshot) => {
         if (!snapshot.empty) {
-          const loadedEvents = snapshot.docs.map(docSnap => docSnap.data() as EventItem);
-          setEvents(loadedEvents);
+          const loadedEvents = snapshot.docs.map(docSnap => {
+            const data = docSnap.data() as EventItem;
+            const defaultEvt = INITIAL_EVENTS.find(i => i.id === data.id);
+            if (defaultEvt) {
+              return {
+                ...data,
+                image: defaultEvt.image,
+                bannerImage: defaultEvt.bannerImage,
+                title: defaultEvt.title,
+                location: defaultEvt.location,
+                venueName: defaultEvt.venueName,
+              };
+            }
+            return data;
+          });
+          const missingInitial = INITIAL_EVENTS.filter(initEvt => !loadedEvents.some(l => l.id === initEvt.id));
+          setEvents([...missingInitial, ...loadedEvents]);
         } else {
           // Seed Initial Events to Firestore if empty
           INITIAL_EVENTS.forEach(async (evt) => {

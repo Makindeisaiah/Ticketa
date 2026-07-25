@@ -43,11 +43,11 @@ export const OrganizerSidebar: React.FC<OrganizerSidebarProps> = ({
 
   return (
     <aside 
-      className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:block ${
+      className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:shrink-0 ${
         isMobileOpen ? 'translate-x-0' : '-translate-x-full'
       }`}
     >
-      <div className="h-full flex flex-col justify-between p-4">
+      <div className="h-full flex flex-col justify-between p-4 overflow-y-auto scrollbar-none">
         <div>
           {/* Logo Brand Header */}
           <div className="flex items-center space-x-3 px-3 py-3 mb-6 border-b border-slate-100">
