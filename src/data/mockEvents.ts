@@ -2,8 +2,66 @@ import { EventItem, Order, PromoCode } from '../types';
 import asakePosterImage from '../assets/images/asake_live_lagos_1784992291299.jpg';
 import davidoCrystalPalaceImage from '../assets/images/davido_crystal_palace_1784993903943.jpg';
 import saintSaviorTourImage from '../assets/images/saint_savior_tour_1784994063607.jpg';
+import boviComedyPoster from '../assets/images/bovi_comedy_poster_1784995252837.jpg';
+import burnaBoyPoster from '../assets/images/burna_boy_poster_1784995270507.jpg';
+import ayLojikPoster from '../assets/images/ay_lojik_koko_bar_1784995847557.jpg';
+import hardyPoster from '../assets/images/hardy_country_tour_1784995861722.jpg';
+import c5CarnivalPoster from '../assets/images/c5_carnival_tour_1784995874508.jpg';
+import ikoroduDevopsPoster from '../assets/images/ikorodu_devops_meetup_1784995886475.jpg';
+import igbesaDesignPoster from '../assets/images/igbesa_design_meetup_1784995898659.jpg';
+import lagosHackathonPoster from '../assets/images/lagos_impact_hackathon_1784995909520.jpg';
+import ayUkPoster from '../assets/images/ay_live_uk_tour_1784995921544.jpg';
+import ayLaughJamPoster from '../assets/images/ay_live_laugh_jam_1784995933936.jpg';
+import travisScottPoster from '../assets/images/travis_scott_sa_tour_1784995948683.jpg';
 
 export const INITIAL_EVENTS: EventItem[] = [
+  {
+    id: 'evt-ay-lojik-koko-bar',
+    title: 'AY Lojik Live in Koko Bar',
+    organizerName: 'Koko Lounge Ent',
+    category: 'Concerts',
+    date: 'Fri, Nov 21, 2025',
+    time: '21:00 WAT',
+    location: 'Koko Bar & Lounge, Victoria Island, Lagos',
+    venueName: 'Koko Bar & Lounge, VI',
+    address: 'Koko Bar & Lounge, Victoria Island, Lagos',
+    image: ayLojikPoster,
+    bannerImage: ayLojikPoster,
+    description: 'Afrobeats star AY Lojik live in performance at Koko Bar & Lounge! An intimate high-energy concert night with unreleased tracks and hit singles.',
+    featured: true,
+    tags: ['Afrobeats', 'AY Lojik', 'Koko Bar', 'Lagos', 'Live Music'],
+    expectations: [
+      'Intimate acoustic & full band setup',
+      'Exclusive meet & greet opportunities',
+      'VIP lounge seating with premium bottle service'
+    ],
+    refundPolicy: 'Tickets are non-refundable except in case of event cancellation.',
+    importantInfo: [
+      'Doors open at 8:00 PM',
+      'Strictly 18+ event',
+      'E-ticket scan required at entrance'
+    ],
+    ticketTiers: [
+      {
+        id: 'tier-ay-lojik-reg',
+        name: 'Regular Gate Pass',
+        price: 25000,
+        description: 'Standard standing floor pass.',
+        availableQuantity: 400,
+        soldQuantity: 180,
+        maxPerOrder: 4
+      },
+      {
+        id: 'tier-ay-lojik-vip',
+        name: 'VIP Table Access',
+        price: 80000,
+        description: 'Priority VIP seating with complimentary drink voucher.',
+        availableQuantity: 50,
+        soldQuantity: 32,
+        maxPerOrder: 2
+      }
+    ]
+  },
   {
     id: 'evt-1300saint-savior-tour',
     title: '1300SAINT - The Savior Tour',
@@ -177,14 +235,14 @@ export const INITIAL_EVENTS: EventItem[] = [
     category: 'Concerts',
     date: 'Sat, Dec 27, 2025',
     time: '20:00 WAT',
-    location: 'Balmoral Convention Center, VI',
+    location: 'Giant Center Stage, Balmoral, VI, Lagos',
     venueName: 'Balmoral Convention Center, VI',
     address: 'Balmoral Convention Center, VI, Lagos',
-    image: 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1000&q=80',
-    bannerImage: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1600&q=80',
-    description: 'The African Giant brings No Sign Of Weakness World Tour live to Lagos.',
+    image: burnaBoyPoster,
+    bannerImage: burnaBoyPoster,
+    description: 'The African Giant brings the No Sign Of Weakness World Tour live to a Giant Center Stage in Lagos!',
     featured: true,
-    tags: ['Afrobeats', 'Afro-fusion', 'Live Show'],
+    tags: ['Afrobeats', 'Afro-fusion', 'Live Show', 'Burna Boy'],
     ticketTiers: [
       {
         id: 'tier-burna-reg',
@@ -207,8 +265,8 @@ export const INITIAL_EVENTS: EventItem[] = [
     location: 'Golden Arena, Edmonton, AB',
     venueName: 'Golden Arena, Edmonton, AB',
     address: 'Golden Arena, Edmonton, AB',
-    image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1000&q=80',
-    bannerImage: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1600&q=80',
+    image: hardyPoster,
+    bannerImage: hardyPoster,
     description: 'Hardy brings country rock live with special guest Cameron Whitcomb.',
     featured: false,
     tags: ['Country', 'Rock'],
@@ -234,8 +292,8 @@ export const INITIAL_EVENTS: EventItem[] = [
     location: 'Fletcher Hall, Durham, NC',
     venueName: 'Fletcher Hall, Durham, NC',
     address: 'Fletcher Hall, Durham, NC',
-    image: 'https://images.unsplash.com/photo-1508997449629-303059a039c0?auto=format&fit=crop&w=1000&q=80',
-    bannerImage: 'https://images.unsplash.com/photo-1508997449629-303059a039c0?auto=format&fit=crop&w=1600&q=80',
+    image: c5CarnivalPoster,
+    bannerImage: c5CarnivalPoster,
     description: 'An explosive showcase of emerging musical talent and live performances.',
     featured: false,
     tags: ['Carnival', 'Talent Show'],
@@ -261,8 +319,8 @@ export const INITIAL_EVENTS: EventItem[] = [
     location: 'Union Stage, Washington, DC',
     venueName: 'Union Stage, Washington, DC',
     address: 'Union Stage, Washington, DC',
-    image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1000&q=80',
-    bannerImage: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1600&q=80',
+    image: saintSaviorTourImage,
+    bannerImage: saintSaviorTourImage,
     description: 'Atmospheric live tour with immersive soundscapes and guest acts.',
     featured: false,
     tags: ['Hip-Hop', 'Indie'],
@@ -288,8 +346,8 @@ export const INITIAL_EVENTS: EventItem[] = [
     location: 'Johannesburg Stadium, SA',
     venueName: 'Johannesburg Stadium, SA',
     address: 'Johannesburg Stadium, South Africa',
-    image: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?auto=format&fit=crop&w=1000&q=80',
-    bannerImage: 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?auto=format&fit=crop&w=1600&q=80',
+    image: travisScottPoster,
+    bannerImage: travisScottPoster,
     description: 'Circus Maximus world tour lands at Johannesburg Stadium!',
     featured: true,
     tags: ['Rage', 'Hip-Hop'],
@@ -363,27 +421,27 @@ export const INITIAL_EVENTS: EventItem[] = [
   },
   {
     id: 'evt-bovi',
-    title: 'Bovi African Comedy',
-    organizerName: 'Kountry Kulture',
+    title: 'Bovi Presents African Comedy Night',
+    organizerName: 'Bovi Presents',
     category: 'Comedy',
-    date: 'Sat, Dec 25, 2025',
-    time: '19:00 WAT',
-    location: 'Alliance Francaise MAC, Ikoyi',
-    venueName: 'Alliance Francaise MAC, Ikoyi',
-    address: 'Alliance Francaise, Ikoyi, Lagos',
-    image: 'https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&w=1000&q=80',
-    bannerImage: 'https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&w=1600&q=80',
-    description: 'Bovi presents an evening of unfiltered stand-up comedy.',
-    featured: false,
-    tags: ['Standup', 'Comedy'],
+    date: 'Sat, Nov 29, 2025',
+    time: '18:00 - 21:00 WAT',
+    location: 'Alliance Française, Mike Adenuga Centre, Ikoyi, Lagos',
+    venueName: 'Alliance Française, Mike Adenuga Centre, Ikoyi',
+    address: 'Mike Adenuga Centre, 9 Osborne Rd, Ikoyi, Lagos',
+    image: boviComedyPoster,
+    bannerImage: boviComedyPoster,
+    description: 'Bovi Presents African Comedy Night live at Alliance Française, Mike Adenuga Centre, Ikoyi! Only 100 tickets available.',
+    featured: true,
+    tags: ['Standup', 'Comedy', 'Bovi', 'Ikoyi', 'Lagos'],
     ticketTiers: [
       {
         id: 'tier-bovi-reg',
-        name: 'Regular',
-        price: 45000,
-        description: 'Standard seating pass.',
-        availableQuantity: 300,
-        soldQuantity: 240,
+        name: 'Gate Pass',
+        price: 50000,
+        description: 'Exclusive seat pass (Limited 100 tickets available).',
+        availableQuantity: 100,
+        soldQuantity: 42,
         maxPerOrder: 4
       }
     ]
@@ -398,8 +456,8 @@ export const INITIAL_EVENTS: EventItem[] = [
     location: 'Wosam Arena, Ago-Iwoye, Ogun',
     venueName: 'Wosam Arena, Ago-Iwoye, Ogun',
     address: 'Wosam Arena, Ago-Iwoye, Ogun State',
-    image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1000&q=80',
-    bannerImage: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1600&q=80',
+    image: ayUkPoster,
+    bannerImage: ayUkPoster,
     description: 'The world-famous AY Live tour hits the stage with hilarious sketches.',
     featured: false,
     tags: ['AY Live', 'Comedy'],
@@ -425,8 +483,8 @@ export const INITIAL_EVENTS: EventItem[] = [
     location: 'Wosam Arena, Ago-Iwoye, Ogun',
     venueName: 'Wosam Arena, Ago-Iwoye, Ogun',
     address: 'Wosam Arena, Ago-Iwoye, Ogun State',
-    image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1000&q=80',
-    bannerImage: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1600&q=80',
+    image: ayLaughJamPoster,
+    bannerImage: ayLaughJamPoster,
     description: 'Exclusive comedy jam with VIP table experiences.',
     featured: false,
     tags: ['Comedy', 'VIP Tables'],
@@ -477,8 +535,8 @@ export const INITIAL_EVENTS: EventItem[] = [
     location: 'Unilag Main Auditorium, Lagos',
     venueName: 'Unilag Main Auditorium',
     address: 'University of Lagos Main Campus, Akoka, Yaba',
-    image: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1000&q=80',
-    bannerImage: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1600&q=80',
+    image: lagosHackathonPoster,
+    bannerImage: lagosHackathonPoster,
     description: '24-hour innovation hackathon solving real-world challenges in West Africa.',
     featured: false,
     tags: ['Hackathon', 'Coding'],
@@ -504,8 +562,8 @@ export const INITIAL_EVENTS: EventItem[] = [
     location: 'Yinkus Restaurant, Ikorodu',
     venueName: 'Yinkus Restaurant, Ikorodu',
     address: 'Yinkus Restaurant, Ikorodu, Lagos',
-    image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1000&q=80',
-    bannerImage: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1600&q=80',
+    image: ikoroduDevopsPoster,
+    bannerImage: ikoroduDevopsPoster,
     description: 'Managing containers on Linux & Cloud infrastructure best practices.',
     featured: false,
     tags: ['Linux', 'DevOps'],
@@ -531,8 +589,8 @@ export const INITIAL_EVENTS: EventItem[] = [
     location: 'Nas 5, CONAS building, Igbesa',
     venueName: 'Nas 5, CONAS building',
     address: 'CONAS Building, Crawford University, Igbesa',
-    image: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=1000&q=80',
-    bannerImage: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=1600&q=80',
+    image: igbesaDesignPoster,
+    bannerImage: igbesaDesignPoster,
     description: 'Designing with purpose: turning simple ideas into visual stories.',
     featured: false,
     tags: ['UI/UX', 'Design'],
