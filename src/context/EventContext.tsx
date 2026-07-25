@@ -7,6 +7,7 @@ import {
   onSnapshot, 
   doc, 
   setDoc, 
+  deleteDoc,
   getDocs,
   writeBatch 
 } from 'firebase/firestore';
@@ -185,7 +186,8 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [orders, setOrders] = useState<Order[]>(() => {
     const saved = localStorage.getItem('tix_orders');
-    return saved ? JSON.parse(saved) : INITIAL_ORDERS;
+    const list = saved ? JSON.parse(saved) : INITIAL_ORDERS;
+    return Array.isArray(list) ? list.slice(0, 20) : INITIAL_ORDERS;
   });
 
   const [promos, setPromos] = useState<PromoCode[]>(() => {
@@ -274,7 +276,20 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       unsubscribeOrders = onSnapshot(ordersCol, (snapshot) => {
         if (!snapshot.empty) {
           const loadedOrders = snapshot.docs.map(docSnap => docSnap.data() as Order);
-          setOrders(loadedOrders);
+          const cappedOrders = loadedOrders.slice(0, 20);
+          setOrders(cappedOrders);
+          localStorage.setItem('tix_orders', JSON.stringify(cappedOrders));
+
+          // Delete excess order records from Firestore
+          if (snapshot.docs.length > 20) {
+            snapshot.docs.slice(20).forEach(async (docSnap) => {
+              try {
+                await deleteDoc(doc(db, 'orders', docSnap.id));
+              } catch (e) {
+                console.error('Error deleting excess order from Firestore:', e);
+              }
+            });
+          }
         } else {
           // Seed Initial Orders to Firestore if empty
           INITIAL_ORDERS.forEach(async (ord) => {

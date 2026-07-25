@@ -29,6 +29,14 @@ export const AttendeeWeb: React.FC = () => {
   const [activeEvent, setActiveEvent] = useState<EventItem | null>(events[0] || null);
   const [selectedTiers, setSelectedTiers] = useState<{ [tierId: string]: number }>({});
 
+  const handleNav = (view: 'home' | 'browse' | 'details' | 'checkout' | 'orders' | 'how-it-works') => {
+    if (eventId) {
+      navigate('/', { replace: true });
+    }
+    setCurrentView(view);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   // Direct URL routing sync for /events/:eventId
   useEffect(() => {
     if (eventId && events.length > 0) {
@@ -249,7 +257,7 @@ export const AttendeeWeb: React.FC = () => {
             {/* Logo */}
             <div className="flex items-center space-x-8">
               <button 
-                onClick={() => { setCurrentView('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                onClick={() => handleNav('home')}
                 className="flex items-center space-x-2.5 text-left group"
               >
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
@@ -265,7 +273,7 @@ export const AttendeeWeb: React.FC = () => {
               {/* Primary Navigation Links */}
               <nav className="hidden md:flex items-center space-x-1">
                 <button
-                  onClick={() => setCurrentView('browse')}
+                  onClick={() => handleNav('browse')}
                   className={`px-3 py-2 rounded-lg text-xs font-semibold transition ${
                     currentView === 'browse' ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                   }`}
@@ -273,7 +281,7 @@ export const AttendeeWeb: React.FC = () => {
                   Browse Events
                 </button>
                 <button
-                  onClick={() => setCurrentView('how-it-works')}
+                  onClick={() => handleNav('how-it-works')}
                   className={`px-3 py-2 rounded-lg text-xs font-semibold transition ${
                     currentView === 'how-it-works' ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                   }`}
@@ -281,7 +289,7 @@ export const AttendeeWeb: React.FC = () => {
                   How it works
                 </button>
                 <button
-                  onClick={() => setCurrentView('orders')}
+                  onClick={() => handleNav('orders')}
                   className={`px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 ${
                     currentView === 'orders' ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                   }`}
@@ -308,8 +316,8 @@ export const AttendeeWeb: React.FC = () => {
               </button>
 
               <button
-                onClick={() => setCurrentView('orders')}
-                className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 rounded-xl text-xs font-black transition shadow-lg shadow-emerald-500/20 flex items-center space-x-2"
+                onClick={() => handleNav('orders')}
+                className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 rounded-xl text-xs font-black transition shadow-lg shadow-emerald-500/20 flex items-center space-x-2 cursor-pointer"
               >
                 <Ticket className="w-4 h-4" />
                 <span>My Wallet</span>
@@ -1249,78 +1257,127 @@ export const AttendeeWeb: React.FC = () => {
         {currentView === 'orders' && (
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
             
-            <div>
-              <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Digital Ticket Wallet</span>
-              <h1 className="text-3xl font-black text-white mt-1">My Orders & Live Passes</h1>
-              <p className="text-xs text-slate-400">Passes stored here automatically sync to the Staff Check-in Scanner App.</p>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 p-6 rounded-3xl border border-slate-800 shadow-xl">
+              <div>
+                <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Digital Ticket Wallet
+                </span>
+                <h1 className="text-2xl sm:text-3xl font-black text-white mt-1">My Orders & Live Passes</h1>
+                <p className="text-xs text-slate-400 mt-0.5">Your official digital tickets are securely stored here with live QR verification codes.</p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => navigate('/mobile')}
+                  className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center space-x-2 shadow-lg shadow-indigo-600/20 transition"
+                >
+                  <Smartphone className="w-4 h-4 text-indigo-200" />
+                  <span>Open Mobile App Wallet</span>
+                </button>
+              </div>
             </div>
+
+            {/* Wallet Summary Metrics */}
+            {orders.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4">
+                  <p className="text-xs text-slate-400 font-semibold">Total Orders</p>
+                  <div className="text-2xl font-black text-white mt-1">{orders.length}</div>
+                </div>
+                <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4">
+                  <p className="text-xs text-slate-400 font-semibold">Active Ticket Passes</p>
+                  <div className="text-2xl font-black text-emerald-400 mt-1">
+                    {orders.reduce((acc, o) => acc + o.tickets.length, 0)}
+                  </div>
+                </div>
+                <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4">
+                  <p className="text-xs text-slate-400 font-semibold">Total Value Purchased</p>
+                  <div className="text-2xl font-black text-teal-300 mt-1">
+                    ₦{orders.reduce((acc, o) => acc + o.totalAmount, 0).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {orders.length === 0 ? (
               <div className="text-center py-20 bg-slate-900 rounded-3xl border border-slate-800 space-y-4">
                 <Ticket className="w-12 h-12 text-slate-600 mx-auto" />
                 <h3 className="text-lg font-bold text-slate-300">No Tickets Purchased Yet</h3>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">Explore upcoming concerts or tech summits to secure your entrance pass.</p>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">Explore upcoming concerts, comedy shows, or tech summits to secure your pass.</p>
                 <button
-                  onClick={() => setCurrentView('browse')}
-                  className="px-5 py-2.5 bg-emerald-500 text-slate-950 font-black rounded-xl text-xs"
+                  onClick={() => handleNav('browse')}
+                  className="px-5 py-2.5 bg-emerald-500 text-slate-950 font-black rounded-xl text-xs hover:bg-emerald-400 transition"
                 >
                   Browse Events
                 </button>
               </div>
             ) : (
               <div className="space-y-6">
-                {orders.map(order => (
-                  <div key={order.id} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
-                    
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 gap-2">
-                      <div>
-                        <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/20">
-                          Order #{order.id}
-                        </span>
-                        <h3 className="text-xl font-black text-white mt-1">{order.eventTitle}</h3>
-                        <p className="text-xs text-slate-400">Purchased on {order.purchaseDate} via {order.paymentMethod}</p>
-                      </div>
+                {orders.map(order => {
+                  const eventObj = events.find(e => e.id === order.eventId || e.title === order.eventTitle);
+                  const posterImg = eventObj?.image || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80';
 
-                      <div className="text-right">
-                        <span className="text-xs text-slate-400">Total Paid</span>
-                        <div className="text-2xl font-black text-emerald-400">₦{order.totalAmount.toLocaleString()}</div>
-                      </div>
-                    </div>
-
-                    {/* Passes list */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {order.tickets.map(tkt => (
-                        <div key={tkt.ticketCode} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex gap-4 items-center">
-                          <QRCodeDisplay value={tkt.ticketCode} size={90} />
-                          
-                          <div className="flex-1 text-xs space-y-1">
-                            <div className="flex justify-between items-center">
-                              <span className="font-mono font-bold text-emerald-400">{tkt.ticketCode}</span>
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
-                                tkt.status === 'CHECKED_IN'
-                                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                                  : 'bg-teal-500/20 text-teal-300 border border-teal-500/30'
-                              }`}>
-                                {tkt.status === 'CHECKED_IN' ? 'Checked In' : 'Valid Pass'}
-                              </span>
-                            </div>
-
-                            <p className="font-bold text-white text-sm">{tkt.tierName} Pass</p>
-                            <p className="text-slate-300">Holder: <span className="text-white font-medium">{tkt.attendeeName}</span></p>
-                            <p className="text-slate-400 text-[11px]">{tkt.venueName}</p>
-                            
-                            {tkt.checkedInAt && (
-                              <p className="text-[10px] text-emerald-400 font-mono pt-1">
-                                Scanned: {tkt.checkedInAt}
-                              </p>
-                            )}
+                  return (
+                    <div key={order.id} className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
+                      
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 gap-4">
+                        <div className="flex items-center space-x-4">
+                          <img 
+                            src={posterImg} 
+                            alt={order.eventTitle} 
+                            className="w-14 h-14 rounded-2xl object-cover border border-slate-700 shadow-md shrink-0" 
+                          />
+                          <div>
+                            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/20">
+                              Order #{order.id}
+                            </span>
+                            <h3 className="text-lg sm:text-xl font-black text-white mt-1">{order.eventTitle}</h3>
+                            <p className="text-xs text-slate-400">Purchased on {order.purchaseDate} via {order.paymentMethod}</p>
                           </div>
                         </div>
-                      ))}
-                    </div>
 
-                  </div>
-                ))}
+                        <div className="sm:text-right">
+                          <span className="text-xs text-slate-400">Total Paid</span>
+                          <div className="text-2xl font-black text-emerald-400">₦{order.totalAmount.toLocaleString()}</div>
+                        </div>
+                      </div>
+
+                      {/* Passes list */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {order.tickets.map(tkt => (
+                          <div key={tkt.ticketCode} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex gap-4 items-center">
+                            <QRCodeDisplay value={tkt.ticketCode} size={90} />
+                            
+                            <div className="flex-1 text-xs space-y-1">
+                              <div className="flex justify-between items-center">
+                                <span className="font-mono font-bold text-emerald-400">{tkt.ticketCode}</span>
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                                  tkt.status === 'CHECKED_IN'
+                                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                    : 'bg-teal-500/20 text-teal-300 border border-teal-500/30'
+                                }`}>
+                                  {tkt.status === 'CHECKED_IN' ? 'Checked In' : 'Valid Pass'}
+                                </span>
+                              </div>
+
+                              <p className="font-bold text-white text-sm">{tkt.tierName} Pass</p>
+                              <p className="text-slate-300">Holder: <span className="text-white font-medium">{tkt.attendeeName}</span></p>
+                              <p className="text-slate-400 text-[11px]">{tkt.venueName}</p>
+                              
+                              {tkt.checkedInAt && (
+                                <p className="text-[10px] text-emerald-400 font-mono pt-1">
+                                  Scanned: {tkt.checkedInAt}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -1412,7 +1469,7 @@ export const AttendeeWeb: React.FC = () => {
               <button
                 onClick={() => {
                   setPaymentSuccessOrder(null);
-                  setCurrentView('orders');
+                  handleNav('orders');
                 }}
                 className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-xs shadow-lg"
               >
@@ -1442,9 +1499,9 @@ export const AttendeeWeb: React.FC = () => {
           </div>
 
           <div className="flex space-x-6 text-slate-400">
-            <button onClick={() => setCurrentView('browse')} className="hover:text-white">Browse Events</button>
-            <button onClick={() => setCurrentView('how-it-works')} className="hover:text-white">How it works</button>
-            <button onClick={() => setCurrentView('orders')} className="hover:text-white">My Wallet</button>
+            <button onClick={() => handleNav('browse')} className="hover:text-white">Browse Events</button>
+            <button onClick={() => handleNav('how-it-works')} className="hover:text-white">How it works</button>
+            <button onClick={() => handleNav('orders')} className="hover:text-white">My Wallet</button>
             <button onClick={() => setCurrentPlatform('organizer')} className="hover:text-emerald-400">Organizer Dashboard</button>
           </div>
         </div>
