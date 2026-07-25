@@ -15,6 +15,7 @@ import { CheckInsTab } from './CheckInsTab';
 import { SettingsTab } from './SettingsTab';
 import { CreateEventModal } from './CreateEventModal';
 import { RevenueWithdrawModal } from './RevenueWithdrawModal';
+import { OrganizerCheckInModal } from './OrganizerCheckInModal';
 
 export const OrganizerDashboard: React.FC = () => {
   const { 
@@ -50,6 +51,14 @@ export const OrganizerDashboard: React.FC = () => {
 
   const [revenueModalEvent, setRevenueModalEvent] = useState<EventItem | null>(null);
   const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
+
+  const [isCheckInModalOpen, setIsCheckInModalOpen] = useState(false);
+  const [checkInModalMode, setCheckInModalMode] = useState<'scan' | 'manual'>('scan');
+
+  const handleOpenCheckInModal = (mode: 'scan' | 'manual' = 'scan') => {
+    setCheckInModalMode(mode);
+    setIsCheckInModalOpen(true);
+  };
 
   // Quick Action Handlers
   const handleOpenCreateModal = () => {
@@ -171,6 +180,8 @@ export const OrganizerDashboard: React.FC = () => {
             <CheckInsTab
               events={events}
               allTickets={allTickets}
+              onOpenScanner={() => handleOpenCheckInModal('scan')}
+              onOpenManualCheckIn={() => handleOpenCheckInModal('manual')}
             />
           )}
 
@@ -195,6 +206,15 @@ export const OrganizerDashboard: React.FC = () => {
         isOpen={isRevenueModalOpen}
         onClose={() => setIsRevenueModalOpen(false)}
         event={revenueModalEvent}
+      />
+
+      {/* Organizer Scanner & Check-In Modal */}
+      <OrganizerCheckInModal
+        isOpen={isCheckInModalOpen}
+        initialMode={checkInModalMode}
+        onClose={() => setIsCheckInModalOpen(false)}
+        events={events}
+        allTickets={allTickets}
       />
 
     </div>
