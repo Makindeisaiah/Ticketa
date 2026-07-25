@@ -308,8 +308,12 @@ export const AttendeeWeb: React.FC = () => {
             {/* Header Right Actions */}
             <div className="flex items-center space-x-3">
               <button
-                onClick={() => setCurrentPlatform('organizer')}
-                className="hidden sm:inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition"
+                onClick={() => {
+                  setCurrentPlatform('organizer');
+                  navigate('/organizer');
+                }}
+                className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition cursor-pointer"
+                title="Host events or register as an event organizer"
               >
                 <Building2 className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Host / Sell Tickets</span>
@@ -1424,8 +1428,11 @@ export const AttendeeWeb: React.FC = () => {
               </div>
 
               <button
-                onClick={() => setCurrentPlatform('organizer')}
-                className="px-6 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl transition shadow-xl shadow-emerald-500/20 whitespace-nowrap"
+                onClick={() => {
+                  setCurrentPlatform('organizer');
+                  navigate('/organizer');
+                }}
+                className="px-6 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl transition shadow-xl shadow-emerald-500/20 whitespace-nowrap cursor-pointer"
               >
                 Create An Event Now
               </button>
@@ -1502,7 +1509,7 @@ export const AttendeeWeb: React.FC = () => {
             <button onClick={() => handleNav('browse')} className="hover:text-white">Browse Events</button>
             <button onClick={() => handleNav('how-it-works')} className="hover:text-white">How it works</button>
             <button onClick={() => handleNav('orders')} className="hover:text-white">My Wallet</button>
-            <button onClick={() => setCurrentPlatform('organizer')} className="hover:text-emerald-400">Organizer Dashboard</button>
+            <button onClick={() => { setCurrentPlatform('organizer'); navigate('/organizer'); }} className="hover:text-emerald-400 cursor-pointer">Organizer Dashboard</button>
           </div>
         </div>
       </footer>
