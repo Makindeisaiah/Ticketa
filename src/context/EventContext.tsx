@@ -240,6 +240,9 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             } else if (data.title?.toLowerCase().includes('asake')) {
               image = EVENT_IMAGE_OVERRIDE_MAP['evt-asake'];
               bannerImage = EVENT_IMAGE_OVERRIDE_MAP['evt-asake'];
+            } else if (data.title?.toLowerCase().includes('davido') || data.title?.toLowerCase().includes('crystal palace')) {
+              image = EVENT_IMAGE_OVERRIDE_MAP['evt-davido-crystal-palace'];
+              bannerImage = EVENT_IMAGE_OVERRIDE_MAP['evt-davido-crystal-palace'];
             } else if (defaultEvt) {
               image = defaultEvt.image;
               bannerImage = defaultEvt.bannerImage;

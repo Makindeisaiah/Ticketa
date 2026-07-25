@@ -19,6 +19,7 @@ export const EVENT_IMAGE_OVERRIDE_MAP: Record<string, string> = {
   'evt-ay-lojik-koko-bar': ayLojikPoster,
   'evt-1300saint-savior-tour': saintSaviorTourImage,
   'evt-davido-crystal-palace': davidoCrystalPalaceImage,
+  'evt-davido': davidoCrystalPalaceImage,
   'evt-burna': burnaBoyPoster,
   'evt-hardy': hardyPoster,
   'evt-c5': c5CarnivalPoster,
