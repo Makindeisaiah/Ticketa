@@ -259,9 +259,6 @@ export const AttendeeWeb: React.FC = () => {
                   <span className="text-xl font-extrabold tracking-tight text-white block leading-none">
                     TICKETA
                   </span>
-                  <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest block mt-0.5">
-                    Attendee Portal
-                  </span>
                 </div>
               </button>
 
