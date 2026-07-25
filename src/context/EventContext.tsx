@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { EventItem, Order, TicketPass, PlatformType, PromoCode, UserProfile, PaymentCard, TicketaUser } from '../types';
-import { INITIAL_EVENTS, INITIAL_ORDERS, INITIAL_PROMOS } from '../data/mockEvents';
+import { INITIAL_EVENTS, INITIAL_ORDERS, INITIAL_PROMOS, EVENT_IMAGE_OVERRIDE_MAP } from '../data/mockEvents';
 import { db } from '../lib/firebase';
 import { 
   collection, 
@@ -230,17 +230,29 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           const loadedEvents = snapshot.docs.map(docSnap => {
             const data = docSnap.data() as EventItem;
             const defaultEvt = INITIAL_EVENTS.find(i => i.id === data.id);
-            if (defaultEvt) {
-              return {
-                ...data,
-                image: defaultEvt.image,
-                bannerImage: defaultEvt.bannerImage,
-                title: defaultEvt.title,
-                location: defaultEvt.location,
-                venueName: defaultEvt.venueName,
-              };
+            
+            let image = data.image;
+            let bannerImage = data.bannerImage;
+
+            if (EVENT_IMAGE_OVERRIDE_MAP[data.id]) {
+              image = EVENT_IMAGE_OVERRIDE_MAP[data.id];
+              bannerImage = EVENT_IMAGE_OVERRIDE_MAP[data.id];
+            } else if (data.title?.toLowerCase().includes('asake')) {
+              image = EVENT_IMAGE_OVERRIDE_MAP['evt-asake'];
+              bannerImage = EVENT_IMAGE_OVERRIDE_MAP['evt-asake'];
+            } else if (defaultEvt) {
+              image = defaultEvt.image;
+              bannerImage = defaultEvt.bannerImage;
             }
-            return data;
+
+            return {
+              ...data,
+              image,
+              bannerImage,
+              title: defaultEvt ? defaultEvt.title : data.title,
+              location: defaultEvt ? defaultEvt.location : data.location,
+              venueName: defaultEvt ? defaultEvt.venueName : data.venueName,
+            };
           });
           setEvents(loadedEvents);
           localStorage.setItem('tix_events', JSON.stringify(loadedEvents));

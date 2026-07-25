@@ -14,7 +14,72 @@ import ayUkPoster from '../assets/images/ay_live_uk_tour_1784995921544.jpg';
 import ayLaughJamPoster from '../assets/images/ay_live_laugh_jam_1784995933936.jpg';
 import travisScottPoster from '../assets/images/travis_scott_sa_tour_1784995948683.jpg';
 
+export const EVENT_IMAGE_OVERRIDE_MAP: Record<string, string> = {
+  'evt-asake': asakePosterImage,
+  'evt-ay-lojik-koko-bar': ayLojikPoster,
+  'evt-1300saint-savior-tour': saintSaviorTourImage,
+  'evt-davido-crystal-palace': davidoCrystalPalaceImage,
+  'evt-burna': burnaBoyPoster,
+  'evt-hardy': hardyPoster,
+  'evt-c5': c5CarnivalPoster,
+  'evt-travis': travisScottPoster,
+  'evt-bovi': boviComedyPoster,
+  'evt-ayuk': ayUkPoster,
+  'evt-ayjam': ayLaughJamPoster,
+  'evt-lagoshack': lagosHackathonPoster,
+  'evt-devops': ikoroduDevopsPoster,
+  'evt-igbesa': igbesaDesignPoster,
+};
+
 export const INITIAL_EVENTS: EventItem[] = [
+  {
+    id: 'evt-asake',
+    title: 'Asake Live in Lagos',
+    organizerName: 'YBNL Nation',
+    category: 'Concerts',
+    date: 'Mon, Dec 29, 2025',
+    time: '19:00 WAT',
+    location: 'Eko Convention Center, Victoria Island, Lagos',
+    venueName: 'Eko Convention Center, VI',
+    address: 'Eko Convention Center, VI, Lagos',
+    image: asakePosterImage,
+    bannerImage: asakePosterImage,
+    description: 'Mr Money With The Vibe brings the Lungu Boy Tour live to Lagos!',
+    featured: true,
+    tags: ['Amapiano', 'Afrobeats', 'Asake', 'Lagos'],
+    expectations: [
+      'Live full-band performance by Asake',
+      'Guest artist surprise appearances',
+      'High-energy visuals & lighting production',
+      'VIP lounge & premium bottle service'
+    ],
+    refundPolicy: 'Tickets are non-refundable except in case of official event cancellation.',
+    importantInfo: [
+      'Doors open at 5:00 PM WAT',
+      'Strict security screening at entry gate',
+      'Valid barcode ticket required for entry'
+    ],
+    ticketTiers: [
+      {
+        id: 'tier-asake-reg',
+        name: 'Regular',
+        price: 30000,
+        description: 'Standard arena pass.',
+        availableQuantity: 1500,
+        soldQuantity: 1100,
+        maxPerOrder: 6
+      },
+      {
+        id: 'tier-asake-vip',
+        name: 'VIP',
+        price: 90000,
+        description: 'Elevated VIP access deck with priority bar.',
+        availableQuantity: 300,
+        soldQuantity: 210,
+        maxPerOrder: 4
+      }
+    ]
+  },
   {
     id: 'evt-ay-lojik-koko-bar',
     title: 'AY Lojik Live in Koko Bar',
