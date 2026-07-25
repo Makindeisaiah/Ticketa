@@ -5,6 +5,7 @@ import { EventItem } from '../../types';
 // Subcomponents
 import { OrganizerSidebar, OrganizerTabType } from './OrganizerSidebar';
 import { OrganizerHeader } from './OrganizerHeader';
+import { OrganizerLogin } from './OrganizerLogin';
 import { OverviewTab } from './OverviewTab';
 import { EventsTab } from './EventsTab';
 import { AnalyticsTab } from './AnalyticsTab';
@@ -23,6 +24,21 @@ export const OrganizerDashboard: React.FC = () => {
     createNewEvent, 
     seedLiveSales 
   } = useEventContext();
+
+  const [organizerAuth, setOrganizerAuth] = useState<{ isLoggedIn: boolean; name: string; email: string }>(() => {
+    const saved = localStorage.getItem('organizer_session');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed.isLoggedIn === 'boolean') {
+          return parsed;
+        }
+      } catch (e) {
+        console.error('Error parsing organizer session:', e);
+      }
+    }
+    return { isLoggedIn: true, name: 'Flytimefest Ltd', email: 'info@flytimefest.com' };
+  });
 
   const [activeTab, setActiveTab] = useState<OrganizerTabType>('dashboard');
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -58,6 +74,22 @@ export const OrganizerDashboard: React.FC = () => {
     createNewEvent(newEventData);
   };
 
+  const handleLoginSuccess = (data: { name: string; email: string }) => {
+    const newSession = { isLoggedIn: true, name: data.name, email: data.email };
+    setOrganizerAuth(newSession);
+    localStorage.setItem('organizer_session', JSON.stringify(newSession));
+  };
+
+  const handleLogout = () => {
+    const loggedOutSession = { isLoggedIn: false, name: '', email: '' };
+    setOrganizerAuth(loggedOutSession);
+    localStorage.setItem('organizer_session', JSON.stringify(loggedOutSession));
+  };
+
+  if (!organizerAuth.isLoggedIn) {
+    return <OrganizerLogin onLoginSuccess={handleLoginSuccess} />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex text-slate-900 font-sans antialiased">
       
@@ -67,6 +99,9 @@ export const OrganizerDashboard: React.FC = () => {
         setActiveTab={setActiveTab}
         isMobileOpen={isMobileOpen}
         setIsMobileOpen={setIsMobileOpen}
+        onLogout={handleLogout}
+        organizerName={organizerAuth.name}
+        organizerEmail={organizerAuth.email}
       />
 
       {/* Main Content Area */}
@@ -79,6 +114,9 @@ export const OrganizerDashboard: React.FC = () => {
           onOpenMobileMenu={() => setIsMobileOpen(true)}
           onCreateEventClick={handleOpenCreateModal}
           onSeedLiveSales={seedLiveSales}
+          onLogout={handleLogout}
+          organizerName={organizerAuth.name}
+          organizerEmail={organizerAuth.email}
         />
 
         {/* Dashboard Main View Container */}
@@ -138,7 +176,7 @@ export const OrganizerDashboard: React.FC = () => {
 
           {/* 6. Settings Tab */}
           {activeTab === 'settings' && (
-            <SettingsTab />
+            <SettingsTab onLogout={handleLogout} />
           )}
 
         </main>

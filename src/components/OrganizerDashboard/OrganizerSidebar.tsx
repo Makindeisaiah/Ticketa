@@ -26,13 +26,19 @@ interface OrganizerSidebarProps {
   setActiveTab: (tab: OrganizerTabType) => void;
   isMobileOpen?: boolean;
   setIsMobileOpen?: (open: boolean) => void;
+  onLogout?: () => void;
+  organizerName?: string;
+  organizerEmail?: string;
 }
 
 export const OrganizerSidebar: React.FC<OrganizerSidebarProps> = ({
   activeTab,
   setActiveTab,
   isMobileOpen,
-  setIsMobileOpen
+  setIsMobileOpen,
+  onLogout,
+  organizerName = 'Flytimefest Ltd',
+  organizerEmail = 'info@flytimefest.com'
 }) => {
   const menuItems: { id: OrganizerTabType; label: string; icon: React.ReactNode }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
@@ -97,17 +103,27 @@ export const OrganizerSidebar: React.FC<OrganizerSidebarProps> = ({
           </nav>
         </div>
 
-        {/* Footer Organizer Account Info */}
-        <div className="pt-4 border-t border-slate-100 space-y-3">
+        {/* Footer Organizer Account Info & Logout Button */}
+        <div className="pt-4 border-t border-slate-100 space-y-2.5">
           <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80 flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center border-2 border-white shadow-sm">
-              FF
+            <div className="w-9 h-9 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center border-2 border-[#00C896] shadow-sm shrink-0">
+              {organizerName.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="text-xs font-bold text-slate-900 truncate">Flytimefest Ltd</h4>
-              <p className="text-[10px] text-slate-500 truncate">info@flytimefest.com</p>
+              <h4 className="text-xs font-bold text-slate-900 truncate">{organizerName}</h4>
+              <p className="text-[10px] text-slate-500 truncate">{organizerEmail}</p>
             </div>
           </div>
+
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 rounded-xl text-xs font-bold transition border border-slate-200 hover:border-rose-200 cursor-pointer"
+            >
+              <LogOut className="w-4 h-4 text-rose-500" />
+              <span>Log Out</span>
+            </button>
+          )}
         </div>
       </div>
     </aside>

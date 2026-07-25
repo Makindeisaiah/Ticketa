@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Bell, Menu, X, ArrowLeft, ChevronDown, Sparkles, Plus } from 'lucide-react';
+import { Search, Bell, Menu, X, ArrowLeft, ChevronDown, Sparkles, Plus, LogOut, User } from 'lucide-react';
 
 interface OrganizerHeaderProps {
   searchQuery: string;
@@ -9,6 +9,9 @@ interface OrganizerHeaderProps {
   onBreadcrumbClick?: (index: number) => void;
   onCreateEventClick?: () => void;
   onSeedLiveSales?: () => void;
+  onLogout?: () => void;
+  organizerName?: string;
+  organizerEmail?: string;
 }
 
 export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
@@ -18,9 +21,13 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
   breadcrumb,
   onBreadcrumbClick,
   onCreateEventClick,
-  onSeedLiveSales
+  onSeedLiveSales,
+  onLogout,
+  organizerName = 'Flytimefest Ltd',
+  organizerEmail = 'info@flytimefest.com'
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [notifications] = useState([
     { id: 1, title: 'New Ticket Purchased', desc: 'Elena R. bought 2x VIP Pass for Davido Live', time: '2 mins ago', unread: true },
     { id: 2, title: 'Gate Check-In Peak', desc: 'Over 500 tickets scanned at Main Gate in last 15m', time: '12 mins ago', unread: true },
@@ -135,14 +142,42 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
             )}
           </div>
 
-          {/* Profile User Badge */}
-          <div className="flex items-center space-x-2 pl-2 border-l border-slate-200">
-            <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center border-2 border-[#00C896] shadow-sm">
-              FF
-            </div>
-            <span className="hidden md:inline text-xs font-extrabold text-slate-800">
-              Flytimefest
-            </span>
+          {/* Profile User Badge & Dropdown */}
+          <div className="relative border-l border-slate-200 pl-2">
+            <button
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className="flex items-center space-x-2 p-1 rounded-xl hover:bg-slate-100 transition cursor-pointer"
+            >
+              <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center border-2 border-[#00C896] shadow-sm">
+                {organizerName.charAt(0).toUpperCase()}
+              </div>
+              <span className="hidden md:inline text-xs font-extrabold text-slate-800">
+                {organizerName.split(' ')[0]}
+              </span>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:inline" />
+            </button>
+
+            {showProfileMenu && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-2 space-y-1">
+                <div className="px-3 py-2 border-b border-slate-100">
+                  <p className="text-xs font-bold text-slate-900 truncate">{organizerName}</p>
+                  <p className="text-[10px] text-slate-500 truncate">{organizerEmail}</p>
+                </div>
+                
+                {onLogout && (
+                  <button
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      onLogout();
+                    }}
+                    className="w-full flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4 text-rose-500" />
+                    <span>Log Out</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
         </div>

@@ -20,7 +20,8 @@ import {
   Smartphone, 
   ExternalLink,
   Copy,
-  Check
+  Check,
+  LogOut
 } from 'lucide-react';
 
 type SettingsSubpage = 
@@ -35,7 +36,11 @@ type SettingsSubpage =
   | 'integrations'
   | 'legal-compliance';
 
-export const SettingsTab: React.FC = () => {
+interface SettingsTabProps {
+  onLogout?: () => void;
+}
+
+export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
   const [activeSubpage, setActiveSubpage] = useState<SettingsSubpage>('grid');
 
   // Organization Info State
@@ -538,6 +543,20 @@ export const SettingsTab: React.FC = () => {
                 <span className="px-2 py-0.5 bg-emerald-100 text-[#00C896] font-bold rounded text-[10px]">Active</span>
               </div>
             </div>
+
+            {onLogout && (
+              <div className="pt-4 border-t border-rose-100 space-y-2">
+                <h4 className="font-extrabold text-rose-600">Account Session</h4>
+                <p className="text-[10px] text-slate-500">Log out of your organizer session on this browser.</p>
+                <button
+                  onClick={onLogout}
+                  className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 font-extrabold rounded-xl text-xs transition flex items-center space-x-2 cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4 text-rose-600" />
+                  <span>Log Out of Organizer Portal</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
