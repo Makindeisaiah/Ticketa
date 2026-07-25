@@ -49,6 +49,24 @@
         "ticketCode": { "type": "string", "description": "Unique ticket code" },
         "isCheckedIn": { "type": "boolean", "description": "Check-in status" }
       }
+    },
+    "users": {
+      "title": "Users",
+      "description": "Registered Ticketa attendees and customers",
+      "properties": {
+        "fullName": { "type": "string", "description": "User's full name" },
+        "email": { "type": "string", "description": "User's email address" },
+        "phone": { "type": "string", "description": "User's phone number" },
+        "registeredAt": { "type": "string", "description": "Account registration date" },
+        "totalOrders": { "type": "number", "description": "Count of ticket orders placed" },
+        "totalSpent": { "type": "number", "description": "Total amount spent on tickets" },
+        "status": { "type": "string", "description": "Account status (Active, Verified)" }
+      }
     }
+  },
+  "firestore": {
+    "/events/{eventId}": { "schema": "events", "description": "Platform events" },
+    "/orders/{orderId}": { "schema": "orders", "description": "Ticket orders" },
+    "/users/{userId}": { "schema": "users", "description": "User profiles" }
   }
 }

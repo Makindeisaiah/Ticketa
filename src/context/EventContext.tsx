@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { EventItem, Order, TicketPass, PlatformType, PromoCode, UserProfile, PaymentCard } from '../types';
+import { EventItem, Order, TicketPass, PlatformType, PromoCode, UserProfile, PaymentCard, TicketaUser } from '../types';
 import { INITIAL_EVENTS, INITIAL_ORDERS, INITIAL_PROMOS } from '../data/mockEvents';
 import { db } from '../lib/firebase';
 import { 
@@ -16,6 +16,69 @@ interface ScanResult {
   message: string;
   ticket?: TicketPass;
 }
+
+export const INITIAL_USERS: TicketaUser[] = [
+  {
+    id: 'usr-001',
+    fullName: 'Isaiah Makinde',
+    email: 'contact@makindeisaiah.com',
+    phone: '+234 812 345 6789',
+    registeredAt: '2026-01-15',
+    totalOrders: 3,
+    totalSpent: 165000,
+    status: 'Verified',
+    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+    lastPurchaseDate: '2026-07-20'
+  },
+  {
+    id: 'usr-002',
+    fullName: 'David Adeleke',
+    email: 'david@30bg.com',
+    phone: '+234 803 111 2233',
+    registeredAt: '2026-02-10',
+    totalOrders: 2,
+    totalSpent: 450000,
+    status: 'Verified',
+    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+    lastPurchaseDate: '2026-07-18'
+  },
+  {
+    id: 'usr-003',
+    fullName: 'Sarah Jenkins',
+    email: 'sarah.j@gmail.com',
+    phone: '+1 415 890 1234',
+    registeredAt: '2026-03-05',
+    totalOrders: 1,
+    totalSpent: 75000,
+    status: 'Active',
+    avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80',
+    lastPurchaseDate: '2026-07-12'
+  },
+  {
+    id: 'usr-004',
+    fullName: 'Chukwudi Okafor',
+    email: 'chuks.okafor@techstars.ng',
+    phone: '+234 814 990 0011',
+    registeredAt: '2026-04-18',
+    totalOrders: 4,
+    totalSpent: 210000,
+    status: 'Verified',
+    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
+    lastPurchaseDate: '2026-07-22'
+  },
+  {
+    id: 'usr-005',
+    fullName: 'Temi Otedola',
+    email: 'temi@otedola.com',
+    phone: '+234 809 777 8899',
+    registeredAt: '2026-05-01',
+    totalOrders: 2,
+    totalSpent: 180000,
+    status: 'Active',
+    avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&q=80',
+    lastPurchaseDate: '2026-07-24'
+  }
+];
 
 const DEFAULT_PROFILE: UserProfile = {
   firstName: 'Isaiah',
@@ -58,11 +121,16 @@ interface EventContextType {
   promos: PromoCode[];
   savedEventIds: string[];
   userProfile: UserProfile;
+  users: TicketaUser[];
+  currentUser: TicketaUser | null;
   activeNotification: string | null;
   selectedEventId: string | null;
   setSelectedEventId: (id: string | null) => void;
   
   // Actions
+  registerUser: (details: { fullName: string; email: string; phone: string }) => TicketaUser;
+  loginUser: (email: string) => TicketaUser | null;
+  logoutUser: () => void;
   createNewEvent: (eventData: Omit<EventItem, 'id'>) => void;
   purchaseTickets: (
     eventId: string,
@@ -127,7 +195,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [savedEventIds, setSavedEventIds] = useState<string[]>(() => {
     const saved = localStorage.getItem('tix_saved_events');
-    return saved ? JSON.parse(saved) : ['evt-davido', 'evt-burna'];
+    return saved ? JSON.parse(saved) : ['evt-davido-crystal-palace', 'evt-burna'];
   });
 
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
@@ -135,13 +203,24 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return saved ? JSON.parse(saved) : DEFAULT_PROFILE;
   });
 
-  const [selectedEventId, setSelectedEventId] = useState<string | null>('evt-davido');
+  const [users, setUsers] = useState<TicketaUser[]>(() => {
+    const saved = localStorage.getItem('tix_users');
+    return saved ? JSON.parse(saved) : INITIAL_USERS;
+  });
+
+  const [currentUser, setCurrentUser] = useState<TicketaUser | null>(() => {
+    const saved = localStorage.getItem('tix_current_user');
+    return saved ? JSON.parse(saved) : INITIAL_USERS[0];
+  });
+
+  const [selectedEventId, setSelectedEventId] = useState<string | null>('evt-davido-crystal-palace');
   const [activeNotification, setActiveNotification] = useState<string | null>(null);
 
   // Firestore Subscriptions & Initial Seeding
   useEffect(() => {
     let unsubscribeEvents: () => void;
     let unsubscribeOrders: () => void;
+    let unsubscribeUsers: () => void;
 
     try {
       // 1. Sync Events from Firestore
@@ -163,8 +242,8 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             }
             return data;
           });
-          const missingInitial = INITIAL_EVENTS.filter(initEvt => !loadedEvents.some(l => l.id === initEvt.id));
-          setEvents([...missingInitial, ...loadedEvents]);
+          setEvents(loadedEvents);
+          localStorage.setItem('tix_events', JSON.stringify(loadedEvents));
         } else {
           // Seed Initial Events to Firestore if empty
           INITIAL_EVENTS.forEach(async (evt) => {
@@ -191,6 +270,22 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         console.warn('Firestore orders listener error, using local state:', err);
       });
 
+      // 3. Sync Users from Firestore
+      const usersCol = collection(db, 'users');
+      unsubscribeUsers = onSnapshot(usersCol, (snapshot) => {
+        if (!snapshot.empty) {
+          const loadedUsers = snapshot.docs.map(docSnap => docSnap.data() as TicketaUser);
+          setUsers(loadedUsers);
+        } else {
+          // Seed Initial Users to Firestore if empty
+          INITIAL_USERS.forEach(async (usr) => {
+            await setDoc(doc(db, 'users', usr.id), usr);
+          });
+        }
+      }, (err) => {
+        console.warn('Firestore users listener error, using local state:', err);
+      });
+
     } catch (e) {
       console.error('Failed to connect to Firestore:', e);
     }
@@ -198,6 +293,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return () => {
       if (unsubscribeEvents) unsubscribeEvents();
       if (unsubscribeOrders) unsubscribeOrders();
+      if (unsubscribeUsers) unsubscribeUsers();
     };
   }, []);
 
@@ -209,6 +305,18 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     localStorage.setItem('tix_orders', JSON.stringify(orders));
   }, [orders]);
+
+  useEffect(() => {
+    localStorage.setItem('tix_users', JSON.stringify(users));
+  }, [users]);
+
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('tix_current_user', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('tix_current_user');
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     localStorage.setItem('tix_promos', JSON.stringify(promos));
@@ -254,6 +362,59 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     triggerNotification(`Event "${newEvent.title}" published successfully!`);
   };
 
+  const registerUser = (details: { fullName: string; email: string; phone: string }): TicketaUser => {
+    const existing = users.find(u => u.email.toLowerCase() === details.email.trim().toLowerCase());
+    if (existing) {
+      setCurrentUser(existing);
+      triggerNotification(`Welcome back, ${existing.fullName}!`);
+      return existing;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const newUserId = `usr-${Math.floor(100 + Math.random() * 900)}`;
+    const newUser: TicketaUser = {
+      id: newUserId,
+      fullName: details.fullName.trim(),
+      email: details.email.trim().toLowerCase(),
+      phone: details.phone.trim(),
+      registeredAt: todayStr,
+      totalOrders: 0,
+      totalSpent: 0,
+      status: 'Verified',
+      avatarUrl: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80`
+    };
+
+    setUsers(prev => [newUser, ...prev]);
+    setCurrentUser(newUser);
+
+    // Persist to Firestore
+    (async () => {
+      try {
+        await setDoc(doc(db, 'users', newUserId), newUser);
+      } catch (err) {
+        console.error('Error writing user to Firestore:', err);
+      }
+    })();
+
+    triggerNotification(`Account created successfully for ${newUser.fullName}!`);
+    return newUser;
+  };
+
+  const loginUser = (email: string): TicketaUser | null => {
+    const found = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+    if (found) {
+      setCurrentUser(found);
+      triggerNotification(`Logged in as ${found.fullName}`);
+      return found;
+    }
+    return null;
+  };
+
+  const logoutUser = () => {
+    setCurrentUser(null);
+    triggerNotification('Signed out of Ticketa session.');
+  };
+
   const purchaseTickets = (
     eventId: string,
     tierId: string,
@@ -294,6 +455,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     });
 
     const unitPrice = tier.price * (1 - discountPercentage / 100);
+    const totalPaid = unitPrice * quantity;
     const orderId = `ORD-${Math.floor(10000 + Math.random() * 90000)}`;
 
     const tickets: TicketPass[] = [];
@@ -324,7 +486,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       customerName: attendeeDetails.name,
       customerEmail: attendeeDetails.email,
       customerPhone: attendeeDetails.phone,
-      totalAmount: unitPrice * quantity,
+      totalAmount: totalPaid,
       paymentMethod,
       purchaseDate: nowStr,
       tickets
@@ -333,13 +495,50 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Update local orders state
     setOrders(prev => [newOrder, ...prev]);
 
-    // Save order & updated event to Firestore async
+    // Create or update TicketaUser for this attendee
+    const cleanEmail = attendeeDetails.email.trim().toLowerCase();
+    const existingUser = users.find(u => u.email.toLowerCase() === cleanEmail);
+    const todayDate = new Date().toISOString().split('T')[0];
+
+    let targetUser: TicketaUser;
+    if (existingUser) {
+      targetUser = {
+        ...existingUser,
+        fullName: attendeeDetails.name || existingUser.fullName,
+        phone: attendeeDetails.phone || existingUser.phone,
+        totalOrders: existingUser.totalOrders + 1,
+        totalSpent: existingUser.totalSpent + totalPaid,
+        lastPurchaseDate: todayDate
+      };
+      setUsers(prev => prev.map(u => (u.id === targetUser.id ? targetUser : u)));
+    } else {
+      targetUser = {
+        id: `usr-${Math.floor(100 + Math.random() * 900)}`,
+        fullName: attendeeDetails.name,
+        email: cleanEmail,
+        phone: attendeeDetails.phone || '',
+        registeredAt: todayDate,
+        totalOrders: 1,
+        totalSpent: totalPaid,
+        status: 'Active',
+        lastPurchaseDate: todayDate
+      };
+      setUsers(prev => [targetUser, ...prev]);
+    }
+
+    // Set active current user if none is set
+    if (!currentUser) {
+      setCurrentUser(targetUser);
+    }
+
+    // Save order, updated event, and user to Firestore async
     (async () => {
       try {
         await setDoc(doc(db, 'orders', orderId), newOrder);
         await setDoc(doc(db, 'events', eventId), updatedEventObj);
+        await setDoc(doc(db, 'users', targetUser.id), targetUser);
       } catch (err) {
-        console.error('Error writing order to Firestore:', err);
+        console.error('Error writing order/user to Firestore:', err);
       }
     })();
 
@@ -500,7 +699,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setEvents(INITIAL_EVENTS);
     setOrders(INITIAL_ORDERS);
     setPromos(INITIAL_PROMOS);
-    setSavedEventIds(['evt-davido', 'evt-burna']);
+    setSavedEventIds(['evt-davido-crystal-palace', 'evt-burna']);
     setUserProfile(DEFAULT_PROFILE);
     localStorage.removeItem('tix_events');
     localStorage.removeItem('tix_orders');
@@ -551,9 +750,14 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         promos,
         savedEventIds,
         userProfile,
+        users,
+        currentUser,
         activeNotification,
         selectedEventId,
         setSelectedEventId,
+        registerUser,
+        loginUser,
+        logoutUser,
         createNewEvent,
         purchaseTickets,
         scanAndCheckInTicket,

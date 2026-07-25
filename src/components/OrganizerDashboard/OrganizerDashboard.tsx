@@ -9,6 +9,7 @@ import { OverviewTab } from './OverviewTab';
 import { EventsTab } from './EventsTab';
 import { AnalyticsTab } from './AnalyticsTab';
 import { TicketSalesTab } from './TicketSalesTab';
+import { UsersTab } from './UsersTab';
 import { CheckInsTab } from './CheckInsTab';
 import { SettingsTab } from './SettingsTab';
 import { CreateEventModal } from './CreateEventModal';
@@ -122,7 +123,12 @@ export const OrganizerDashboard: React.FC = () => {
             />
           )}
 
-          {/* 5. Check-Ins Tab */}
+          {/* 5. Users & Customers Tab */}
+          {activeTab === 'users' && (
+            <UsersTab />
+          )}
+
+          {/* 6. Check-Ins Tab */}
           {activeTab === 'check-ins' && (
             <CheckInsTab
               events={events}

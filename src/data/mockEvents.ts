@@ -159,76 +159,6 @@ export const INITIAL_EVENTS: EventItem[] = [
     ]
   },
   {
-    id: 'evt-davido',
-    title: 'Davido Live in Lagos',
-    organizerName: 'Flytimefest',
-    category: 'Concerts',
-    date: 'Thu, Dec 25, 2025',
-    time: '19:00 WAT',
-    location: 'Plot 1415 Adetokunbo Ademola Street, PMB 12724, Victoria Island, Lagos Nigeria',
-    venueName: 'Eko Convention Center, VI',
-    address: 'Plot 1415 Adetokunbo Ademola Street, Victoria Island, Lagos Nigeria',
-    image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1000&q=80',
-    bannerImage: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1600&q=80',
-    description: 'Davido returns to Lagos with a powerful live performance showcasing his greatest hits and new favorites. This event features full live band performances, special guest artists, breathtaking stage lighting, and immersive visuals tailored for a premium concert experience. Expect a night of unstoppable energy, top-tier entertainment, and memories you will never forget.',
-    featured: true,
-    tags: ['Afrobeats', 'Live Music', 'Lagos', 'Concert'],
-    expectations: [
-      'Live full-band performance',
-      'Guest artist appearances',
-      'High-end lighting & stage effects',
-      'Crowd interaction moments',
-      'Exclusive "5IVE Alive Tour" merchandise',
-      'Secure venue & organized seating arrangement'
-    ],
-    refundPolicy: 'Tickets are non-refundable except in the case of event cancellation or major rescheduling by the organizer.',
-    importantInfo: [
-      'Gates open at 5:00 PM',
-      'No outside food or drinks allowed',
-      'All attendees must present e-tickets at the entrance',
-      'Bag checks will be conducted',
-      'Event is recommended for ages 16+'
-    ],
-    ticketTiers: [
-      {
-        id: 'tier-reg',
-        name: 'Regular',
-        price: 30000,
-        description: 'Standard access to the main arena floor.',
-        availableQuantity: 1000,
-        soldQuantity: 420,
-        maxPerOrder: 6
-      },
-      {
-        id: 'tier-vip',
-        name: 'VIP',
-        price: 100000,
-        description: 'Elevated view deck, expedited entry gate, and private bar access.',
-        availableQuantity: 200,
-        soldQuantity: 110,
-        maxPerOrder: 4
-      },
-      {
-        id: 'tier-vvip',
-        name: 'VVIP',
-        price: 500000,
-        description: 'Front row pit section with complimentary drinks and commemorative gift bag.',
-        availableQuantity: 50,
-        soldQuantity: 32,
-        maxPerOrder: 2
-      },
-      {
-        id: 'tier-prem',
-        name: 'Premium Table',
-        price: 3500000,
-        description: 'Reserved table for guests with bottle service and backstage passes.',
-        availableQuantity: 10,
-        soldQuantity: 6,
-        maxPerOrder: 1
-      }
-    ]
-  },
-  {
     id: 'evt-burna',
     title: 'Burna Boy Live in Lagos',
     organizerName: 'Spaceship Entertainment',
@@ -310,33 +240,6 @@ export const INITIAL_EVENTS: EventItem[] = [
     ]
   },
   {
-    id: 'evt-saint',
-    title: '1300Saint The Saviour Tour',
-    organizerName: 'Saint Music Group',
-    category: 'Concerts',
-    date: 'Sat, Apr 04, 2026',
-    time: '19:00 EST',
-    location: 'Union Stage, Washington, DC',
-    venueName: 'Union Stage, Washington, DC',
-    address: 'Union Stage, Washington, DC',
-    image: saintSaviorTourImage,
-    bannerImage: saintSaviorTourImage,
-    description: 'Atmospheric live tour with immersive soundscapes and guest acts.',
-    featured: false,
-    tags: ['Hip-Hop', 'Indie'],
-    ticketTiers: [
-      {
-        id: 'tier-saint-reg',
-        name: 'Regular',
-        price: 30000,
-        description: 'Main hall ticket.',
-        availableQuantity: 200,
-        soldQuantity: 95,
-        maxPerOrder: 4
-      }
-    ]
-  },
-  {
     id: 'evt-travis',
     title: 'Travis Scott Live in SA',
     organizerName: 'Cactus Jack Africa',
@@ -363,62 +266,7 @@ export const INITIAL_EVENTS: EventItem[] = [
       }
     ]
   },
-  {
-    id: 'evt-asake',
-    title: 'Asake Live in Lagos',
-    organizerName: 'YBNL Nation',
-    category: 'Concerts',
-    date: 'Mon, Dec 29, 2025',
-    time: '19:00 WAT',
-    location: 'Eko Convention Center, Victoria Island, Lagos',
-    venueName: 'Eko Convention Center, VI',
-    address: 'Eko Convention Center, VI, Lagos',
-    image: asakePosterImage,
-    bannerImage: asakePosterImage,
-    description: 'Mr Money With The Vibe brings the Lungu Boy Tour live to Lagos!',
-    featured: true,
-    tags: ['Amapiano', 'Afrobeats'],
-    ticketTiers: [
-      {
-        id: 'tier-asake-reg',
-        name: 'Regular',
-        price: 30000,
-        description: 'Standard arena pass.',
-        availableQuantity: 1500,
-        soldQuantity: 1100,
-        maxPerOrder: 6
-      }
-    ]
-  },
-
   // COMEDY CATEGORY
-  {
-    id: 'evt-kennyblaq',
-    title: 'Kenny Blaq Reckless MCF',
-    organizerName: 'Reckless Comedy',
-    category: 'Comedy',
-    date: 'Thu, Dec 13, 2025',
-    time: '14:00 WAT',
-    location: 'Onikan Stadium, Surulere',
-    venueName: 'Onikan Stadium, Surulere',
-    address: 'Onikan Stadium, Surulere, Lagos',
-    image: 'https://images.unsplash.com/photo-1527224857830-43a7acc85260?auto=format&fit=crop&w=1000&q=80',
-    bannerImage: 'https://images.unsplash.com/photo-1527224857830-43a7acc85260?auto=format&fit=crop&w=1600&q=80',
-    description: 'Reckless Music & Comedy Festival featuring Kenny Blaq.',
-    featured: true,
-    tags: ['Comedy', 'Music'],
-    ticketTiers: [
-      {
-        id: 'tier-kb-reg',
-        name: 'Regular',
-        price: 25000,
-        description: 'Standard admission ticket.',
-        availableQuantity: 500,
-        soldQuantity: 310,
-        maxPerOrder: 6
-      }
-    ]
-  },
   {
     id: 'evt-bovi',
     title: 'Bovi Presents African Comedy Night',
@@ -498,33 +346,6 @@ export const INITIAL_EVENTS: EventItem[] = [
   },
 
   // TECH CATEGORY
-  {
-    id: 'evt-fortified',
-    title: 'Fortified Submit 2025',
-    organizerName: 'Tech-Powered Fortified',
-    category: 'Tech',
-    date: 'Fri, Nov 28, 2025',
-    time: '10:00 - 16:00 WAT',
-    location: 'Creative Studio, Yaba',
-    venueName: 'Creative Studio, Yaba',
-    address: 'Creative Studio, Herbert Macaulay Way, Yaba, Lagos',
-    image: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1000&q=80',
-    bannerImage: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1600&q=80',
-    description: 'Technology, innovation, and empowerment summit for tech founders and youth.',
-    featured: true,
-    tags: ['Hackathon', 'Tech'],
-    ticketTiers: [
-      {
-        id: 'tier-fort-free',
-        name: 'FREE Pass',
-        price: 0,
-        description: 'Complimentary full access badge.',
-        availableQuantity: 500,
-        soldQuantity: 380,
-        maxPerOrder: 2
-      }
-    ]
-  },
   {
     id: 'evt-lagoshack',
     title: 'Lagos Impact Hackathon',

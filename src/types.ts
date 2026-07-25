@@ -78,6 +78,19 @@ export interface UserProfile {
   };
 }
 
+export interface TicketaUser {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  registeredAt: string;
+  totalOrders: number;
+  totalSpent: number;
+  status: 'Active' | 'Verified';
+  avatarUrl?: string;
+  lastPurchaseDate?: string;
+}
+
 export interface Order {
   id: string;
   eventId: string;

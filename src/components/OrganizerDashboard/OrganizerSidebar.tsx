@@ -4,6 +4,7 @@ import {
   Calendar, 
   BarChart3, 
   Ticket, 
+  Users,
   CheckSquare, 
   Settings, 
   Ticket as TicketIcon,
@@ -16,6 +17,7 @@ export type OrganizerTabType =
   | 'events' 
   | 'analytics' 
   | 'ticket-sales' 
+  | 'users'
   | 'check-ins' 
   | 'settings';
 
@@ -37,6 +39,7 @@ export const OrganizerSidebar: React.FC<OrganizerSidebarProps> = ({
     { id: 'events', label: 'Events', icon: <Calendar className="w-5 h-5" /> },
     { id: 'analytics', label: 'Analytics', icon: <BarChart3 className="w-5 h-5" /> },
     { id: 'ticket-sales', label: 'Ticket Sales', icon: <Ticket className="w-5 h-5" /> },
+    { id: 'users', label: 'Users & Customers', icon: <Users className="w-5 h-5" /> },
     { id: 'check-ins', label: 'Check-Ins', icon: <CheckSquare className="w-5 h-5" /> },
     { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
   ];
