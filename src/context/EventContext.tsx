@@ -525,9 +525,21 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const registerUser = (details: { fullName: string; email: string; phone: string }): TicketaUser => {
-    const existing = users.find(u => u.email.toLowerCase() === details.email.trim().toLowerCase());
+    const cleanEmail = details.email.trim().toLowerCase();
+    const cleanPhone = details.phone.trim();
+    const cleanName = details.fullName.trim();
+
+    const existing = users.find(u => u.email.toLowerCase() === cleanEmail);
     if (existing) {
       setCurrentUser(existing);
+      const nameParts = existing.fullName.split(' ');
+      setUserProfile(prev => ({
+        ...prev,
+        firstName: nameParts[0] || existing.fullName,
+        lastName: nameParts.slice(1).join(' ') || '',
+        email: existing.email,
+        phone: existing.phone
+      }));
       triggerNotification(`Welcome back, ${existing.fullName}!`);
       return existing;
     }
@@ -536,9 +548,9 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const newUserId = `usr-${Math.floor(100 + Math.random() * 900)}`;
     const newUser: TicketaUser = {
       id: newUserId,
-      fullName: details.fullName.trim(),
-      email: details.email.trim().toLowerCase(),
-      phone: details.phone.trim(),
+      fullName: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone,
       registeredAt: todayStr,
       totalOrders: 0,
       totalSpent: 0,
@@ -546,8 +558,25 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       avatarUrl: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80`
     };
 
+    const nameParts = cleanName.split(' ');
+    const freshProfile: UserProfile = {
+      firstName: nameParts[0] || cleanName,
+      lastName: nameParts.slice(1).join(' ') || '',
+      email: cleanEmail,
+      phone: cleanPhone,
+      paymentCards: [],
+      notifications: {
+        remainders: true,
+        purchaseAlerts: true,
+        newEventAlert: true,
+        marketing: false,
+        newsletter: false
+      }
+    };
+
     setUsers(prev => [newUser, ...prev]);
     setCurrentUser(newUser);
+    setUserProfile(freshProfile);
 
     // Persist to Firestore
     (async () => {
@@ -563,9 +592,18 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const loginUser = (email: string): TicketaUser | null => {
-    const found = users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+    const cleanEmail = email.trim().toLowerCase();
+    const found = users.find(u => u.email.toLowerCase() === cleanEmail);
     if (found) {
       setCurrentUser(found);
+      const nameParts = found.fullName.split(' ');
+      setUserProfile(prev => ({
+        ...prev,
+        firstName: nameParts[0] || found.fullName,
+        lastName: nameParts.slice(1).join(' ') || '',
+        email: found.email,
+        phone: found.phone
+      }));
       triggerNotification(`Logged in as ${found.fullName}`);
       return found;
     }
@@ -574,6 +612,20 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const logoutUser = () => {
     setCurrentUser(null);
+    setUserProfile({
+      firstName: 'Guest',
+      lastName: '',
+      email: '',
+      phone: '',
+      paymentCards: [],
+      notifications: {
+        remainders: true,
+        purchaseAlerts: false,
+        newEventAlert: false,
+        marketing: false,
+        newsletter: false
+      }
+    });
     triggerNotification('Signed out of Ticketa session.');
   };
 

@@ -12,11 +12,30 @@ import {
   RefreshCw, Layers, FileText, Mail, Printer
 } from 'lucide-react';
 import { exportTicketAsPdf, exportTicketToAppleWallet, printThermalWristband } from '../../utils/ticketExporter';
+import { AuthModal } from '../AuthModal';
+import { User, UserPlus, LogIn, LogOut } from 'lucide-react';
 
 export const AttendeeWeb: React.FC = () => {
-  const { events, purchaseTickets, orders, promos, toggleSaveEvent, savedEventIds, setCurrentPlatform, sendTicketEmail, sendTicketSms } = useEventContext();
+  const { 
+    events, 
+    purchaseTickets, 
+    orders, 
+    promos, 
+    toggleSaveEvent, 
+    savedEventIds, 
+    setCurrentPlatform, 
+    sendTicketEmail, 
+    sendTicketSms,
+    currentUser,
+    userProfile,
+    logoutUser
+  } = useEventContext();
   const { eventId } = useParams<{ eventId?: string }>();
   const navigate = useNavigate();
+
+  // Auth Modal State
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'signup' | 'login'>('signup');
 
   // Navigation State
   const [currentView, setCurrentView] = useState<'home' | 'browse' | 'details' | 'checkout' | 'orders' | 'how-it-works'>('home');
@@ -56,9 +75,9 @@ export const AttendeeWeb: React.FC = () => {
 
   
   // Checkout Form State
-  const [fullName, setFullName] = useState('Isaiah Makinde');
-  const [email, setEmail] = useState('contact@makindeisaiah.com');
-  const [phone, setPhone] = useState('+234 812 345 6789');
+  const [fullName, setFullName] = useState(currentUser?.fullName || (userProfile.firstName ? `${userProfile.firstName} ${userProfile.lastName}`.trim() : ''));
+  const [email, setEmail] = useState(currentUser?.email || userProfile.email || '');
+  const [phone, setPhone] = useState(currentUser?.phone || userProfile.phone || '');
   const [paymentMethod, setPaymentMethod] = useState<'Flutterwave' | 'Credit Card' | 'Bank Transfer' | 'USSD'>('Flutterwave');
   const [promoCode, setPromoCode] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
@@ -66,10 +85,30 @@ export const AttendeeWeb: React.FC = () => {
   const [promoSuccess, setPromoSuccess] = useState('');
   
   // Card Details State
-  const [cardHolder, setCardHolder] = useState('Isaiah Makinde');
+  const [cardHolder, setCardHolder] = useState(currentUser?.fullName || (userProfile.firstName ? `${userProfile.firstName} ${userProfile.lastName}`.trim() : ''));
   const [cardNumber, setCardNumber] = useState('5199 •••• •••• 9937');
   const [cardExpiry, setCardExpiry] = useState('12/28');
   const [cardCvv, setCardCvv] = useState('406');
+
+  // Sync user profile when currentUser or userProfile changes
+  useEffect(() => {
+    if (currentUser) {
+      setFullName(currentUser.fullName);
+      setEmail(currentUser.email);
+      setPhone(currentUser.phone);
+      setCardHolder(currentUser.fullName);
+    } else if (userProfile.email) {
+      setFullName(`${userProfile.firstName} ${userProfile.lastName}`.trim());
+      setEmail(userProfile.email);
+      setPhone(userProfile.phone);
+      setCardHolder(`${userProfile.firstName} ${userProfile.lastName}`.trim());
+    } else {
+      setFullName('');
+      setEmail('');
+      setPhone('');
+      setCardHolder('');
+    }
+  }, [currentUser, userProfile]);
 
   // Checkout Processing States
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -308,12 +347,41 @@ export const AttendeeWeb: React.FC = () => {
 
             {/* Header Right Actions */}
             <div className="flex items-center space-x-3">
+              {currentUser ? (
+                <button
+                  onClick={() => { setAuthModalMode('signup'); setShowAuthModal(true); }}
+                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl text-xs font-bold transition flex items-center space-x-2 cursor-pointer"
+                >
+                  <div className="w-5 h-5 rounded-full bg-emerald-500 text-slate-950 font-black text-[10px] flex items-center justify-center">
+                    {currentUser.fullName[0]}
+                  </div>
+                  <span className="max-w-[100px] truncate">{currentUser.fullName}</span>
+                </button>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => { setAuthModalMode('signup'); setShowAuthModal(true); }}
+                    className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black transition shadow-md shadow-emerald-500/20 flex items-center space-x-1.5 cursor-pointer"
+                  >
+                    <UserPlus className="w-3.5 h-3.5" />
+                    <span>Sign Up</span>
+                  </button>
+                  <button
+                    onClick={() => { setAuthModalMode('login'); setShowAuthModal(true); }}
+                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition border border-slate-700 cursor-pointer hidden sm:flex items-center space-x-1.5"
+                  >
+                    <LogIn className="w-3.5 h-3.5" />
+                    <span>Sign In</span>
+                  </button>
+                </div>
+              )}
+
               <button
                 onClick={() => handleNav('orders')}
-                className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 rounded-xl text-xs font-black transition shadow-lg shadow-emerald-500/20 flex items-center space-x-2 cursor-pointer"
+                className="px-4 py-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 rounded-xl text-xs font-black transition shadow-lg shadow-emerald-500/20 flex items-center space-x-2 cursor-pointer"
               >
                 <Ticket className="w-4 h-4" />
-                <span>My Wallet</span>
+                <span className="hidden sm:inline">My Wallet</span>
               </button>
             </div>
 
@@ -1247,67 +1315,80 @@ export const AttendeeWeb: React.FC = () => {
         )}
 
         {/* ---------------- 5. MY TICKETS & WALLET VIEW ---------------- */}
-        {currentView === 'orders' && (
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-            
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 p-6 rounded-3xl border border-slate-800 shadow-xl">
-              <div>
-                <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Digital Ticket Wallet
-                </span>
-                <h1 className="text-2xl sm:text-3xl font-black text-white mt-1">My Orders & Live Passes</h1>
-                <p className="text-xs text-slate-400 mt-0.5">Your official digital tickets are securely stored here with live QR verification codes.</p>
-              </div>
+        {currentView === 'orders' && (() => {
+          const activeUserOrders = currentUser 
+            ? orders.filter(o => o.customerEmail.toLowerCase() === currentUser.email.toLowerCase() || o.customerPhone === currentUser.phone)
+            : userProfile.email && userProfile.email !== 'contact@makindeisaiah.com'
+              ? orders.filter(o => o.customerEmail.toLowerCase() === userProfile.email.toLowerCase())
+              : orders;
 
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => navigate('/mobile')}
-                  className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center space-x-2 shadow-lg shadow-indigo-600/20 transition"
-                >
-                  <Smartphone className="w-4 h-4 text-indigo-200" />
-                  <span>Open Mobile App Wallet</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Wallet Summary Metrics */}
-            {orders.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4">
-                  <p className="text-xs text-slate-400 font-semibold">Total Orders</p>
-                  <div className="text-2xl font-black text-white mt-1">{orders.length}</div>
+          return (
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+              
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 p-6 rounded-3xl border border-slate-800 shadow-xl">
+                <div>
+                  <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Digital Ticket Wallet
+                  </span>
+                  <h1 className="text-2xl sm:text-3xl font-black text-white mt-1">My Orders & Live Passes</h1>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {currentUser 
+                      ? `Logged in as ${currentUser.fullName} (${currentUser.email})` 
+                      : 'Your official digital tickets are securely stored here with live QR verification codes.'}
+                  </p>
                 </div>
-                <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4">
-                  <p className="text-xs text-slate-400 font-semibold">Active Ticket Passes</p>
-                  <div className="text-2xl font-black text-emerald-400 mt-1">
-                    {orders.reduce((acc, o) => acc + o.tickets.length, 0)}
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => navigate('/mobile')}
+                    className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center space-x-2 shadow-lg shadow-indigo-600/20 transition cursor-pointer"
+                  >
+                    <Smartphone className="w-4 h-4 text-indigo-200" />
+                    <span>Open Mobile App Wallet</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Wallet Summary Metrics */}
+              {activeUserOrders.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4">
+                    <p className="text-xs text-slate-400 font-semibold">Total Orders</p>
+                    <div className="text-2xl font-black text-white mt-1">{activeUserOrders.length}</div>
+                  </div>
+                  <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4">
+                    <p className="text-xs text-slate-400 font-semibold">Active Ticket Passes</p>
+                    <div className="text-2xl font-black text-emerald-400 mt-1">
+                      {activeUserOrders.reduce((acc, o) => acc + o.tickets.length, 0)}
+                    </div>
+                  </div>
+                  <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4">
+                    <p className="text-xs text-slate-400 font-semibold">Total Value Purchased</p>
+                    <div className="text-2xl font-black text-teal-300 mt-1">
+                      ₦{activeUserOrders.reduce((acc, o) => acc + o.totalAmount, 0).toLocaleString()}
+                    </div>
                   </div>
                 </div>
-                <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4">
-                  <p className="text-xs text-slate-400 font-semibold">Total Value Purchased</p>
-                  <div className="text-2xl font-black text-teal-300 mt-1">
-                    ₦{orders.reduce((acc, o) => acc + o.totalAmount, 0).toLocaleString()}
-                  </div>
-                </div>
-              </div>
-            )}
+              )}
 
-            {orders.length === 0 ? (
-              <div className="text-center py-20 bg-slate-900 rounded-3xl border border-slate-800 space-y-4">
-                <Ticket className="w-12 h-12 text-slate-600 mx-auto" />
-                <h3 className="text-lg font-bold text-slate-300">No Tickets Purchased Yet</h3>
-                <p className="text-xs text-slate-400 max-w-sm mx-auto">Explore upcoming concerts, comedy shows, or tech summits to secure your pass.</p>
-                <button
-                  onClick={() => handleNav('browse')}
-                  className="px-5 py-2.5 bg-emerald-500 text-slate-950 font-black rounded-xl text-xs hover:bg-emerald-400 transition"
-                >
-                  Browse Events
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {orders.map(order => {
+              {activeUserOrders.length === 0 ? (
+                <div className="text-center py-20 bg-slate-900 rounded-3xl border border-slate-800 space-y-4">
+                  <Ticket className="w-12 h-12 text-slate-600 mx-auto" />
+                  <h3 className="text-lg font-bold text-slate-300">No Tickets Purchased Yet</h3>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                    {currentUser ? `Welcome ${currentUser.fullName}! You have a clean pass wallet. Browse events to secure your first ticket.` : 'Explore upcoming concerts, comedy shows, or tech summits to secure your pass.'}
+                  </p>
+                  <button
+                    onClick={() => handleNav('browse')}
+                    className="px-5 py-2.5 bg-emerald-500 text-slate-950 font-black rounded-xl text-xs hover:bg-emerald-400 transition cursor-pointer"
+                  >
+                    Browse Events
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {activeUserOrders.map(order => {
                   const eventObj = events.find(e => e.id === order.eventId || e.title === order.eventTitle);
                   const posterImg = eventObj?.image || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80';
 
@@ -1423,7 +1504,8 @@ export const AttendeeWeb: React.FC = () => {
             )}
 
           </div>
-        )}
+          );
+        })()}
 
         {/* ---------------- 6. HOW IT WORKS / TRUST PAGE ---------------- */}
         {currentView === 'how-it-works' && (
@@ -1529,6 +1611,13 @@ export const AttendeeWeb: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Auth Modal Component */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+        defaultMode={authModalMode} 
+      />
 
     </div>
   );

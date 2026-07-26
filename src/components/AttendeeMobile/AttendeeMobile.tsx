@@ -10,6 +10,8 @@ import {
   Tag, Shield, AlertCircle, X, Sparkles, Filter, Check, FileText, Mail, Printer
 } from 'lucide-react';
 import { exportTicketAsPdf, exportTicketToAppleWallet, printThermalWristband } from '../../utils/ticketExporter';
+import { AuthModal } from '../AuthModal';
+import { UserPlus, LogIn, LogOut } from 'lucide-react';
 
 export const AttendeeMobile: React.FC = () => {
   const { 
@@ -25,8 +27,13 @@ export const AttendeeMobile: React.FC = () => {
     purchaseTickets,
     promos,
     sendTicketEmail,
-    sendTicketSms
+    sendTicketSms,
+    currentUser,
+    logoutUser
   } = useEventContext();
+
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'signup' | 'login'>('signup');
 
   const [activeTab, setActiveTab] = useState<'home' | 'tickets' | 'saved' | 'profile'>('home');
   const [deviceModel, setDeviceModel] = useState<'iphone' | 'android'>('iphone');
@@ -609,20 +616,55 @@ export const AttendeeMobile: React.FC = () => {
           {/* ==================== TAB 4: PROFILE & SETTINGS ==================== */}
           {activeTab === 'profile' && (
             <div className="p-4 space-y-4 pb-20 pt-2">
-              <h2 className="text-base font-bold text-white flex items-center gap-1.5">
-                <User className="w-4.5 h-4.5 text-emerald-400" />
-                <span>Profile & Account</span>
-              </h2>
+              <div className="flex justify-between items-center">
+                <h2 className="text-base font-bold text-white flex items-center gap-1.5">
+                  <User className="w-4.5 h-4.5 text-emerald-400" />
+                  <span>Profile & Account</span>
+                </h2>
+
+                {currentUser ? (
+                  <button
+                    onClick={logoutUser}
+                    className="text-xs font-bold text-rose-400 hover:text-rose-300 flex items-center gap-1 bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Sign Out</span>
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => { setAuthModalMode('signup'); setShowAuthModal(true); }}
+                      className="text-xs font-bold text-slate-950 bg-emerald-500 hover:bg-emerald-400 px-2.5 py-1 rounded-lg flex items-center gap-1"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" />
+                      <span>Sign Up</span>
+                    </button>
+                    <button
+                      onClick={() => { setAuthModalMode('login'); setShowAuthModal(true); }}
+                      className="text-xs font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg flex items-center gap-1 border border-slate-700"
+                    >
+                      <LogIn className="w-3.5 h-3.5" />
+                      <span>Sign In</span>
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* User Card */}
               <div className="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex items-center space-x-3">
-                <div className="w-12 h-12 rounded-full bg-emerald-500 text-slate-950 font-black text-base flex items-center justify-center">
-                  {userProfile.firstName[0]}{userProfile.lastName[0]}
+                <div className="w-12 h-12 rounded-full bg-emerald-500 text-slate-950 font-black text-base flex items-center justify-center shrink-0">
+                  {currentUser ? currentUser.fullName[0] : (userProfile.firstName[0] || 'G')}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-bold text-white">{userProfile.firstName} {userProfile.lastName}</h3>
-                  <p className="text-xs text-slate-400 truncate">{userProfile.email}</p>
-                  <p className="text-[11px] text-slate-500">{userProfile.phone}</p>
+                  <h3 className="text-sm font-bold text-white">
+                    {currentUser ? currentUser.fullName : (userProfile.firstName ? `${userProfile.firstName} ${userProfile.lastName}` : 'Guest User')}
+                  </h3>
+                  <p className="text-xs text-slate-400 truncate">
+                    {currentUser ? currentUser.email : (userProfile.email || 'No account logged in')}
+                  </p>
+                  <p className="text-[11px] text-slate-500">
+                    {currentUser ? currentUser.phone : (userProfile.phone || 'Tap Sign Up to create clean profile')}
+                  </p>
                 </div>
               </div>
 
@@ -1088,6 +1130,13 @@ export const AttendeeMobile: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Auth Modal Component */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)} 
+        defaultMode={authModalMode} 
+      />
 
     </div>
   );
