@@ -117,3 +117,27 @@ export interface PromoCode {
   active: boolean;
   usedCount: number;
 }
+
+export interface OfflineScanRecord {
+  id: string;
+  ticketCode: string;
+  gateName: string;
+  scannedAt: string;
+  attendeeName: string;
+  eventTitle: string;
+  tierName: string;
+  synced: boolean;
+}
+
+export interface NotificationLog {
+  id: string;
+  orderId: string;
+  ticketCode?: string;
+  type: 'EMAIL' | 'SMS';
+  recipient: string;
+  subject: string;
+  bodyPreview: string;
+  sentAt: string;
+  status: 'DELIVERED' | 'QUEUED' | 'FAILED';
+}
+

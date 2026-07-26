@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { EventItem, Order, TicketPass, PlatformType, PromoCode, UserProfile, PaymentCard, TicketaUser } from '../types';
+import { 
+  EventItem, Order, TicketPass, PlatformType, PromoCode, 
+  UserProfile, PaymentCard, TicketaUser, OfflineScanRecord, NotificationLog 
+} from '../types';
 import { INITIAL_EVENTS, INITIAL_ORDERS, INITIAL_PROMOS, EVENT_IMAGE_OVERRIDE_MAP } from '../data/mockEvents';
 import { db } from '../lib/firebase';
 import { 
@@ -12,11 +15,38 @@ import {
   writeBatch 
 } from 'firebase/firestore';
 
-interface ScanResult {
+export interface ScanResult {
   success: boolean;
   message: string;
   ticket?: TicketPass;
+  isOfflineScan?: boolean;
 }
+
+export const INITIAL_NOTIFICATIONS: NotificationLog[] = [
+  {
+    id: 'notif-101',
+    orderId: 'ORD-88219',
+    ticketCode: 'TKT-1049-A1',
+    type: 'EMAIL',
+    recipient: 'contact@makindeisaiah.com',
+    subject: '🎟️ Official Ticket Pass: Davido Live at Crystal Palace Arena',
+    bodyPreview: 'Your VVIP Gold Ticket Pass has been issued! Present the QR code at Gate #1.',
+    sentAt: '2026-07-25 18:45:00',
+    status: 'DELIVERED'
+  },
+  {
+    id: 'notif-102',
+    orderId: 'ORD-88219',
+    ticketCode: 'TKT-1049-A1',
+    type: 'SMS',
+    recipient: '+234 812 345 6789',
+    subject: 'Ticketa Mobile Pass Link',
+    bodyPreview: 'Ticketa Pass for Davido Live: https://ticketa.app/pass/TKT-1049-A1. Show QR code at entrance.',
+    sentAt: '2026-07-25 18:45:05',
+    status: 'DELIVERED'
+  }
+];
+
 
 export const INITIAL_USERS: TicketaUser[] = [
   {
@@ -127,7 +157,20 @@ interface EventContextType {
   activeNotification: string | null;
   selectedEventId: string | null;
   setSelectedEventId: (id: string | null) => void;
-  
+
+  // Offline Mode & Sync Queue for Scanners
+  isOfflineMode: boolean;
+  setIsOfflineMode: (offline: boolean) => void;
+  offlineQueue: OfflineScanRecord[];
+  syncOfflineScans: () => Promise<{ syncedCount: number; errors: number }>;
+  clearOfflineQueue: () => void;
+
+  // Email / SMS Ticket Notifications
+  notificationLogs: NotificationLog[];
+  sendTicketEmail: (orderOrTicket: Order | TicketPass, customEmail?: string) => void;
+  sendTicketSms: (orderOrTicket: Order | TicketPass, customPhone?: string) => void;
+  clearNotificationLogs: () => void;
+
   // Actions
   registerUser: (details: { fullName: string; email: string; phone: string }) => TicketaUser;
   loginUser: (email: string) => TicketaUser | null;
@@ -218,7 +261,55 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [selectedEventId, setSelectedEventId] = useState<string | null>('evt-davido-crystal-palace');
   const [activeNotification, setActiveNotification] = useState<string | null>(null);
 
+  // Offline Mode & Sync Queue States
+  const [isOfflineMode, setIsOfflineMode] = useState<boolean>(() => {
+    return typeof navigator !== 'undefined' ? !navigator.onLine : false;
+  });
+
+  const [offlineQueue, setOfflineQueue] = useState<OfflineScanRecord[]>(() => {
+    const saved = localStorage.getItem('tix_offline_queue');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Notification Logs State
+  const [notificationLogs, setNotificationLogs] = useState<NotificationLog[]>(() => {
+    const saved = localStorage.getItem('tix_notif_log');
+    return saved ? JSON.parse(saved) : INITIAL_NOTIFICATIONS;
+  });
+
+  // Network Connectivity Auto-Detector Listener
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOfflineMode(false);
+      triggerNotification('Network connection restored. Syncing pending offline scans...');
+      syncOfflineScans();
+    };
+
+    const handleOffline = () => {
+      setIsOfflineMode(true);
+      triggerNotification('Network connection lost! Switched to Offline Gate Scanner Mode.');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [offlineQueue]);
+
+  // Persist offline queue and notification logs
+  useEffect(() => {
+    localStorage.setItem('tix_offline_queue', JSON.stringify(offlineQueue));
+  }, [offlineQueue]);
+
+  useEffect(() => {
+    localStorage.setItem('tix_notif_log', JSON.stringify(notificationLogs));
+  }, [notificationLogs]);
+
   // Firestore Subscriptions & Initial Seeding
+
   useEffect(() => {
     let unsubscribeEvents: () => void;
     let unsubscribeOrders: () => void;
@@ -572,8 +663,106 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     })();
 
+    // Auto-dispatch Email and SMS ticket notifications
+    sendTicketEmail(newOrder, attendeeDetails.email);
+    sendTicketSms(newOrder, attendeeDetails.phone);
+
     triggerNotification(`Order #${orderId} confirmed! ${quantity} x ${tier.name} issued.`);
     return newOrder;
+  };
+
+  const sendTicketEmail = (orderOrTicket: Order | TicketPass, customEmail?: string) => {
+    const recipient = customEmail || ('customerEmail' in orderOrTicket ? orderOrTicket.customerEmail : orderOrTicket.attendeeEmail);
+    const orderId = 'id' in orderOrTicket ? orderOrTicket.id : orderOrTicket.orderId;
+    const title = 'eventTitle' in orderOrTicket ? orderOrTicket.eventTitle : 'Ticketa Event';
+    const code = 'tickets' in orderOrTicket ? orderOrTicket.tickets[0]?.ticketCode : orderOrTicket.ticketCode;
+
+    const newLog: NotificationLog = {
+      id: `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      orderId,
+      ticketCode: code,
+      type: 'EMAIL',
+      recipient: recipient || 'attendee@ticketa.com',
+      subject: `🎟️ Official Event Pass: ${title}`,
+      bodyPreview: `Your official digital ticket pass for ${title} is ready. Order #${orderId}. Present QR pass at entrance gate.`,
+      sentAt: new Date().toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
+      status: 'DELIVERED'
+    };
+
+    setNotificationLogs(prev => [newLog, ...prev]);
+    triggerNotification(`📧 Email Ticket Pass sent to ${recipient}!`);
+  };
+
+  const sendTicketSms = (orderOrTicket: Order | TicketPass, customPhone?: string) => {
+    const recipient = customPhone || ('customerPhone' in orderOrTicket ? orderOrTicket.customerPhone : orderOrTicket.attendeePhone) || '+234 812 345 6789';
+    const orderId = 'id' in orderOrTicket ? orderOrTicket.id : orderOrTicket.orderId;
+    const title = 'eventTitle' in orderOrTicket ? orderOrTicket.eventTitle : 'Ticketa Event';
+    const code = 'tickets' in orderOrTicket ? orderOrTicket.tickets[0]?.ticketCode : orderOrTicket.ticketCode;
+
+    const newLog: NotificationLog = {
+      id: `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      orderId,
+      ticketCode: code,
+      type: 'SMS',
+      recipient,
+      subject: 'Ticketa Mobile Pass Link',
+      bodyPreview: `Ticketa SMS Pass for ${title}: Order #${orderId} (${code}). Show QR code at entrance: https://ticketa.app/pass/${code}`,
+      sentAt: new Date().toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
+      status: 'DELIVERED'
+    };
+
+    setNotificationLogs(prev => [newLog, ...prev]);
+    triggerNotification(`📱 SMS Pass link dispatched to ${recipient}!`);
+  };
+
+  const syncOfflineScans = async () => {
+    const unsynced = offlineQueue.filter(item => !item.synced);
+    if (unsynced.length === 0) {
+      triggerNotification('Sync complete: No unsynced offline records in queue.');
+      return { syncedCount: 0, errors: 0 };
+    }
+
+    let syncedCount = 0;
+    let errors = 0;
+
+    for (const record of unsynced) {
+      try {
+        let foundOrder = orders.find(o => o.tickets.some(t => t.ticketCode === record.ticketCode));
+        if (foundOrder) {
+          const updatedTickets = foundOrder.tickets.map(t => {
+            if (t.ticketCode === record.ticketCode) {
+              return {
+                ...t,
+                status: 'CHECKED_IN' as const,
+                checkedInAt: record.scannedAt,
+                scannedByGate: record.gateName
+              };
+            }
+            return t;
+          });
+          const updatedOrder = { ...foundOrder, tickets: updatedTickets };
+          await setDoc(doc(db, 'orders', foundOrder.id), updatedOrder);
+        }
+        syncedCount++;
+      } catch (e) {
+        console.error('Error syncing offline scan to Firestore:', e);
+        errors++;
+      }
+    }
+
+    setOfflineQueue([]);
+    triggerNotification(`✅ Synced ${syncedCount} offline scan(s) to server database!`);
+    return { syncedCount, errors };
+  };
+
+  const clearOfflineQueue = () => {
+    setOfflineQueue([]);
+    triggerNotification('Offline scan queue cleared.');
+  };
+
+  const clearNotificationLogs = () => {
+    setNotificationLogs([]);
+    triggerNotification('Notification dispatch log cleared.');
   };
 
   const scanAndCheckInTicket = (ticketCode: string, gateName = 'Gate #1 - Main Entrance'): ScanResult => {
@@ -622,6 +811,47 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       second: '2-digit',
       hour12: false
     });
+
+    if (isOfflineMode) {
+      const updatedTicket: TicketPass = {
+        ...foundTicket,
+        status: 'CHECKED_IN',
+        checkedInAt: nowStr,
+        scannedByGate: `${gateName} (Offline Queue)`,
+        gateNumber: gateName.split('-')[0].trim()
+      };
+
+      const updatedOrder: Order = {
+        ...targetOrder,
+        tickets: targetOrder.tickets.map(tk => (tk.ticketCode === foundTicket!.ticketCode ? updatedTicket : tk))
+      };
+
+      setOrders(prevOrders =>
+        prevOrders.map(ord => (ord.id === targetOrder!.id ? updatedOrder : ord))
+      );
+
+      const offlineRecord: OfflineScanRecord = {
+        id: `off-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        ticketCode: updatedTicket.ticketCode,
+        gateName: updatedTicket.scannedByGate,
+        scannedAt: nowStr,
+        attendeeName: updatedTicket.attendeeName,
+        eventTitle: updatedTicket.eventTitle,
+        tierName: updatedTicket.tierName,
+        synced: false
+      };
+
+      setOfflineQueue(prev => [offlineRecord, ...prev]);
+      triggerNotification(`OFFLINE SCAN QUEUED: ${updatedTicket.attendeeName} (${updatedTicket.tierName}) saved to sync queue`);
+
+      return {
+        success: true,
+        message: `OFFLINE SCAN QUEUED: Access Granted! Pass verified in local gate database.`,
+        ticket: updatedTicket,
+        isOfflineScan: true
+      };
+    }
+
 
     const updatedTicket: TicketPass = {
       ...foundTicket,
@@ -785,6 +1015,15 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         activeNotification,
         selectedEventId,
         setSelectedEventId,
+        isOfflineMode,
+        setIsOfflineMode,
+        offlineQueue,
+        syncOfflineScans,
+        clearOfflineQueue,
+        notificationLogs,
+        sendTicketEmail,
+        sendTicketSms,
+        clearNotificationLogs,
         registerUser,
         loginUser,
         logoutUser,

@@ -7,7 +7,7 @@ import {
   Smartphone, Ticket, MapPin, Compass, Calendar, 
   Bookmark, Search, Clock, ArrowLeft, CheckCircle2, 
   User, CreditCard, Bell, ChevronRight, Share2, Plus, Trash2, 
-  Tag, Shield, AlertCircle, X, Sparkles, Filter, Check, FileText
+  Tag, Shield, AlertCircle, X, Sparkles, Filter, Check, FileText, Mail
 } from 'lucide-react';
 import { exportTicketAsPdf, exportTicketToAppleWallet } from '../../utils/ticketExporter';
 
@@ -23,7 +23,9 @@ export const AttendeeMobile: React.FC = () => {
     addPaymentCard,
     removePaymentCard,
     purchaseTickets,
-    promos
+    promos,
+    sendTicketEmail,
+    sendTicketSms
   } = useEventContext();
 
   const [activeTab, setActiveTab] = useState<'home' | 'tickets' | 'saved' | 'profile'>('home');
@@ -457,10 +459,10 @@ export const AttendeeMobile: React.FC = () => {
                             <span className="font-semibold text-white truncate max-w-[200px]">{activeTicketObj.venueName}</span>
                           </div>
 
-                          <div className="pt-2 flex gap-2">
+                          <div className="pt-2 grid grid-cols-2 gap-2">
                             <button
                               onClick={() => exportTicketAsPdf(activeTicketObj)}
-                              className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-[11px] font-bold flex items-center justify-center space-x-1.5 transition cursor-pointer"
+                              className="py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-[11px] font-bold flex items-center justify-center space-x-1 transition cursor-pointer"
                             >
                               <FileText className="w-3.5 h-3.5 text-emerald-400" />
                               <span>PDF Ticket</span>
@@ -468,10 +470,26 @@ export const AttendeeMobile: React.FC = () => {
 
                             <button
                               onClick={() => exportTicketToAppleWallet(activeTicketObj)}
-                              className="flex-1 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 rounded-xl text-[11px] font-bold flex items-center justify-center space-x-1.5 transition cursor-pointer"
+                              className="py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 rounded-xl text-[11px] font-bold flex items-center justify-center space-x-1 transition cursor-pointer"
                             >
                               <Smartphone className="w-3.5 h-3.5 text-indigo-400" />
                               <span>Apple Wallet</span>
+                            </button>
+
+                            <button
+                              onClick={() => sendTicketEmail(activeTicketObj, activeTicketObj.attendeeEmail)}
+                              className="py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-xl text-[11px] font-bold flex items-center justify-center space-x-1 transition cursor-pointer"
+                            >
+                              <Mail className="w-3.5 h-3.5 text-blue-400" />
+                              <span>Email Pass</span>
+                            </button>
+
+                            <button
+                              onClick={() => sendTicketSms(activeTicketObj, activeTicketObj.attendeePhone)}
+                              className="py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 rounded-xl text-[11px] font-bold flex items-center justify-center space-x-1 transition cursor-pointer"
+                            >
+                              <Smartphone className="w-3.5 h-3.5 text-indigo-400" />
+                              <span>SMS Pass</span>
                             </button>
                           </div>
                         </div>

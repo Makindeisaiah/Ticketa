@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Bell, Menu, X, ArrowLeft, ChevronDown, Sparkles, Plus, LogOut, User } from 'lucide-react';
+import { Search, Bell, Menu, X, ArrowLeft, ChevronDown, Sparkles, Plus, LogOut, User, Mail } from 'lucide-react';
 
 interface OrganizerHeaderProps {
   searchQuery: string;
@@ -9,6 +9,7 @@ interface OrganizerHeaderProps {
   onBreadcrumbClick?: (index: number) => void;
   onCreateEventClick?: () => void;
   onSeedLiveSales?: () => void;
+  onOpenNotifs?: () => void;
   onLogout?: () => void;
   organizerName?: string;
   organizerEmail?: string;
@@ -22,6 +23,7 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
   onBreadcrumbClick,
   onCreateEventClick,
   onSeedLiveSales,
+  onOpenNotifs,
   onLogout,
   organizerName = 'Flytimefest Ltd',
   organizerEmail = 'info@flytimefest.com'
@@ -97,6 +99,18 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Simulate Sale</span>
+            </button>
+          )}
+
+          {/* Email / SMS Dispatch Logs Trigger */}
+          {onOpenNotifs && (
+            <button
+              onClick={onOpenNotifs}
+              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition cursor-pointer"
+              title="View Email & SMS Pass Dispatch Logs"
+            >
+              <Mail className="w-3.5 h-3.5 text-blue-600" />
+              <span className="hidden sm:inline">Dispatch Logs</span>
             </button>
           )}
 

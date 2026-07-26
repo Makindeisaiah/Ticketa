@@ -16,6 +16,7 @@ import { SettingsTab } from './SettingsTab';
 import { CreateEventModal } from './CreateEventModal';
 import { RevenueWithdrawModal } from './RevenueWithdrawModal';
 import { OrganizerCheckInModal } from './OrganizerCheckInModal';
+import { NotificationCenterModal } from '../NotificationCenterModal';
 
 export const OrganizerDashboard: React.FC = () => {
   const { 
@@ -54,6 +55,7 @@ export const OrganizerDashboard: React.FC = () => {
 
   const [isCheckInModalOpen, setIsCheckInModalOpen] = useState(false);
   const [checkInModalMode, setCheckInModalMode] = useState<'scan' | 'manual'>('scan');
+  const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
 
   const handleOpenCheckInModal = (mode: 'scan' | 'manual' = 'scan') => {
     setCheckInModalMode(mode);
@@ -123,6 +125,7 @@ export const OrganizerDashboard: React.FC = () => {
           onOpenMobileMenu={() => setIsMobileOpen(true)}
           onCreateEventClick={handleOpenCreateModal}
           onSeedLiveSales={seedLiveSales}
+          onOpenNotifs={() => setIsNotifModalOpen(true)}
           onLogout={handleLogout}
           organizerName={organizerAuth.name}
           organizerEmail={organizerAuth.email}
@@ -215,6 +218,12 @@ export const OrganizerDashboard: React.FC = () => {
         onClose={() => setIsCheckInModalOpen(false)}
         events={events}
         allTickets={allTickets}
+      />
+
+      {/* Notification Dispatch Center Modal */}
+      <NotificationCenterModal
+        isOpen={isNotifModalOpen}
+        onClose={() => setIsNotifModalOpen(false)}
       />
 
     </div>

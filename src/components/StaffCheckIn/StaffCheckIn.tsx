@@ -3,13 +3,14 @@ import { useEventContext } from '../../context/EventContext';
 import { TicketPass } from '../../types';
 import { Html5Qrcode } from 'html5-qrcode';
 import { CameraScannerFeed } from '../CameraScannerFeed';
+import { NotificationCenterModal } from '../NotificationCenterModal';
 import { 
   QrCode, Camera, CheckCircle2, XCircle, Search, ShieldCheck, 
   Volume2, Users, RefreshCw, Zap, AlertTriangle, ChevronRight, 
   Sparkles, ShieldAlert, History, User, Mail, Lock, LogOut, 
   Filter, ArrowRight, Clock, MapPin, Ticket, Download, HelpCircle, 
   Printer, Wifi, RotateCcw, FileText, LayoutDashboard, Sun, Moon, 
-  Settings, Send, Bell, Check, X, Eye, Flashlight, Sliders, ChevronLeft
+  Settings, Send, Bell, Check, X, Eye, Flashlight, Sliders, ChevronLeft, WifiOff
 } from 'lucide-react';
 
 export const StaffCheckIn: React.FC = () => {
@@ -18,8 +19,21 @@ export const StaffCheckIn: React.FC = () => {
     allTickets, 
     scanAndCheckInTicket, 
     manualCheckInByEmail,
-    selectedEventId 
+    selectedEventId,
+    isOfflineMode,
+    setIsOfflineMode,
+    offlineQueue,
+    syncOfflineScans,
+    clearOfflineQueue,
+    notificationLogs,
+    sendTicketEmail,
+    sendTicketSms
   } = useEventContext();
+
+  const [showSyncQueueModal, setShowSyncQueueModal] = useState(false);
+  const [showNotifModal, setShowNotifModal] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+
 
   // Selected Active Event
   const activeEvent = events.find(e => e.id === selectedEventId) || events[0];
@@ -557,33 +571,106 @@ export const StaffCheckIn: React.FC = () => {
             </div>
           </div>
 
-          {/* Gate & Shift Indicator Header Pills */}
-          <div className="flex items-center space-x-3 text-xs">
-            <div className="hidden sm:flex items-center space-x-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
-              <MapPin className="w-4 h-4 text-purple-600" />
-              <div>
-                <span className="text-[10px] text-slate-400 block font-medium">Assigned Gate</span>
-                <span className="font-bold text-slate-900">{assignedGate}</span>
+          {/* Gate, Offline Mode & Notification Controls */}
+          <div className="flex items-center space-x-2.5 text-xs">
+            
+            {/* Offline Mode Switcher */}
+            <div className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl border transition ${
+              isOfflineMode 
+                ? 'bg-amber-500/10 border-amber-500/30 text-amber-900' 
+                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-900'
+            }`}>
+              {isOfflineMode ? (
+                <WifiOff className="w-4 h-4 text-amber-600 animate-pulse" />
+              ) : (
+                <Wifi className="w-4 h-4 text-emerald-600" />
+              )}
+              <div className="flex items-center space-x-2">
+                <span className="font-bold text-[11px]">
+                  {isOfflineMode ? 'Offline Mode' : 'Cloud Connected'}
+                </span>
+                <button
+                  onClick={() => setIsOfflineMode(!isOfflineMode)}
+                  className={`w-9 h-5 flex items-center rounded-full p-0.5 transition-colors cursor-pointer ${
+                    isOfflineMode ? 'bg-amber-500 justify-end' : 'bg-slate-300 justify-start'
+                  }`}
+                  title="Toggle Scanner Offline Mode"
+                >
+                  <span className="w-4 h-4 rounded-full bg-white shadow-md"></span>
+                </button>
               </div>
             </div>
 
-            <div className="hidden sm:flex items-center space-x-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
-              <Clock className="w-4 h-4 text-emerald-600" />
+            {/* Sync Queue Badge Button */}
+            {offlineQueue.length > 0 && (
+              <button
+                onClick={() => setShowSyncQueueModal(true)}
+                className="bg-amber-500 text-slate-950 font-black px-3 py-1.5 rounded-xl text-xs flex items-center space-x-1.5 hover:bg-amber-400 transition shadow-md cursor-pointer animate-bounce"
+              >
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Sync Queue ({offlineQueue.length})</span>
+              </button>
+            )}
+
+            {/* Notification Center Trigger */}
+            <button
+              onClick={() => setShowNotifModal(true)}
+              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 rounded-xl font-bold flex items-center space-x-1.5 transition cursor-pointer"
+              title="View Mail & SMS Dispatch Logs"
+            >
+              <Mail className="w-4 h-4 text-blue-600" />
+              <span className="hidden md:inline">Mail/SMS</span>
+              <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
+                {notificationLogs.length}
+              </span>
+            </button>
+
+            <div className="hidden lg:flex items-center space-x-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
+              <MapPin className="w-4 h-4 text-purple-600" />
               <div>
-                <span className="text-[10px] text-slate-400 block font-medium">Session Time</span>
-                <span className="font-bold text-slate-900">{shiftTime}</span>
+                <span className="text-[10px] text-slate-400 block font-medium">Gate</span>
+                <span className="font-bold text-slate-900">{assignedGate}</span>
               </div>
             </div>
 
             <button
               onClick={() => setCurrentView('settings')}
-              className="p-2 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50"
+              className="p-2 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 cursor-pointer"
               title="Settings & Preferences"
             >
               <Settings className="w-4 h-4" />
             </button>
           </div>
         </header>
+
+        {/* Persistent Offline Banner when in Offline Mode */}
+        {isOfflineMode && (
+          <div className="bg-amber-500 text-slate-950 px-6 py-2.5 flex items-center justify-between text-xs font-bold shadow-md">
+            <div className="flex items-center space-x-2">
+              <WifiOff className="w-4 h-4" />
+              <span>OFFLINE SCANNER ACTIVE: Validating tickets against locally cached passes. Scans will queue safely in offline storage.</span>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <span className="bg-slate-950 text-white text-[10px] px-2 py-0.5 rounded-full font-mono">
+                {offlineQueue.length} Pending Sync
+              </span>
+              <button
+                onClick={async () => {
+                  setIsSyncing(true);
+                  await syncOfflineScans();
+                  setIsSyncing(false);
+                }}
+                disabled={isSyncing || offlineQueue.length === 0}
+                className="bg-slate-950 hover:bg-slate-900 text-white px-3 py-1 rounded-lg text-[11px] font-bold flex items-center space-x-1 disabled:opacity-50 transition cursor-pointer"
+              >
+                <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
+                <span>{isSyncing ? 'Syncing...' : 'Sync Pending Scans'}</span>
+              </button>
+            </div>
+          </div>
+        )}
+
 
         {/* VIEW SUB-ROUTER */}
         <div className="p-6 space-y-6">
@@ -1819,6 +1906,106 @@ export const StaffCheckIn: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Notification Center Modal */}
+      <NotificationCenterModal
+        isOpen={showNotifModal}
+        onClose={() => setShowNotifModal(false)}
+      />
+
+      {/* Offline Sync Queue Modal */}
+      {showSyncQueueModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-2xl w-full p-6 shadow-2xl space-y-5 animate-scaleIn">
+            <div className="flex justify-between items-center border-b border-slate-800 pb-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2.5 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-2xl">
+                  <RefreshCw className="w-6 h-6 animate-spin" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-white">Offline Scanner Sync Queue</h3>
+                  <p className="text-xs text-slate-400">
+                    {offlineQueue.length} check-in scans recorded offline and waiting to sync to server
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setShowSyncQueueModal(false)}
+                className="p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Offline Scan List */}
+            <div className="max-h-72 overflow-y-auto space-y-2.5 pr-1 scrollbar-none">
+              {offlineQueue.length === 0 ? (
+                <div className="text-center py-8 text-slate-500 text-xs font-semibold">
+                  No pending offline scans. All check-ins are synced with Cloud database!
+                </div>
+              ) : (
+                offlineQueue.map(item => (
+                  <div key={item.id} className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 flex justify-between items-center text-xs">
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-bold text-white">{item.attendeeName}</span>
+                        <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] px-2 py-0.2 rounded-full font-bold">
+                          {item.tierName}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-3 text-[11px] text-slate-400">
+                        <span className="font-mono text-amber-400">{item.ticketCode}</span>
+                        <span>• {item.gateName}</span>
+                        <span>• {item.scannedAt}</span>
+                      </div>
+                    </div>
+
+                    <span className="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-xl text-[10px] font-bold uppercase tracking-wider">
+                      Pending Sync
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex justify-between items-center pt-2 border-t border-slate-800">
+              <button
+                onClick={() => clearOfflineQueue()}
+                disabled={offlineQueue.length === 0}
+                className="text-xs text-rose-400 hover:text-rose-300 font-bold disabled:opacity-50 cursor-pointer"
+              >
+                Clear Queue
+              </button>
+
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => setShowSyncQueueModal(false)}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl cursor-pointer"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={async () => {
+                    setIsSyncing(true);
+                    await syncOfflineScans();
+                    setIsSyncing(false);
+                    setShowSyncQueueModal(false);
+                  }}
+                  disabled={offlineQueue.length === 0 || isSyncing}
+                  className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black rounded-xl flex items-center space-x-1.5 shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                  <span>{isSyncing ? 'Syncing...' : 'Sync All Pending Scans'}</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
 
     </div>
   );
