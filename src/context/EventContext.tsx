@@ -748,11 +748,12 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     triggerNotification(`📧 Email Ticket Pass sent to ${recipient}!`);
   };
 
-  const sendTicketSms = (orderOrTicket: Order | TicketPass, customPhone?: string) => {
+  const sendTicketSms = async (orderOrTicket: Order | TicketPass, customPhone?: string) => {
     const recipient = customPhone || ('customerPhone' in orderOrTicket ? orderOrTicket.customerPhone : orderOrTicket.attendeePhone) || '+234 812 345 6789';
     const orderId = 'id' in orderOrTicket ? orderOrTicket.id : orderOrTicket.orderId;
     const title = 'eventTitle' in orderOrTicket ? orderOrTicket.eventTitle : 'Ticketa Event';
     const code = 'tickets' in orderOrTicket ? orderOrTicket.tickets[0]?.ticketCode : orderOrTicket.ticketCode;
+    const message = `Ticketa SMS Pass for ${title}: Order #${orderId} (${code}). Show QR code at entrance: https://ticketa.app/pass/${code}`;
 
     const newLog: NotificationLog = {
       id: `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -761,13 +762,30 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       type: 'SMS',
       recipient,
       subject: 'Ticketa Mobile Pass Link',
-      bodyPreview: `Ticketa SMS Pass for ${title}: Order #${orderId} (${code}). Show QR code at entrance: https://ticketa.app/pass/${code}`,
+      bodyPreview: message,
       sentAt: new Date().toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
       status: 'DELIVERED'
     };
 
     setNotificationLogs(prev => [newLog, ...prev]);
-    triggerNotification(`📱 SMS Pass link dispatched to ${recipient}!`);
+
+    try {
+      const response = await fetch('/api/send-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: recipient, message })
+      });
+      const data = await response.json();
+      
+      if (response.ok) {
+        triggerNotification(`📱 SMS Pass link dispatched to ${recipient}!`);
+      } else {
+        triggerNotification(`⚠️ SMS Failed: ${data.error}`);
+      }
+    } catch (err) {
+      console.error(err);
+      triggerNotification(`⚠️ Failed to connect to SMS dispatch server.`);
+    }
   };
 
   const syncOfflineScans = async () => {
