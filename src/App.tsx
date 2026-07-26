@@ -5,8 +5,7 @@ import { AttendeeWeb } from './components/AttendeeWeb/AttendeeWeb';
 import { AttendeeMobile } from './components/AttendeeMobile/AttendeeMobile';
 import { OrganizerDashboard } from './components/OrganizerDashboard/OrganizerDashboard';
 import { StaffCheckIn } from './components/StaffCheckIn/StaffCheckIn';
-import { AppsHub } from './components/AppsHub';
-import { AppSwitcher } from './components/AppSwitcher';
+import { DevSuite } from './components/DevSuite';
 
 const MainLayout: React.FC = () => {
   return (
@@ -25,15 +24,14 @@ const MainLayout: React.FC = () => {
         {/* 4. Gate Check-in Staff Scanner Application (Venue Gate Validator) */}
         <Route path="/scanner" element={<StaffCheckIn />} />
 
-        {/* 5. Applications Ecosystem Hub & Directory */}
-        <Route path="/apps" element={<AppsHub />} />
+        {/* 5. Internal Dev Suite & Testing Hub (Gated behind dev route) */}
+        <Route path="/_internal" element={<DevSuite />} />
+        <Route path="/dev-suite" element={<DevSuite />} />
+        <Route path="/apps" element={<DevSuite />} />
 
-        {/* Catch-all redirect */}
+        {/* Catch-all redirect to public attendee homepage */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-
-      {/* Floating App Switcher Widget across all apps */}
-      <AppSwitcher />
     </div>
   );
 };

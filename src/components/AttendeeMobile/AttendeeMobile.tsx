@@ -7,8 +7,9 @@ import {
   Smartphone, Ticket, MapPin, Compass, Calendar, 
   Bookmark, Search, Clock, ArrowLeft, CheckCircle2, 
   User, CreditCard, Bell, ChevronRight, Share2, Plus, Trash2, 
-  Tag, Shield, AlertCircle, X, Sparkles, Filter, Check
+  Tag, Shield, AlertCircle, X, Sparkles, Filter, Check, FileText
 } from 'lucide-react';
+import { exportTicketAsPdf, exportTicketToAppleWallet } from '../../utils/ticketExporter';
 
 export const AttendeeMobile: React.FC = () => {
   const { 
@@ -444,7 +445,7 @@ export const AttendeeMobile: React.FC = () => {
                           Pass Code: <span className="text-emerald-400 font-mono font-bold">{activeTicketObj.ticketCode}</span>
                         </span>
 
-                        <div className="mt-3 w-full border-t border-slate-800 pt-3 text-[11px] space-y-1 text-slate-300">
+                        <div className="mt-3 w-full border-t border-slate-800 pt-3 text-[11px] space-y-2 text-slate-300">
                           <div className="flex justify-between">
                             <span className="text-slate-500">Date:</span>
                             <span className="font-semibold text-white">{activeTicketObj.eventDate}</span>
@@ -452,6 +453,24 @@ export const AttendeeMobile: React.FC = () => {
                           <div className="flex justify-between">
                             <span className="text-slate-500">Venue:</span>
                             <span className="font-semibold text-white truncate max-w-[200px]">{activeTicketObj.venueName}</span>
+                          </div>
+
+                          <div className="pt-2 flex gap-2">
+                            <button
+                              onClick={() => exportTicketAsPdf(activeTicketObj)}
+                              className="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-[11px] font-bold flex items-center justify-center space-x-1.5 transition cursor-pointer"
+                            >
+                              <FileText className="w-3.5 h-3.5 text-emerald-400" />
+                              <span>PDF Ticket</span>
+                            </button>
+
+                            <button
+                              onClick={() => exportTicketToAppleWallet(activeTicketObj)}
+                              className="flex-1 py-2 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 rounded-xl text-[11px] font-bold flex items-center justify-center space-x-1.5 transition cursor-pointer"
+                            >
+                              <Smartphone className="w-3.5 h-3.5 text-indigo-400" />
+                              <span>Apple Wallet</span>
+                            </button>
                           </div>
                         </div>
                       </div>

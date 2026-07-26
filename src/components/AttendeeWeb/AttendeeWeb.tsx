@@ -9,8 +9,9 @@ import {
   Sparkles, CheckCircle2, ArrowRight, X, Clock, Users, ChevronRight,
   Filter, Lock, Share2, Bookmark, Download, ExternalLink, QrCode,
   Building2, ChevronDown, Check, AlertCircle, ArrowLeft, Copy, Smartphone,
-  RefreshCw, Layers
+  RefreshCw, Layers, FileText
 } from 'lucide-react';
+import { exportTicketAsPdf, exportTicketToAppleWallet } from '../../utils/ticketExporter';
 
 export const AttendeeWeb: React.FC = () => {
   const { events, purchaseTickets, orders, promos, toggleSaveEvent, savedEventIds, setCurrentPlatform } = useEventContext();
@@ -307,18 +308,6 @@ export const AttendeeWeb: React.FC = () => {
 
             {/* Header Right Actions */}
             <div className="flex items-center space-x-3">
-              <button
-                onClick={() => {
-                  setCurrentPlatform('organizer');
-                  navigate('/organizer');
-                }}
-                className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition cursor-pointer"
-                title="Host events or register as an event organizer"
-              >
-                <Building2 className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Host / Sell Tickets</span>
-              </button>
-
               <button
                 onClick={() => handleNav('orders')}
                 className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 rounded-xl text-xs font-black transition shadow-lg shadow-emerald-500/20 flex items-center space-x-2 cursor-pointer"
@@ -1350,10 +1339,10 @@ export const AttendeeWeb: React.FC = () => {
                       {/* Passes list */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {order.tickets.map(tkt => (
-                          <div key={tkt.ticketCode} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex gap-4 items-center">
+                          <div key={tkt.ticketCode} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                             <QRCodeDisplay value={tkt.ticketCode} size={90} />
                             
-                            <div className="flex-1 text-xs space-y-1">
+                            <div className="flex-1 text-xs space-y-1.5 w-full">
                               <div className="flex justify-between items-center">
                                 <span className="font-mono font-bold text-emerald-400">{tkt.ticketCode}</span>
                                 <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
@@ -1370,10 +1359,31 @@ export const AttendeeWeb: React.FC = () => {
                               <p className="text-slate-400 text-[11px]">{tkt.venueName}</p>
                               
                               {tkt.checkedInAt && (
-                                <p className="text-[10px] text-emerald-400 font-mono pt-1">
+                                <p className="text-[10px] text-emerald-400 font-mono pt-0.5">
                                   Scanned: {tkt.checkedInAt}
                                 </p>
                               )}
+
+                              {/* Download & Export Buttons */}
+                              <div className="pt-2 flex flex-wrap gap-2">
+                                <button
+                                  onClick={() => exportTicketAsPdf(tkt)}
+                                  className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-[11px] font-bold flex items-center space-x-1 transition cursor-pointer"
+                                  title="Download Printable PDF Ticket"
+                                >
+                                  <FileText className="w-3.5 h-3.5 text-emerald-400" />
+                                  <span>PDF Ticket</span>
+                                </button>
+
+                                <button
+                                  onClick={() => exportTicketToAppleWallet(tkt)}
+                                  className="px-2.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 rounded-xl text-[11px] font-bold flex items-center space-x-1 transition cursor-pointer"
+                                  title="Export to Apple Wallet (.pkpass)"
+                                >
+                                  <Smartphone className="w-3.5 h-3.5 text-indigo-400" />
+                                  <span>Apple Wallet</span>
+                                </button>
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -1416,26 +1426,6 @@ export const AttendeeWeb: React.FC = () => {
                   </div>
                 );
               })}
-            </div>
-
-            {/* CTA for Organizers */}
-            <div className="bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-900 border border-emerald-500/30 p-8 rounded-3xl flex flex-col sm:flex-row justify-between items-center gap-6 shadow-2xl">
-              <div>
-                <h2 className="text-2xl font-black text-white">Host Events. Sell Tickets. Get Paid Fast.</h2>
-                <p className="text-xs text-slate-300 mt-1 max-w-lg">
-                  Join thousands of top event organizers using Ticketa to manage ticket sales, check-ins, and automated payouts.
-                </p>
-              </div>
-
-              <button
-                onClick={() => {
-                  setCurrentPlatform('organizer');
-                  navigate('/organizer');
-                }}
-                className="px-6 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl transition shadow-xl shadow-emerald-500/20 whitespace-nowrap cursor-pointer"
-              >
-                Create An Event Now
-              </button>
             </div>
 
           </div>
@@ -1506,10 +1496,9 @@ export const AttendeeWeb: React.FC = () => {
           </div>
 
           <div className="flex space-x-6 text-slate-400">
-            <button onClick={() => handleNav('browse')} className="hover:text-white">Browse Events</button>
-            <button onClick={() => handleNav('how-it-works')} className="hover:text-white">How it works</button>
-            <button onClick={() => handleNav('orders')} className="hover:text-white">My Wallet</button>
-            <button onClick={() => { setCurrentPlatform('organizer'); navigate('/organizer'); }} className="hover:text-emerald-400 cursor-pointer">Organizer Dashboard</button>
+            <button onClick={() => handleNav('browse')} className="hover:text-white cursor-pointer">Browse Events</button>
+            <button onClick={() => handleNav('how-it-works')} className="hover:text-white cursor-pointer">How it works</button>
+            <button onClick={() => handleNav('orders')} className="hover:text-white cursor-pointer">My Wallet</button>
           </div>
         </div>
       </footer>
