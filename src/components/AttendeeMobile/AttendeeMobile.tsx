@@ -214,9 +214,11 @@ export const AttendeeMobile: React.FC = () => {
         </div>
 
         {/* Screen Content Window */}
-        <div className="flex-1 bg-slate-950 rounded-[32px] overflow-y-auto overflow-x-hidden flex flex-col justify-between scrollbar-none relative">
+        <div className="flex-1 bg-slate-950 rounded-[32px] overflow-hidden flex flex-col relative">
 
-          {/* ==================== TAB 1: HOME / DISCOVER ==================== */}
+          {/* Main Scrollable Viewport */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-none">
+            {/* ==================== TAB 1: HOME / DISCOVER ==================== */}
           {activeTab === 'home' && (
             <div className="p-4 space-y-4 pb-20 pt-2">
               
@@ -676,9 +678,9 @@ export const AttendeeMobile: React.FC = () => {
                   </label>
                 </div>
               </div>
-
             </div>
           )}
+          </div>
 
           {/* ==================== MOBILE BOTTOM NAVIGATION BAR ==================== */}
           <nav className="bg-slate-900/95 backdrop-blur-md border-t border-slate-800 p-2 flex justify-around items-center z-30 absolute bottom-0 left-0 right-0">
