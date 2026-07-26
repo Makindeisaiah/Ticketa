@@ -2,6 +2,25 @@ import React, { useState } from 'react';
 import { Search, Download, CheckCircle2, XCircle, Clock, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const RefundsTab: React.FC = () => {
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  // Sample data to make it easier to mutate for UI demonstration
+  const [refunds, setRefunds] = useState([
+    { id: "RD-346484", attendee: "Olakunle Davis", event: "Davido Live in Lagos", ticketType: "Regular", amount: "₦30,000", reason: "Scheduling Conflict", status: "Pending", requestedOn: "Dec 22, 2025" },
+    { id: "RD-349854", attendee: "Alex Adigun", event: "Asake Live in Lagos", ticketType: "VVIP", amount: "₦1,500,000", reason: "Event Canceled", status: "Approved", requestedOn: "Dec 22, 2025" },
+    { id: "RD-347636", attendee: "George Falana", event: "Davido Live in Lagos", ticketType: "Premium", amount: "₦3,000,000", reason: "Medical Emergency", status: "Rejected", requestedOn: "Dec 21, 2025" },
+    { id: "RD-340974", attendee: "Fisayo Onanuga", event: "Davido Live in Uyo", ticketType: "VIP", amount: "₦100,000", reason: "Scheduling Conflict", status: "Processed", requestedOn: "Dec 21, 2025" },
+    { id: "RD-347643", attendee: "Babalola Anifowoshe", event: "Burna Boy Live in Lagos", ticketType: "Regular", amount: "₦30,000", reason: "Event Canceled", status: "Failed", requestedOn: "Dec 21, 2025" },
+    { id: "RD-349847", attendee: "Kunle Ayomide", event: "Davido Live in Lagos", ticketType: "Regular", amount: "₦30,000", reason: "Medical Emergency", status: "Pending", requestedOn: "Dec 20, 2025" },
+    { id: "RD-347746", attendee: "Obi Joy", event: "Asake Live in Lagos", ticketType: "VVIP", amount: "₦1,500,000", reason: "Scheduling Conflict", status: "Approved", requestedOn: "Dec 20, 2025" },
+    { id: "RD-347464", attendee: "Aminu Ibrahim", event: "Davido Live in Lagos", ticketType: "Premium", amount: "₦3,000,000", reason: "Event Canceled", status: "Rejected", requestedOn: "Dec 19, 2025" },
+  ]);
+
+  const handleCancelRefund = (id: string) => {
+    setRefunds(prev => prev.map(r => r.id === id ? { ...r, status: 'Canceled' } : r));
+    setOpenMenuId(null);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -81,17 +100,8 @@ export const RefundsTab: React.FC = () => {
             </thead>
             <tbody className="text-xs font-semibold text-slate-700 divide-y divide-slate-100">
               {/* Sample Rows */}
-              {[
-                { id: "RD-346484", attendee: "Olakunle Davis", event: "Davido Live in Lagos", ticketType: "Regular", amount: "₦30,000", reason: "Scheduling Conflict", status: "Pending", requestedOn: "Dec 22, 2025" },
-                { id: "RD-349854", attendee: "Alex Adigun", event: "Asake Live in Lagos", ticketType: "VVIP", amount: "₦1,500,000", reason: "Event Canceled", status: "Approved", requestedOn: "Dec 22, 2025" },
-                { id: "RD-347636", attendee: "George Falana", event: "Davido Live in Lagos", ticketType: "Premium", amount: "₦3,000,000", reason: "Medical Emergency", status: "Rejected", requestedOn: "Dec 21, 2025" },
-                { id: "RD-340974", attendee: "Fisayo Onanuga", event: "Davido Live in Uyo", ticketType: "VIP", amount: "₦100,000", reason: "Scheduling Conflict", status: "Processed", requestedOn: "Dec 21, 2025" },
-                { id: "RD-347643", attendee: "Babalola Anifowoshe", event: "Burna Boy Live in Lagos", ticketType: "Regular", amount: "₦30,000", reason: "Event Canceled", status: "Failed", requestedOn: "Dec 21, 2025" },
-                { id: "RD-349847", attendee: "Kunle Ayomide", event: "Davido Live in Lagos", ticketType: "Regular", amount: "₦30,000", reason: "Medical Emergency", status: "Pending", requestedOn: "Dec 20, 2025" },
-                { id: "RD-347746", attendee: "Obi Joy", event: "Asake Live in Lagos", ticketType: "VVIP", amount: "₦1,500,000", reason: "Scheduling Conflict", status: "Approved", requestedOn: "Dec 20, 2025" },
-                { id: "RD-347464", attendee: "Aminu Ibrahim", event: "Davido Live in Lagos", ticketType: "Premium", amount: "₦3,000,000", reason: "Event Canceled", status: "Rejected", requestedOn: "Dec 19, 2025" },
-              ].map((row, i) => (
-                <tr key={i} className="hover:bg-slate-50 transition">
+              {refunds.map((row, i) => (
+                <tr key={row.id} className="hover:bg-slate-50 transition">
                   <td className="px-4 py-3 text-slate-500 font-mono">{row.id}</td>
                   <td className="px-4 py-3">{row.attendee}</td>
                   <td className="px-4 py-3">{row.event}</td>
@@ -113,16 +123,39 @@ export const RefundsTab: React.FC = () => {
                         row.status === 'Approved' ? 'bg-[#00C896]' :
                         row.status === 'Rejected' ? 'bg-rose-500' :
                         row.status === 'Processed' ? 'bg-blue-500' :
+                        row.status === 'Canceled' ? 'bg-slate-400' :
                         'bg-slate-500'
                       }`} />
                       <span>{row.status}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-slate-500">{row.requestedOn}</td>
-                  <td className="px-4 py-3 text-center">
-                    <button className="w-8 h-8 rounded-lg bg-amber-400 text-white flex items-center justify-center mx-auto hover:bg-amber-500 transition">
+                  <td className="px-4 py-3 text-center relative">
+                    <button 
+                      onClick={() => setOpenMenuId(openMenuId === row.id ? null : row.id)}
+                      className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center mx-auto hover:bg-slate-200 transition"
+                    >
                       <MoreHorizontal className="w-4 h-4" />
                     </button>
+                    
+                    {openMenuId === row.id && (
+                      <div className="absolute right-8 top-10 mt-1 w-40 bg-white border border-slate-200 rounded-xl shadow-lg z-10 overflow-hidden text-left">
+                        {row.status === 'Pending' && (
+                          <button 
+                            onClick={() => handleCancelRefund(row.id)}
+                            className="w-full px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-slate-50 transition border-b border-slate-100"
+                          >
+                            Cancel Refund
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => setOpenMenuId(null)}
+                          className="w-full px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+                        >
+                          View Details
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
