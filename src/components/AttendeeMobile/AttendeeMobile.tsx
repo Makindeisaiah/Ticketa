@@ -78,7 +78,11 @@ export const AttendeeMobile: React.FC = () => {
   const savedEvents = events.filter(evt => savedEventIds.includes(evt.id));
 
   // User tickets list
-  const userTickets = allTickets.filter(t => t.status !== 'CANCELLED');
+  const userTickets = currentUser
+    ? allTickets.filter(t => (t.attendeeEmail.toLowerCase() === currentUser.email.toLowerCase() || (currentUser.phone && t.attendeePhone === currentUser.phone)) && t.status !== 'CANCELLED')
+    : userProfile.email
+      ? allTickets.filter(t => t.attendeeEmail.toLowerCase() === userProfile.email.toLowerCase() && t.status !== 'CANCELLED')
+      : [];
   const activeTicketObj = allTickets.find(t => t.ticketCode === selectedTicketCode) || userTickets[0];
 
   // Handle promo apply

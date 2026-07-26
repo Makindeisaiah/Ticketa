@@ -1317,10 +1317,10 @@ export const AttendeeWeb: React.FC = () => {
         {/* ---------------- 5. MY TICKETS & WALLET VIEW ---------------- */}
         {currentView === 'orders' && (() => {
           const activeUserOrders = currentUser 
-            ? orders.filter(o => o.customerEmail.toLowerCase() === currentUser.email.toLowerCase() || o.customerPhone === currentUser.phone)
-            : userProfile.email && userProfile.email !== 'contact@makindeisaiah.com'
+            ? orders.filter(o => o.customerEmail.toLowerCase() === currentUser.email.toLowerCase() || (currentUser.phone && o.customerPhone === currentUser.phone))
+            : userProfile.email
               ? orders.filter(o => o.customerEmail.toLowerCase() === userProfile.email.toLowerCase())
-              : orders;
+              : [];
 
           return (
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">

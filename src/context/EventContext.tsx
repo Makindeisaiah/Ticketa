@@ -112,28 +112,11 @@ export const INITIAL_USERS: TicketaUser[] = [
 ];
 
 const DEFAULT_PROFILE: UserProfile = {
-  firstName: 'Isaiah',
-  lastName: 'Makinde',
-  email: 'contact@makindeisaiah.com',
-  phone: '+234 812 345 6789',
-  paymentCards: [
-    {
-      id: 'card-1',
-      cardNumber: '5199 6204 7383 9937',
-      expiryDate: '20/2028',
-      cvv: '406',
-      cardHolder: 'Makinde Isaiah O',
-      isDefault: true
-    },
-    {
-      id: 'card-2',
-      cardNumber: '4242 **** **** 3883',
-      expiryDate: '12/2027',
-      cvv: '123',
-      cardHolder: 'Makinde Isaiah O',
-      isDefault: false
-    }
-  ],
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  paymentCards: [],
   notifications: {
     remainders: true,
     purchaseAlerts: false,
@@ -267,7 +250,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [currentUser, setCurrentUser] = useState<TicketaUser | null>(() => {
     const saved = localStorage.getItem('tix_current_user');
-    return saved ? JSON.parse(saved) : INITIAL_USERS[0];
+    return saved ? JSON.parse(saved) : null;
   });
 
   const [selectedEventId, setSelectedEventId] = useState<string | null>('evt-davido-crystal-palace');
