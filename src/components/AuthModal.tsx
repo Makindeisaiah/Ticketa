@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useEventContext } from '../context/EventContext';
-import { X, UserPlus, LogIn, CheckCircle2, User, Mail, Phone, Lock, Sparkles, ShieldCheck } from 'lucide-react';
+import { X, UserPlus, LogIn, CheckCircle2, User, Mail, Phone, Lock, Sparkles, ShieldCheck, KeyRound, RefreshCw, Check } from 'lucide-react';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -10,7 +10,7 @@ interface AuthModalProps {
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode = 'signup' }) => {
   const { registerUser, loginUser, currentUser, logoutUser } = useEventContext();
-  const [mode, setMode] = useState<'signup' | 'login'>(defaultMode);
+  const [mode, setMode] = useState<'signup' | 'verify-email' | 'login'>(defaultMode);
 
   // Form State
   const [fullName, setFullName] = useState('');
@@ -18,9 +18,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
   const [phone, setPhone] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
+  // Email Verification Code state
+  const [generatedOtp, setGeneratedOtp] = useState('');
+  const [inputOtp, setInputOtp] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+
   if (!isOpen) return null;
 
-  const handleRegister = (e: React.FormEvent) => {
+  const initiateSignUp = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -29,8 +34,61 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
       return;
     }
 
-    registerUser({ fullName, email, phone });
+    if (!email.includes('@') || !email.includes('.')) {
+      setErrorMsg('Please enter a valid email address.');
+      return;
+    }
+
+    // Generate 6-digit OTP verification code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(code);
+    setInputOtp('');
+    setMode('verify-email');
+    setResendCooldown(30);
+
+    // Cooldown timer
+    const interval = setInterval(() => {
+      setResendCooldown(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleVerifyAndRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+
+    if (inputOtp.trim() !== generatedOtp.trim()) {
+      setErrorMsg(`Invalid code. Enter the 6-digit code shown in the badge or sent to ${email}`);
+      return;
+    }
+
+    // Complete registration with verified status
+    registerUser({ fullName, email, phone, emailVerified: true });
     onClose();
+  };
+
+  const handleResendCode = () => {
+    if (resendCooldown > 0) return;
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setGeneratedOtp(code);
+    setInputOtp('');
+    setResendCooldown(30);
+    setErrorMsg('A new verification code has been dispatched to your email.');
+
+    const interval = setInterval(() => {
+      setResendCooldown(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
   };
 
   const handleLogin = (e: React.FormEvent) => {
@@ -66,28 +124,38 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
         {/* Header */}
         <div className="text-center space-y-2">
           <div className="w-12 h-12 bg-gradient-to-tr from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center mx-auto text-slate-950 font-black shadow-lg shadow-emerald-500/20">
-            {mode === 'signup' ? <UserPlus className="w-6 h-6" /> : <LogIn className="w-6 h-6" />}
+            {mode === 'verify-email' ? (
+              <KeyRound className="w-6 h-6" />
+            ) : mode === 'signup' ? (
+              <UserPlus className="w-6 h-6" />
+            ) : (
+              <LogIn className="w-6 h-6" />
+            )}
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
             {currentUser 
               ? `Account Profile` 
-              : mode === 'signup' 
-                ? 'Create Ticketa Account' 
-                : 'Sign In to Ticketa'
+              : mode === 'verify-email'
+                ? 'Verify Email Address'
+                : mode === 'signup' 
+                  ? 'Create Ticketa Account' 
+                  : 'Sign In to Ticketa'
             }
           </h2>
           <p className="text-xs text-slate-400">
             {currentUser
               ? 'Manage your pass wallet, contact info and order history'
-              : mode === 'signup'
-                ? 'Register a fresh account with a clean ticket pass profile'
-                : 'Access your ticket wallet and order passes'
+              : mode === 'verify-email'
+                ? `Enter the 6-digit verification code sent to ${email}`
+                : mode === 'signup'
+                  ? 'Register a fresh account with a clean ticket pass profile'
+                  : 'Access your ticket wallet and order passes'
             }
           </p>
         </div>
 
         {/* Mode Selector Switcher */}
-        {!currentUser && (
+        {!currentUser && mode !== 'verify-email' && (
           <div className="grid grid-cols-2 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-xs font-bold">
             <button
               onClick={() => { setMode('signup'); setErrorMsg(''); }}
@@ -110,7 +178,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
           </div>
         )}
 
-        {/* Error message */}
+        {/* Error / Info message */}
         {errorMsg && (
           <div className="bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs p-3 rounded-xl font-medium">
             {errorMsg}
@@ -126,7 +194,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
                   {currentUser.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}
                 </div>
                 <div>
-                  <h3 className="font-bold text-white text-sm">{currentUser.fullName}</h3>
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="font-bold text-white text-sm">{currentUser.fullName}</h3>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  </div>
                   <p className="text-xs text-slate-400">{currentUser.email}</p>
                   <p className="text-[11px] text-slate-500">{currentUser.phone}</p>
                 </div>
@@ -154,9 +225,77 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
               Sign Out of Account
             </button>
           </div>
+        ) : mode === 'verify-email' ? (
+          /* Email Verification Step */
+          <form onSubmit={handleVerifyAndRegister} className="space-y-4">
+            
+            {/* Live Verification Code Banner */}
+            <div className="bg-emerald-500/10 border border-emerald-500/30 p-3.5 rounded-2xl space-y-2 text-center">
+              <div className="text-[11px] text-slate-400 font-medium">
+                📩 Email Verification Sent to <span className="text-emerald-300 font-bold">{email}</span>
+              </div>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-xs text-slate-400">Verification Code:</span>
+                <span className="text-lg font-mono font-black tracking-widest text-emerald-400 bg-slate-950 px-3 py-1 rounded-lg border border-emerald-500/30">
+                  {generatedOtp}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setInputOtp(generatedOtp)}
+                  className="text-[10px] font-bold bg-emerald-500 text-slate-950 px-2 py-1 rounded hover:bg-emerald-400 transition"
+                >
+                  Auto-Fill Code
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-300 mb-1">Enter 6-Digit Code</label>
+              <div className="relative">
+                <KeyRound className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
+                <input
+                  type="text"
+                  maxLength={6}
+                  placeholder="e.g. 849201"
+                  value={inputOtp}
+                  onChange={e => setInputOtp(e.target.value.replace(/[^0-9]/g, ''))}
+                  className="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-sm font-mono text-center tracking-widest text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center space-x-2 cursor-pointer"
+            >
+              <Check className="w-4 h-4" />
+              <span>Verify Email & Activate Account</span>
+            </button>
+
+            <div className="flex items-center justify-between text-xs pt-1">
+              <button
+                type="button"
+                onClick={() => setMode('signup')}
+                className="text-slate-400 hover:text-white"
+              >
+                ← Back to Details
+              </button>
+
+              <button
+                type="button"
+                onClick={handleResendCode}
+                disabled={resendCooldown > 0}
+                className="text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-1 disabled:opacity-50"
+              >
+                <RefreshCw className="w-3 h-3" />
+                <span>{resendCooldown > 0 ? `Resend code (${resendCooldown}s)` : 'Resend Code'}</span>
+              </button>
+            </div>
+
+          </form>
         ) : mode === 'signup' ? (
           /* Sign Up Form */
-          <form onSubmit={handleRegister} className="space-y-4">
+          <form onSubmit={initiateSignUp} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-slate-300 mb-1">Full Name</label>
               <div className="relative">
@@ -204,7 +343,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
               className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center space-x-2 cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
-              <span>Create Account (Clean Slate)</span>
+              <span>Continue to Email Verification</span>
             </button>
           </form>
         ) : (

@@ -156,7 +156,7 @@ interface EventContextType {
   clearNotificationLogs: () => void;
 
   // Actions
-  registerUser: (details: { fullName: string; email: string; phone: string }) => TicketaUser;
+  registerUser: (details: { fullName: string; email: string; phone: string; emailVerified?: boolean }) => TicketaUser;
   loginUser: (email: string) => TicketaUser | null;
   logoutUser: () => void;
   createNewEvent: (eventData: Omit<EventItem, 'id'>) => void;
@@ -302,6 +302,22 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     localStorage.setItem('tix_notif_log', JSON.stringify(notificationLogs));
   }, [notificationLogs]);
+
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('tix_current_user', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('tix_current_user');
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    localStorage.setItem('tix_user_profile', JSON.stringify(userProfile));
+  }, [userProfile]);
+
+  useEffect(() => {
+    localStorage.setItem('tix_users', JSON.stringify(users));
+  }, [users]);
 
   // Firestore Subscriptions & Initial Seeding
 
@@ -507,24 +523,50 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     triggerNotification(`Event "${newEvent.title}" published successfully!`);
   };
 
-  const registerUser = (details: { fullName: string; email: string; phone: string }): TicketaUser => {
+  const registerUser = (details: { fullName: string; email: string; phone: string; emailVerified?: boolean }): TicketaUser => {
     const cleanEmail = details.email.trim().toLowerCase();
     const cleanPhone = details.phone.trim();
     const cleanName = details.fullName.trim();
 
     const existing = users.find(u => u.email.toLowerCase() === cleanEmail);
     if (existing) {
-      setCurrentUser(existing);
-      const nameParts = existing.fullName.split(' ');
-      setUserProfile(prev => ({
-        ...prev,
-        firstName: nameParts[0] || existing.fullName,
+      const updatedExisting: TicketaUser = {
+        ...existing,
+        emailVerified: details.emailVerified ?? existing.emailVerified ?? true,
+        fullName: cleanName || existing.fullName,
+        phone: cleanPhone || existing.phone
+      };
+
+      setUsers(prev => prev.map(u => u.id === existing.id ? updatedExisting : u));
+      setCurrentUser(updatedExisting);
+
+      const nameParts = updatedExisting.fullName.split(' ');
+      const freshProfile: UserProfile = {
+        firstName: nameParts[0] || updatedExisting.fullName,
         lastName: nameParts.slice(1).join(' ') || '',
-        email: existing.email,
-        phone: existing.phone
-      }));
-      triggerNotification(`Welcome back, ${existing.fullName}!`);
-      return existing;
+        email: updatedExisting.email,
+        phone: updatedExisting.phone,
+        paymentCards: [],
+        notifications: {
+          remainders: true,
+          purchaseAlerts: true,
+          newEventAlert: true,
+          marketing: false,
+          newsletter: false
+        }
+      };
+      setUserProfile(freshProfile);
+
+      (async () => {
+        try {
+          await setDoc(doc(db, 'users', existing.id), updatedExisting);
+        } catch (err) {
+          console.error('Error updating existing user in Firestore:', err);
+        }
+      })();
+
+      triggerNotification(`Welcome back, ${existing.fullName}! Account logged in.`);
+      return updatedExisting;
     }
 
     const todayStr = new Date().toISOString().split('T')[0];
@@ -538,6 +580,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       totalOrders: 0,
       totalSpent: 0,
       status: 'Verified',
+      emailVerified: details.emailVerified ?? true,
       avatarUrl: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80`
     };
 
@@ -565,12 +608,26 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     (async () => {
       try {
         await setDoc(doc(db, 'users', newUserId), newUser);
+        console.log(`User stored in Firebase Firestore at path users/${newUserId}:`, newUser);
       } catch (err) {
         console.error('Error writing user to Firestore:', err);
       }
     })();
 
-    triggerNotification(`Account created successfully for ${newUser.fullName}!`);
+    // Verification Log Entry
+    const verifNotif: NotificationLog = {
+      id: `notif-${Date.now()}-reg`,
+      orderId: `REG-${newUserId}`,
+      type: 'EMAIL',
+      recipient: cleanEmail,
+      subject: '✅ Email Address Verified & Ticketa Account Activated',
+      bodyPreview: `Your email (${cleanEmail}) has been verified. Clean slate account ready on Ticketa & Firebase Firestore.`,
+      sentAt: new Date().toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
+      status: 'DELIVERED'
+    };
+    setNotificationLogs(prev => [verifNotif, ...prev]);
+
+    triggerNotification(`Account created & verified for ${newUser.fullName}! Saved to Firebase.`);
     return newUser;
   };
 

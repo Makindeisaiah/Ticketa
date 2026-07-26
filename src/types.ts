@@ -87,6 +87,7 @@ export interface TicketaUser {
   totalOrders: number;
   totalSpent: number;
   status: 'Active' | 'Verified';
+  emailVerified?: boolean;
   avatarUrl?: string;
   lastPurchaseDate?: string;
 }
