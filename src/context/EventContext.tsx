@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   EventItem, Order, TicketPass, PlatformType, PromoCode, 
-  UserProfile, PaymentCard, TicketaUser, OfflineScanRecord, NotificationLog 
+  UserProfile, PaymentCard, TicketaUser, OfflineScanRecord, NotificationLog, QrTicket
 } from '../types';
 import { INITIAL_EVENTS, INITIAL_ORDERS, INITIAL_PROMOS, EVENT_IMAGE_OVERRIDE_MAP } from '../data/mockEvents';
 import { db } from '../lib/firebase';
@@ -149,6 +149,7 @@ interface EventContextType {
   events: EventItem[];
   orders: Order[];
   allTickets: TicketPass[];
+  qrTickets: QrTicket[];
   promos: PromoCode[];
   savedEventIds: string[];
   userProfile: UserProfile;
@@ -233,6 +234,17 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return Array.isArray(list) ? list.slice(0, 20) : INITIAL_ORDERS;
   });
 
+  const [allTickets, setAllTickets] = useState<TicketPass[]>(() => {
+    const saved = localStorage.getItem('tix_all_tickets');
+    if (saved) return JSON.parse(saved);
+    return INITIAL_ORDERS.flatMap(order => order.tickets);
+  });
+
+  const [qrTickets, setQrTickets] = useState<QrTicket[]>(() => {
+    const saved = localStorage.getItem('tix_qr_tickets');
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [promos, setPromos] = useState<PromoCode[]>(() => {
     const saved = localStorage.getItem('tix_promos');
     return saved ? JSON.parse(saved) : INITIAL_PROMOS;
@@ -314,6 +326,8 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     let unsubscribeEvents: () => void;
     let unsubscribeOrders: () => void;
     let unsubscribeUsers: () => void;
+    let unsubscribeTickets: () => void;
+    let unsubscribeQrTickets: () => void;
 
     try {
       // 1. Sync Events from Firestore
@@ -407,6 +421,36 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         console.warn('Firestore users listener error, using local state:', err);
       });
 
+      // 4. Sync Tickets from Firestore
+      const ticketsCol = collection(db, 'tickets');
+      unsubscribeTickets = onSnapshot(ticketsCol, (snapshot) => {
+        if (!snapshot.empty) {
+          const loadedTickets = snapshot.docs.map(docSnap => docSnap.data() as TicketPass);
+          setAllTickets(loadedTickets);
+          localStorage.setItem('tix_all_tickets', JSON.stringify(loadedTickets));
+        } else {
+          // Seed Initial Tickets
+          const allInitial = INITIAL_ORDERS.flatMap(o => o.tickets);
+          allInitial.forEach(async (t) => {
+            await setDoc(doc(db, 'tickets', t.ticketCode), t);
+          });
+        }
+      }, (err) => {
+        console.warn('Firestore tickets listener error:', err);
+      });
+
+      // 5. Sync QR Tickets from Firestore
+      const qrTicketsCol = collection(db, 'qr_tickets');
+      unsubscribeQrTickets = onSnapshot(qrTicketsCol, (snapshot) => {
+        if (!snapshot.empty) {
+          const loadedQr = snapshot.docs.map(docSnap => docSnap.data() as QrTicket);
+          setQrTickets(loadedQr);
+          localStorage.setItem('tix_qr_tickets', JSON.stringify(loadedQr));
+        }
+      }, (err) => {
+        console.warn('Firestore qr_tickets listener error:', err);
+      });
+
     } catch (e) {
       console.error('Failed to connect to Firestore:', e);
     }
@@ -415,6 +459,8 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (unsubscribeEvents) unsubscribeEvents();
       if (unsubscribeOrders) unsubscribeOrders();
       if (unsubscribeUsers) unsubscribeUsers();
+      if (unsubscribeTickets) unsubscribeTickets();
+      if (unsubscribeQrTickets) unsubscribeQrTickets();
     };
   }, []);
 
@@ -450,11 +496,6 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     localStorage.setItem('tix_user_profile', JSON.stringify(userProfile));
   }, [userProfile]);
-
-  // Derived list of all tickets
-  const allTickets = React.useMemo(() => {
-    return orders.flatMap(order => order.tickets);
-  }, [orders]);
 
   const triggerNotification = (text: string) => {
     setActiveNotification(text);
@@ -658,8 +699,22 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         await setDoc(doc(db, 'orders', orderId), newOrder);
         await setDoc(doc(db, 'events', eventId), updatedEventObj);
         await setDoc(doc(db, 'users', targetUser.id), targetUser);
+        
+        // Save tickets to separate collection
+        for (const t of tickets) {
+          await setDoc(doc(db, 'tickets', t.ticketCode), t);
+          
+          const qrData: QrTicket = {
+            id: `qr-${t.ticketCode}`,
+            ticketCode: t.ticketCode,
+            eventId: eventObj.id,
+            status: 'VALID',
+            qrData: JSON.stringify({ code: t.ticketCode, eventId: eventObj.id, tier: t.tierName })
+          };
+          await setDoc(doc(db, 'qr_tickets', qrData.id), qrData);
+        }
       } catch (err) {
-        console.error('Error writing order/user to Firestore:', err);
+        console.error('Error writing records to Firestore:', err);
       }
     })();
 
@@ -742,6 +797,22 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           });
           const updatedOrder = { ...foundOrder, tickets: updatedTickets };
           await setDoc(doc(db, 'orders', foundOrder.id), updatedOrder);
+          
+          const t = updatedTickets.find(t => t.ticketCode === record.ticketCode);
+          if (t) {
+            await setDoc(doc(db, 'tickets', t.ticketCode), t);
+            
+            const qrTicketRef = doc(db, 'qr_tickets', `qr-${t.ticketCode}`);
+            await setDoc(qrTicketRef, {
+              id: `qr-${t.ticketCode}`,
+              ticketCode: t.ticketCode,
+              eventId: t.eventId,
+              status: 'CHECKED_IN',
+              qrData: JSON.stringify({ code: t.ticketCode, eventId: t.eventId, tier: t.tierName }),
+              scannedAt: record.scannedAt,
+              assignedGate: record.gateName
+            }, { merge: true });
+          }
         }
         syncedCount++;
       } catch (e) {
@@ -875,6 +946,19 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     (async () => {
       try {
         await setDoc(doc(db, 'orders', targetOrder!.id), updatedOrder);
+        await setDoc(doc(db, 'tickets', updatedTicket.ticketCode), updatedTicket);
+        
+        const qrTicketRef = doc(db, 'qr_tickets', `qr-${updatedTicket.ticketCode}`);
+        await setDoc(qrTicketRef, {
+          id: `qr-${updatedTicket.ticketCode}`,
+          ticketCode: updatedTicket.ticketCode,
+          eventId: updatedTicket.eventId,
+          status: 'CHECKED_IN',
+          qrData: JSON.stringify({ code: updatedTicket.ticketCode, eventId: updatedTicket.eventId, tier: updatedTicket.tierName }),
+          scannedAt: nowStr,
+          assignedGate: gateName
+        }, { merge: true });
+        
       } catch (err) {
         console.error('Error updating ticket check-in in Firestore:', err);
       }
@@ -972,8 +1056,12 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       for (const evt of INITIAL_EVENTS) {
         await setDoc(doc(db, 'events', evt.id), evt);
       }
+      const initialAllTickets = INITIAL_ORDERS.flatMap(o => o.tickets);
       for (const ord of INITIAL_ORDERS) {
         await setDoc(doc(db, 'orders', ord.id), ord);
+      }
+      for (const t of initialAllTickets) {
+        await setDoc(doc(db, 'tickets', t.ticketCode), t);
       }
     } catch (e) {
       console.error('Error resetting Firestore data:', e);
@@ -1007,6 +1095,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         events,
         orders,
         allTickets,
+        qrTickets,
         promos,
         savedEventIds,
         userProfile,

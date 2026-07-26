@@ -46,8 +46,24 @@
         "tierName": { "type": "string", "description": "Ticket tier name" },
         "attendeeName": { "type": "string", "description": "Attendee full name" },
         "attendeeEmail": { "type": "string", "description": "Attendee email" },
+        "attendeePhone": { "type": "string", "description": "Attendee phone" },
+        "pricePaid": { "type": "number", "description": "Price paid" },
         "ticketCode": { "type": "string", "description": "Unique ticket code" },
-        "isCheckedIn": { "type": "boolean", "description": "Check-in status" }
+        "status": { "type": "string", "description": "Status" },
+        "checkedInAt": { "type": "string", "description": "Check-in timestamp" },
+        "scannedByGate": { "type": "string", "description": "Gate name" }
+      }
+    },
+    "qr_tickets": {
+      "title": "QR Tickets",
+      "description": "QR Ticket payload and fast-scan records",
+      "properties": {
+        "ticketCode": { "type": "string", "description": "Unique ticket code" },
+        "eventId": { "type": "string", "description": "Event ID" },
+        "status": { "type": "string", "description": "Status (VALID, CHECKED_IN, CANCELLED)" },
+        "qrData": { "type": "string", "description": "Payload data for QR generation" },
+        "assignedGate": { "type": "string", "description": "Gate assigned for check-in" },
+        "scannedAt": { "type": "string", "description": "When the QR was scanned" }
       }
     },
     "users": {
@@ -67,6 +83,8 @@
   "firestore": {
     "/events/{eventId}": { "schema": "events", "description": "Platform events" },
     "/orders/{orderId}": { "schema": "orders", "description": "Ticket orders" },
+    "/tickets/{ticketId}": { "schema": "tickets", "description": "Purchased tickets" },
+    "/qr_tickets/{qrTicketId}": { "schema": "qr_tickets", "description": "QR scan records and payloads" },
     "/users/{userId}": { "schema": "users", "description": "User profiles" }
   }
 }

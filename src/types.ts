@@ -118,6 +118,16 @@ export interface PromoCode {
   usedCount: number;
 }
 
+export interface QrTicket {
+  id: string;
+  ticketCode: string;
+  eventId: string;
+  status: 'VALID' | 'CHECKED_IN' | 'CANCELLED';
+  qrData: string;
+  assignedGate?: string;
+  scannedAt?: string;
+}
+
 export interface OfflineScanRecord {
   id: string;
   ticketCode: string;
