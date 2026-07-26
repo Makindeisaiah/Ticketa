@@ -17,6 +17,7 @@ import { CreateEventModal } from './CreateEventModal';
 import { RevenueWithdrawModal } from './RevenueWithdrawModal';
 import { OrganizerCheckInModal } from './OrganizerCheckInModal';
 import { NotificationCenterModal } from '../NotificationCenterModal';
+import { ThermalPrinterModal } from '../ThermalPrinterModal';
 
 export const OrganizerDashboard: React.FC = () => {
   const { 
@@ -56,6 +57,7 @@ export const OrganizerDashboard: React.FC = () => {
   const [isCheckInModalOpen, setIsCheckInModalOpen] = useState(false);
   const [checkInModalMode, setCheckInModalMode] = useState<'scan' | 'manual'>('scan');
   const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
+  const [isPrinterModalOpen, setIsPrinterModalOpen] = useState(false);
 
   const handleOpenCheckInModal = (mode: 'scan' | 'manual' = 'scan') => {
     setCheckInModalMode(mode);
@@ -126,6 +128,7 @@ export const OrganizerDashboard: React.FC = () => {
           onCreateEventClick={handleOpenCreateModal}
           onSeedLiveSales={seedLiveSales}
           onOpenNotifs={() => setIsNotifModalOpen(true)}
+          onOpenPrinter={() => setIsPrinterModalOpen(true)}
           onLogout={handleLogout}
           organizerName={organizerAuth.name}
           organizerEmail={organizerAuth.email}
@@ -224,6 +227,13 @@ export const OrganizerDashboard: React.FC = () => {
       <NotificationCenterModal
         isOpen={isNotifModalOpen}
         onClose={() => setIsNotifModalOpen(false)}
+      />
+
+      {/* Thermal Wristband & Badge Printer Modal */}
+      <ThermalPrinterModal
+        isOpen={isPrinterModalOpen}
+        onClose={() => setIsPrinterModalOpen(false)}
+        selectedTicket={allTickets[0]}
       />
 
     </div>

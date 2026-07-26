@@ -7,9 +7,9 @@ import {
   Smartphone, Ticket, MapPin, Compass, Calendar, 
   Bookmark, Search, Clock, ArrowLeft, CheckCircle2, 
   User, CreditCard, Bell, ChevronRight, Share2, Plus, Trash2, 
-  Tag, Shield, AlertCircle, X, Sparkles, Filter, Check, FileText, Mail
+  Tag, Shield, AlertCircle, X, Sparkles, Filter, Check, FileText, Mail, Printer
 } from 'lucide-react';
-import { exportTicketAsPdf, exportTicketToAppleWallet } from '../../utils/ticketExporter';
+import { exportTicketAsPdf, exportTicketToAppleWallet, printThermalWristband } from '../../utils/ticketExporter';
 
 export const AttendeeMobile: React.FC = () => {
   const { 
@@ -490,6 +490,14 @@ export const AttendeeMobile: React.FC = () => {
                             >
                               <Smartphone className="w-3.5 h-3.5 text-indigo-400" />
                               <span>SMS Pass</span>
+                            </button>
+
+                            <button
+                              onClick={() => printThermalWristband(activeTicketObj, { format: 'WRISTBAND_1X11' })}
+                              className="col-span-2 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-xl text-[11px] font-bold flex items-center justify-center space-x-1 transition cursor-pointer"
+                            >
+                              <Printer className="w-3.5 h-3.5 text-amber-400" />
+                              <span>Print Thermal Wristband</span>
                             </button>
                           </div>
                         </div>

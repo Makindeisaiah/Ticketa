@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Bell, Menu, X, ArrowLeft, ChevronDown, Sparkles, Plus, LogOut, User, Mail } from 'lucide-react';
+import { Search, Bell, Menu, X, ArrowLeft, ChevronDown, Sparkles, Plus, LogOut, User, Mail, Printer } from 'lucide-react';
 
 interface OrganizerHeaderProps {
   searchQuery: string;
@@ -10,6 +10,7 @@ interface OrganizerHeaderProps {
   onCreateEventClick?: () => void;
   onSeedLiveSales?: () => void;
   onOpenNotifs?: () => void;
+  onOpenPrinter?: () => void;
   onLogout?: () => void;
   organizerName?: string;
   organizerEmail?: string;
@@ -24,6 +25,7 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
   onCreateEventClick,
   onSeedLiveSales,
   onOpenNotifs,
+  onOpenPrinter,
   onLogout,
   organizerName = 'Flytimefest Ltd',
   organizerEmail = 'info@flytimefest.com'
@@ -111,6 +113,18 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
             >
               <Mail className="w-3.5 h-3.5 text-blue-600" />
               <span className="hidden sm:inline">Dispatch Logs</span>
+            </button>
+          )}
+
+          {/* Thermal Printer Trigger */}
+          {onOpenPrinter && (
+            <button
+              onClick={onOpenPrinter}
+              className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-bold flex items-center space-x-1.5 transition cursor-pointer"
+              title="Thermal Wristband & Badge Printer Controls"
+            >
+              <Printer className="w-3.5 h-3.5 text-amber-600" />
+              <span className="hidden sm:inline">Wristband Printer</span>
             </button>
           )}
 

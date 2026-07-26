@@ -9,9 +9,9 @@ import {
   Sparkles, CheckCircle2, ArrowRight, X, Clock, Users, ChevronRight,
   Filter, Lock, Share2, Bookmark, Download, ExternalLink, QrCode,
   Building2, ChevronDown, Check, AlertCircle, ArrowLeft, Copy, Smartphone,
-  RefreshCw, Layers, FileText, Mail
+  RefreshCw, Layers, FileText, Mail, Printer
 } from 'lucide-react';
-import { exportTicketAsPdf, exportTicketToAppleWallet } from '../../utils/ticketExporter';
+import { exportTicketAsPdf, exportTicketToAppleWallet, printThermalWristband } from '../../utils/ticketExporter';
 
 export const AttendeeWeb: React.FC = () => {
   const { events, purchaseTickets, orders, promos, toggleSaveEvent, savedEventIds, setCurrentPlatform, sendTicketEmail, sendTicketSms } = useEventContext();
@@ -1400,6 +1400,15 @@ export const AttendeeWeb: React.FC = () => {
                                 >
                                   <Smartphone className="w-3.5 h-3.5 text-indigo-400" />
                                   <span>SMS Pass</span>
+                                </button>
+
+                                <button
+                                  onClick={() => printThermalWristband(tkt, { format: 'WRISTBAND_1X11' })}
+                                  className="px-2.5 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-xl text-[11px] font-bold flex items-center space-x-1 transition cursor-pointer"
+                                  title="Print Thermal Event Wristband / Badge"
+                                >
+                                  <Printer className="w-3.5 h-3.5 text-amber-400" />
+                                  <span>Wristband Print</span>
                                 </button>
                               </div>
                             </div>

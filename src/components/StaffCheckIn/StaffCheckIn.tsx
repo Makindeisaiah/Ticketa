@@ -4,6 +4,8 @@ import { TicketPass } from '../../types';
 import { Html5Qrcode } from 'html5-qrcode';
 import { CameraScannerFeed } from '../CameraScannerFeed';
 import { NotificationCenterModal } from '../NotificationCenterModal';
+import { ThermalPrinterModal } from '../ThermalPrinterModal';
+import { printThermalWristband } from '../../utils/ticketExporter';
 import { 
   QrCode, Camera, CheckCircle2, XCircle, Search, ShieldCheck, 
   Volume2, Users, RefreshCw, Zap, AlertTriangle, ChevronRight, 
@@ -32,6 +34,9 @@ export const StaffCheckIn: React.FC = () => {
 
   const [showSyncQueueModal, setShowSyncQueueModal] = useState(false);
   const [showNotifModal, setShowNotifModal] = useState(false);
+  const [showPrinterModal, setShowPrinterModal] = useState(false);
+  const [autoPrintWristband, setAutoPrintWristband] = useState(false);
+  const [activePrinterTicket, setActivePrinterTicket] = useState<TicketPass | undefined>(undefined);
   const [isSyncing, setIsSyncing] = useState(false);
 
 
@@ -173,6 +178,13 @@ export const StaffCheckIn: React.FC = () => {
         },
         ...prev
       ]);
+    }
+
+    if (res.success && res.ticket) {
+      setActivePrinterTicket(res.ticket);
+      if (autoPrintWristband) {
+        printThermalWristband(res.ticket, { format: 'WRISTBAND_1X11', gateName: assignedGate });
+      }
     }
 
     setLastScanResult({
@@ -623,6 +635,25 @@ export const StaffCheckIn: React.FC = () => {
               <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">
                 {notificationLogs.length}
               </span>
+            </button>
+
+            {/* Thermal Wristband Printer Trigger */}
+            <button
+              onClick={() => setShowPrinterModal(true)}
+              className={`px-3 py-1.5 border rounded-xl font-bold flex items-center space-x-1.5 transition cursor-pointer ${
+                autoPrintWristband 
+                  ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20' 
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200'
+              }`}
+              title="Thermal Wristband & Badge Printer Controls"
+            >
+              <Printer className="w-4 h-4 text-amber-600" />
+              <span className="hidden sm:inline">Wristband Printer</span>
+              {autoPrintWristband && (
+                <span className="bg-slate-950 text-amber-400 text-[9px] px-1.5 py-0.2 rounded-full uppercase font-black">
+                  Auto
+                </span>
+              )}
             </button>
 
             <div className="hidden lg:flex items-center space-x-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
@@ -1889,10 +1920,21 @@ export const StaffCheckIn: React.FC = () => {
             )}
 
             {/* Actions */}
-            <div className="flex items-center space-x-3 pt-2">
+            <div className="grid grid-cols-2 gap-2 pt-2">
+              {lastScanResult.success && lastScanResult.ticket && (
+                <button
+                  onClick={() => printThermalWristband(lastScanResult.ticket!, { format: 'WRISTBAND_1X11', gateName: assignedGate })}
+                  className="py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-black text-xs transition shadow-lg shadow-amber-500/20 flex items-center justify-center space-x-1.5 cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Print Wristband</span>
+                </button>
+              )}
               <button
                 onClick={() => setLastScanResult(null)}
-                className={`w-full py-3 rounded-xl font-black text-xs transition shadow-lg flex items-center justify-center space-x-2 cursor-pointer ${
+                className={`py-3 rounded-xl font-black text-xs transition shadow-lg flex items-center justify-center space-x-2 cursor-pointer ${
+                  lastScanResult.success && lastScanResult.ticket ? 'col-span-1' : 'col-span-2'
+                } ${
                   lastScanResult.success 
                     ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/20' 
                     : 'bg-slate-800 hover:bg-slate-700 text-white'
@@ -2006,6 +2048,15 @@ export const StaffCheckIn: React.FC = () => {
         </div>
       )}
 
+      {/* Thermal Printer Control & Preview Modal */}
+      <ThermalPrinterModal
+        isOpen={showPrinterModal}
+        onClose={() => setShowPrinterModal(false)}
+        selectedTicket={activePrinterTicket || allTickets[0]}
+        autoPrintEnabled={autoPrintWristband}
+        onToggleAutoPrint={(enabled) => setAutoPrintWristband(enabled)}
+        gateName={assignedGate}
+      />
 
     </div>
   );
