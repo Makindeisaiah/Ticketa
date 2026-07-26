@@ -21,6 +21,11 @@ import {
   ExternalLink,
   Copy,
   Check,
+  Ticket,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
   LogOut
 } from 'lucide-react';
 
@@ -42,6 +47,7 @@ interface SettingsTabProps {
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
   const [activeSubpage, setActiveSubpage] = useState<SettingsSubpage>('grid');
+  const [paymentsTab, setPaymentsTab] = useState<'overview' | 'payouts' | 'refunds'>('overview');
 
   // Organization Info State
   const [orgName, setOrgName] = useState('Flytimefest');
@@ -562,46 +568,408 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
       )}
 
       {/* SUBPAGE 4: Payments & Payouts */}
+      {/* SUBPAGE 4: Payments & Payouts */}
       {activeSubpage === 'payments-payouts' && (
         <div className="space-y-6">
-          <button onClick={() => setActiveSubpage('grid')} className="hover:text-[#00C896] flex items-center gap-1 text-xs font-bold text-slate-500">
-            <ArrowLeft className="w-3.5 h-3.5" /> Back to Settings / Payments & Payouts
-          </button>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-              <span className="text-[10px] font-bold uppercase text-slate-400">Available Balance</span>
-              <div className="text-lg font-black text-[#00C896] font-mono mt-1">₦ 1,789,896,000</div>
-            </div>
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-              <span className="text-[10px] font-bold uppercase text-slate-400">Pending Balance</span>
-              <div className="text-lg font-black text-amber-600 font-mono mt-1">₦ 389,896,000</div>
-            </div>
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-              <span className="text-[10px] font-bold uppercase text-slate-400">Total Earning</span>
-              <div className="text-lg font-black text-slate-900 font-mono mt-1">₦ 3,368,896,000</div>
-            </div>
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-              <span className="text-[10px] font-bold uppercase text-slate-400">Next Payout Date</span>
-              <div className="text-sm font-black text-slate-900 mt-1">January 18, 2025</div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-            <h3 className="text-base font-extrabold text-slate-900">Payout Destination Bank Account</h3>
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
-              <div>
-                <div className="font-extrabold text-slate-900">GTBank **** 5399</div>
-                <div className="text-[10px] text-slate-500">Account Holder: Flytimefest Ltd</div>
-              </div>
-              <button className="px-3 py-1.5 border border-slate-200 bg-white font-bold rounded-lg hover:bg-slate-100">
-                Edit Bank
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4 border-b border-slate-200 w-full sm:w-auto">
+              <button 
+                onClick={() => setPaymentsTab('overview')} 
+                className={`pb-3 px-1 text-sm font-bold border-b-2 transition ${paymentsTab === 'overview' ? 'border-[#00C896] text-[#00C896]' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+              >
+                Overview
+              </button>
+              <button 
+                onClick={() => setPaymentsTab('payouts')} 
+                className={`pb-3 px-1 text-sm font-bold border-b-2 transition ${paymentsTab === 'payouts' ? 'border-[#00C896] text-[#00C896]' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+              >
+                Payouts
+              </button>
+              <button 
+                onClick={() => setPaymentsTab('refunds')} 
+                className={`pb-3 px-1 text-sm font-bold border-b-2 transition ${paymentsTab === 'refunds' ? 'border-[#00C896] text-[#00C896]' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+              >
+                Refunds & Fees
               </button>
             </div>
+            
+            <button onClick={() => setActiveSubpage('grid')} className="hover:text-[#00C896] flex items-center gap-1 text-xs font-bold text-slate-500">
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to Settings
+            </button>
           </div>
+
+          {paymentsTab === 'overview' && (
+            <div className="space-y-6">
+              {/* QuickPay Banner */}
+              <div className="bg-emerald-100 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-purple-600 rounded flex items-center justify-center text-white font-black text-xs">QP</div>
+                  <span className="text-emerald-900 font-semibold text-sm">QuickPay is connected for processing payments</span>
+                </div>
+                <button className="px-4 py-2 bg-[#00C896] text-white rounded-xl text-xs font-bold hover:bg-[#00b386] transition shrink-0">
+                  Manage QuickPay Account
+                </button>
+              </div>
+
+              {/* Metrics */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-center">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-full bg-[#00C896]/10 flex items-center justify-center text-[#00C896]"><Ticket className="w-4 h-4" /></div>
+                    <span className="text-[10px] font-bold uppercase text-slate-500">Available Balance</span>
+                  </div>
+                  <div className="text-xl font-black text-slate-900 font-mono">₦1,789,896,000</div>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-center">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-full bg-[#00C896]/10 flex items-center justify-center text-[#00C896]"><CheckCircle2 className="w-4 h-4" /></div>
+                    <span className="text-[10px] font-bold uppercase text-slate-500">Pending Balance</span>
+                  </div>
+                  <div className="text-xl font-black text-slate-900 font-mono">₦389,896,000</div>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-center">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-full bg-[#00C896]/10 flex items-center justify-center text-[#00C896]"><Receipt className="w-4 h-4" /></div>
+                    <span className="text-[10px] font-bold uppercase text-slate-500">Total Earning</span>
+                  </div>
+                  <div className="text-xl font-black text-slate-900 font-mono">₦3,368,896,000</div>
+                </div>
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-center">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-8 h-8 rounded-full bg-[#00C896]/10 flex items-center justify-center text-[#00C896]"><Clock className="w-4 h-4" /></div>
+                    <span className="text-[10px] font-bold uppercase text-slate-500">Next Payout Date</span>
+                  </div>
+                  <div className="text-sm font-black text-slate-900 mt-1">January 18, 2025</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Col */}
+                <div className="space-y-6">
+                  {/* Payment Gateways */}
+                  <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
+                    <h3 className="text-base font-extrabold text-slate-900">Payment Gateways</h3>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-purple-600 rounded-xl flex items-center justify-center text-white font-black text-sm">QP</div>
+                        <span className="font-extrabold text-slate-900">QuickPay</span>
+                      </div>
+                      <button className="px-4 py-2 bg-[#00C896] text-white rounded-xl text-xs font-bold hover:bg-[#00b386] transition">Manage</button>
+                    </div>
+                    <p className="text-xs text-slate-500 font-semibold">Connected gateway that processes ticket payments.</p>
+                  </div>
+
+                  {/* Payout Destination */}
+                  <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
+                    <h3 className="text-base font-extrabold text-slate-900">Payout Destination</h3>
+                    <div className="flex items-center justify-between border border-slate-200 p-4 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-orange-600 rounded flex items-center justify-center text-white text-[10px] font-bold">GTBank</div>
+                        <div>
+                          <div className="font-extrabold text-slate-900 text-sm">GTBank **** 5399</div>
+                          <div className="text-xs text-slate-500">Account Holder: Flytimefest Ltd.</div>
+                        </div>
+                      </div>
+                      <button className="px-3 py-1.5 bg-[#00C896] text-white rounded-lg text-xs font-bold hover:bg-[#00b386] transition">Edit</button>
+                    </div>
+                    <div className="bg-emerald-50 text-emerald-700 p-3 rounded-xl text-xs font-bold flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4" /> Payment secured and encrypted via QuickPay
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Col */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
+                  <h3 className="text-base font-extrabold text-slate-900 mb-4">Payment History</h3>
+                  <div className="flex items-center justify-between gap-4 mb-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input type="text" placeholder="Search payouts..." className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#00C896]" />
+                    </div>
+                    <select className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none text-slate-600 outline-none">
+                      <option>Filter: All</option>
+                    </select>
+                  </div>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs font-semibold text-slate-700 border-collapse">
+                      <thead>
+                        <tr className="bg-[#00C896] text-white uppercase text-[10px] tracking-wider">
+                          <th className="px-3 py-2 font-extrabold rounded-l-lg">Date</th>
+                          <th className="px-3 py-2 font-extrabold">Amount</th>
+                          <th className="px-3 py-2 font-extrabold">Bank Account</th>
+                          <th className="px-3 py-2 font-extrabold">Status</th>
+                          <th className="px-3 py-2 font-extrabold text-center rounded-r-lg"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {[
+                          { date: 'Nov 19, 2025', amount: '₦1,466,866,000', bank: 'GTBank **** 5399', status: 'Pending' },
+                          { date: 'Oct 10, 2025', amount: '₦850,538,000', bank: 'GTBank **** 5399', status: 'Paid' },
+                          { date: 'July 30, 2025', amount: '₦904,866,000', bank: 'GTBank **** 5399', status: 'Paid' },
+                          { date: 'Mar 27, 2025', amount: '₦450,100,000', bank: 'GTBank **** 5399', status: 'Paid' },
+                        ].map((row, i) => (
+                          <tr key={i} className="hover:bg-slate-50">
+                            <td className="px-3 py-3 text-slate-500">{row.date}</td>
+                            <td className="px-3 py-3 font-mono text-slate-900">{row.amount}</td>
+                            <td className="px-3 py-3">{row.bank}</td>
+                            <td className="px-3 py-3">
+                              <span className={`px-2 py-0.5 rounded-sm text-[10px] font-bold ${row.status === 'Pending' ? 'bg-amber-400 text-white' : 'bg-[#00C896] text-white'}`}>
+                                {row.status}
+                              </span>
+                            </td>
+                            <td className="px-3 py-3 text-center">
+                              <button className="px-3 py-1 bg-[#00C896] text-white rounded text-[10px] font-bold hover:bg-[#00b386]">View</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-slate-500">Showing 1 to 4 of 20</span>
+                    <div className="flex items-center gap-1">
+                      <button className="w-6 h-6 rounded flex items-center justify-center bg-amber-400 text-white"><ChevronLeft className="w-4 h-4" /></button>
+                      <button className="w-6 h-6 rounded flex items-center justify-center bg-[#00C896] text-white font-bold text-[10px]">1</button>
+                      <button className="w-6 h-6 rounded flex items-center justify-center bg-slate-200 text-slate-600 font-bold text-[10px]">2</button>
+                      <button className="w-6 h-6 rounded flex items-center justify-center bg-amber-400 text-white"><ChevronRight className="w-4 h-4" /></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {paymentsTab === 'payouts' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Left Col */}
+              <div className="lg:col-span-5 space-y-6">
+                {/* Payout Settings */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
+                  <h3 className="text-base font-extrabold text-slate-900">Payout Settings</h3>
+                  <div>
+                    <div className="flex items-center gap-2 font-bold text-sm text-slate-900 mb-1">
+                      <Calendar className="w-4 h-4 text-slate-500" /> Post-Event Payout
+                    </div>
+                    <p className="text-[10px] text-slate-500 mb-3 ml-6">Funds are released automatically after your event is completed</p>
+                    <ul className="space-y-1.5 text-xs text-[#00C896] font-bold ml-6">
+                      <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5" /> Funds released 48 hours after event end date</li>
+                      <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5" /> Refund & fees deducted before payout</li>
+                      <li className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5" /> Payout sent to your connected bank account</li>
+                    </ul>
+                  </div>
+                  <div className="bg-emerald-50 text-emerald-700 p-3 rounded-xl text-xs font-bold flex items-center gap-2">
+                    <Lock className="w-4 h-4" /> Funds Locked - Next payout calculated based on event end date
+                  </div>
+                </div>
+
+                {/* Payout Summary */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                  <div className="bg-[#00C896] text-white p-4 font-extrabold text-sm flex items-center gap-2">
+                    <Receipt className="w-4 h-4" /> Total Paid Out
+                  </div>
+                  <div className="p-6 space-y-4">
+                    <div className="text-3xl font-black text-slate-900 font-mono">₦5,784,855,900</div>
+                    <p className="text-xs font-semibold text-slate-500">Next payout calculated on event end date</p>
+                    <div className="bg-emerald-50 text-emerald-700 p-3 rounded-xl text-xs font-bold flex items-center gap-2">
+                      <Lock className="w-4 h-4" /> Funds Locked
+                    </div>
+                    <button className="text-[#00C896] text-[10px] font-bold flex items-center gap-1 hover:underline">
+                      Next payout calculated based on event end date <ChevronRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Col */}
+              <div className="lg:col-span-7 space-y-6">
+                {/* Payout Destination */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
+                  <h3 className="text-base font-extrabold text-slate-900">Payout Destination</h3>
+                  <div className="flex items-center justify-between border border-slate-200 p-4 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-orange-600 rounded flex items-center justify-center text-white text-xs font-bold">GTBank</div>
+                      <div>
+                        <div className="font-extrabold text-slate-900 text-sm">GTBank **** 5399</div>
+                        <div className="text-xs text-slate-500">Flytimefest Ltd.</div>
+                      </div>
+                    </div>
+                    <div className="px-3 py-1 bg-[#00C896] text-white rounded text-xs font-bold">NGN</div>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] font-bold text-slate-400 mb-1">Country</span>
+                    <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
+                      <div className="w-4 h-3 bg-green-600 flex"><div className="w-1/3 bg-white h-full mx-auto" /></div>
+                      Nigeria
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment History */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
+                  <h3 className="text-base font-extrabold text-slate-900 mb-4">Payment History</h3>
+                  <div className="flex items-center justify-between gap-4 mb-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input type="text" placeholder="Search payouts..." className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#00C896]" />
+                    </div>
+                    <select className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none text-slate-600 outline-none">
+                      <option>Filter: All</option>
+                    </select>
+                  </div>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs font-semibold text-slate-700 border-collapse">
+                      <thead>
+                        <tr className="bg-[#00C896] text-white uppercase text-[10px] tracking-wider">
+                          <th className="px-3 py-2 font-extrabold rounded-l-lg">Payout Date</th>
+                          <th className="px-3 py-2 font-extrabold">Amount</th>
+                          <th className="px-3 py-2 font-extrabold">Bank Account</th>
+                          <th className="px-3 py-2 font-extrabold">Status</th>
+                          <th className="px-3 py-2 font-extrabold text-center rounded-r-lg"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {[
+                          { date: 'Nov 19, 2025', amount: '₦1,466,866,000', bank: 'GTBank **** 5399', status: 'Pending' },
+                          { date: 'Oct 10, 2025', amount: '₦850,538,000', bank: 'GTBank **** 5399', status: 'Paid' },
+                          { date: 'July 30, 2025', amount: '₦904,866,000', bank: 'GTBank **** 5399', status: 'Paid' },
+                        ].map((row, i) => (
+                          <tr key={i} className="hover:bg-slate-50">
+                            <td className="px-3 py-3 text-slate-500">{row.date}</td>
+                            <td className="px-3 py-3 font-mono text-slate-900">{row.amount}</td>
+                            <td className="px-3 py-3">{row.bank}</td>
+                            <td className="px-3 py-3">
+                              <span className={`px-2 py-0.5 rounded-sm text-[10px] font-bold ${row.status === 'Pending' ? 'bg-amber-400 text-white' : 'bg-[#00C896] text-white'}`}>
+                                {row.status}
+                              </span>
+                            </td>
+                            <td className="px-3 py-3 text-center">
+                              <button className="px-3 py-1 bg-[#00C896] text-white rounded text-[10px] font-bold hover:bg-[#00b386]">View</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {paymentsTab === 'refunds' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Refund Rules */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-extrabold text-slate-900">Refund Rules</h3>
+                    <button className="px-3 py-1 bg-[#00C896] text-white rounded text-[10px] font-bold hover:bg-[#00b386]">Edit Refund Rules</button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <div className="flex items-center gap-1.5 text-slate-900 font-bold text-sm mb-1">
+                        <Calendar className="w-4 h-4 text-[#00C896]" /> Refund Window
+                      </div>
+                      <div className="text-xs text-slate-500 font-semibold">Up to 1 day before the event</div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5 text-slate-900 font-bold text-sm mb-1">
+                        <Receipt className="w-4 h-4 text-[#00C896]" /> Refund Fees
+                      </div>
+                      <div className="text-xs text-slate-500 font-semibold">Organizer pays refund fees</div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5 text-slate-900 font-bold text-sm mb-1">
+                        <CreditCard className="w-4 h-4 text-[#00C896]" /> Refund Method
+                      </div>
+                      <div className="text-xs text-slate-500 font-semibold">Refund to original payment method</div>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5 text-slate-900 font-bold text-sm mb-1">
+                        <Building2 className="w-4 h-4 text-[#00C896]" /> Partial Refunds
+                      </div>
+                      <div className="text-xs text-slate-500 font-semibold">Allowed (custom amount)</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fees Breakdown */}
+                <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4 flex flex-col justify-center">
+                  <h3 className="text-base font-extrabold text-slate-900">Fees Breakdown</h3>
+                  <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                    <span className="text-sm font-bold text-slate-900">Total Refunded</span>
+                    <span className="font-mono text-sm font-black text-slate-900">₦3,653,000</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                    <span className="text-xs font-semibold text-slate-600">5% per paid ticket</span>
+                    <span className="text-xs font-bold text-slate-900">245 Tickets</span>
+                  </div>
+                  <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                    <span className="text-xs font-semibold text-slate-600">₦10 + 2% per paid ticket</span>
+                    <span className="text-xs font-bold text-slate-900">₦1,567,000</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment History (Refunds) */}
+              <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
+                <h3 className="text-base font-extrabold text-slate-900 mb-4">Payment History</h3>
+                <div className="flex items-center justify-between gap-4 mb-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input type="text" placeholder="Search payouts..." className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:border-[#00C896]" />
+                  </div>
+                  <select className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none text-slate-600 outline-none">
+                    <option>Filter: All</option>
+                  </select>
+                </div>
+                
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs font-semibold text-slate-700 border-collapse">
+                    <thead>
+                      <tr className="bg-[#00C896] text-white uppercase text-[10px] tracking-wider">
+                        <th className="px-3 py-2 font-extrabold rounded-l-lg">Refund Date</th>
+                        <th className="px-3 py-2 font-extrabold">Ticket ID</th>
+                        <th className="px-3 py-2 font-extrabold">Amount</th>
+                        <th className="px-3 py-2 font-extrabold">Reason</th>
+                        <th className="px-3 py-2 font-extrabold">Status</th>
+                        <th className="px-3 py-2 font-extrabold text-center rounded-r-lg">Receipt</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {[
+                        { date: 'Nov 19, 2025', ticket: 'TKA-4553353', amount: '₦1,466,866,000', reason: 'Event Canceled', status: 'Pending' },
+                        { date: 'Oct 10, 2025', ticket: 'TKA-4553473', amount: '₦850,538,000', reason: 'Scheduling Conflict', status: 'Paid' },
+                        { date: 'July 30, 2025', ticket: 'TKA-4553474', amount: '₦904,866,000', reason: 'Medical Emergency', status: 'Paid' },
+                        { date: 'Mar 27, 2025', ticket: 'TKA-4677786', amount: '₦450,100,000', reason: 'Event Canceled', status: 'Paid' },
+                        { date: 'Mar 27, 2025', ticket: 'TKA-7757890', amount: '₦450,100,000', reason: 'Scheduling Conflict', status: 'Paid' },
+                      ].map((row, i) => (
+                        <tr key={i} className="hover:bg-slate-50">
+                          <td className="px-3 py-3 text-slate-500">{row.date}</td>
+                          <td className="px-3 py-3 font-mono text-slate-900">{row.ticket}</td>
+                          <td className="px-3 py-3 font-mono text-slate-900">{row.amount}</td>
+                          <td className="px-3 py-3">{row.reason}</td>
+                          <td className="px-3 py-3">
+                            <span className={`px-2 py-0.5 rounded-sm text-[10px] font-bold ${row.status === 'Pending' ? 'bg-amber-400 text-white' : 'bg-[#00C896] text-white'}`}>
+                              {row.status}
+                            </span>
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <button className="px-3 py-1 bg-[#00C896] text-white rounded text-[10px] font-bold hover:bg-[#00b386]">View</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       )}
-
       {/* SUBPAGE 5: Billing & Subscription */}
       {activeSubpage === 'billing-subscription' && (
         <div className="space-y-6">
@@ -698,139 +1066,15 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
           <button onClick={() => setActiveSubpage('grid')} className="hover:text-[#00C896] flex items-center gap-1 text-xs font-bold text-slate-500">
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Settings / Integrations
           </button>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {[
-              { id: 'flutterwave', name: 'Flutterwave', status: 'Connected', desc: 'Accept Cards, Bank Transfer, USSD, Mobile Money & NQR globally', featured: true },
-              { id: 'quickpay', name: 'QuickPay', status: 'Connected', desc: 'Accept local card & bank payments' },
-              { id: 'paystack', name: 'Paystack', status: 'Connected', desc: 'African payment gateway integration' },
-              { id: 'zoom', name: 'Zoom', status: 'Connected', desc: 'Virtual event livestreaming' },
-              { id: 'meet', name: 'Google Meet', status: 'Not Connected', desc: 'Online webinar integration' },
-              { id: 'analytics', name: 'Google Analytics', status: 'Connected', desc: 'Track attendee conversion' },
-            ].map((it, idx) => (
-              <div key={idx} className={`p-5 rounded-2xl border shadow-sm space-y-3 relative ${
-                it.featured ? 'bg-gradient-to-br from-amber-500/5 via-white to-orange-500/5 border-amber-500/40' : 'bg-white border-slate-200/80'
-              }`}>
-                {it.featured && (
-                  <span className="absolute -top-2.5 right-4 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-[9px] uppercase px-2 py-0.5 rounded-full shadow-sm">
-                    Primary Gateway
-                  </span>
-                )}
-                <div className="flex justify-between items-center">
-                  <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                    {it.name}
-                  </h4>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
-                    it.status === 'Connected' ? 'bg-emerald-100 text-[#00C896]' : 'bg-slate-100 text-slate-500'
-                  }`}>
-                    {it.status}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 leading-relaxed">{it.desc}</p>
-                <button
-                  onClick={() => {
-                    if (it.id === 'flutterwave') {
-                      setShowFlwModal(true);
-                    } else {
-                      showToast(`${it.name} settings updated`);
-                    }
-                  }}
-                  className={`w-full py-2 rounded-xl text-xs font-extrabold transition ${
-                    it.id === 'flutterwave'
-                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 shadow-sm'
-                      : 'border border-slate-200 hover:bg-slate-50 text-slate-800'
-                  }`}
-                >
-                  {it.id === 'flutterwave' ? '⚡ Configure Flutterwave' : (it.status === 'Connected' ? 'Configure' : 'Connect')}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Flutterwave Gateway Configuration Modal */}
-      {showFlwModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6 bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 text-white flex justify-between items-center">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-slate-950 font-black text-sm flex items-center justify-center shadow-lg">
-                  FW
-                </div>
+          <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4 max-w-2xl text-xs font-semibold">
+             <h2 className="text-base font-extrabold text-slate-900">Connected Apps</h2>
+             <div className="p-4 border border-slate-200 rounded-xl flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-black text-white">Flutterwave Gateway Settings</h3>
-                  <p className="text-[11px] text-amber-400 font-medium">Inline Checkout & Settlement Config</p>
+                  <div className="font-extrabold text-slate-900">Mailchimp</div>
+                  <div className="text-slate-500">Sync attendees to lists</div>
                 </div>
-              </div>
-              <button onClick={() => setShowFlwModal(false)} className="p-1.5 text-slate-400 hover:text-white rounded-lg">
-                ✕
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4 text-xs font-semibold">
-              <div className="flex items-center justify-between p-3 bg-amber-50 rounded-2xl border border-amber-200 text-amber-900">
-                <div>
-                  <span className="font-extrabold block">Environment Mode</span>
-                  <span className="text-[10px] text-amber-700">Toggle between Sandbox Test Key and Production Live Key</span>
-                </div>
-                <div className="flex bg-white p-1 rounded-xl border border-amber-200">
-                  <button
-                    onClick={() => setFlwMode('Test')}
-                    className={`px-3 py-1 rounded-lg font-bold text-[11px] ${flwMode === 'Test' ? 'bg-amber-500 text-slate-950' : 'text-slate-600'}`}
-                  >
-                    Test Sandbox
-                  </button>
-                  <button
-                    onClick={() => setFlwMode('Live')}
-                    className={`px-3 py-1 rounded-lg font-bold text-[11px] ${flwMode === 'Live' ? 'bg-emerald-600 text-white' : 'text-slate-600'}`}
-                  >
-                    Live Production
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-700 mb-1">Flutterwave Public Key</label>
-                <input
-                  type="text"
-                  value={flwPublicKey}
-                  onChange={e => setFlwPublicKey(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono text-xs focus:border-amber-500 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 mb-1">Flutterwave Secret Key</label>
-                <input
-                  type="password"
-                  value={flwSecretKey}
-                  onChange={e => setFlwSecretKey(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono text-xs focus:border-amber-500 focus:outline-none"
-                />
-              </div>
-
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">Supported Payment Options</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {['Bank Cards', 'Bank Transfer', 'USSD (*737#)', 'Mobile Money (GH, UG, KE)', 'NQR Code'].map(opt => (
-                    <span key={opt} className="bg-emerald-100 text-[#00C896] text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      ✓ {opt}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <button
-                onClick={() => {
-                  setShowFlwModal(false);
-                  showToast('Flutterwave gateway credentials saved successfully!');
-                }}
-                className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-black rounded-xl text-xs shadow-lg transition"
-              >
-                Save Flutterwave Settings
-              </button>
-            </div>
+                <button className="px-3 py-1.5 border border-slate-200 bg-white font-bold rounded-lg hover:bg-slate-100">Connect</button>
+             </div>
           </div>
         </div>
       )}
@@ -841,20 +1085,14 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
           <button onClick={() => setActiveSubpage('grid')} className="hover:text-[#00C896] flex items-center gap-1 text-xs font-bold text-slate-500">
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Settings / Legal & Compliance
           </button>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs font-semibold">
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-2">
-              <h4 className="text-sm font-extrabold text-slate-900">GDPR Compliance</h4>
-              <p className="text-slate-500">Review GDPR practices and ensure your event is compliant with global regulations.</p>
-            </div>
-            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-2">
-              <h4 className="text-sm font-extrabold text-slate-900">Privacy Policy & Terms</h4>
-              <p className="text-slate-500">Review and update your event privacy policy and terms of service.</p>
-            </div>
+          <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4 max-w-2xl text-xs font-semibold">
+             <h2 className="text-base font-extrabold text-slate-900">Legal Documents</h2>
+             <p className="text-slate-500">Update your terms and conditions for ticket buyers.</p>
+             <textarea className="w-full h-32 p-3 bg-slate-50 border border-slate-200 rounded-xl" placeholder="Terms & Conditions..."></textarea>
+             <button className="px-4 py-2 bg-[#00C896] text-white font-extrabold rounded-xl shadow-sm">Save Documents</button>
           </div>
         </div>
       )}
-
     </div>
   );
 };

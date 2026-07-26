@@ -9,7 +9,8 @@ import {
   Settings, 
   Ticket as TicketIcon,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  RefreshCw
 } from 'lucide-react';
 
 export type OrganizerTabType = 
@@ -19,6 +20,7 @@ export type OrganizerTabType =
   | 'ticket-sales' 
   | 'users'
   | 'check-ins' 
+  | 'refunds'
   | 'settings';
 
 interface OrganizerSidebarProps {
@@ -47,6 +49,7 @@ export const OrganizerSidebar: React.FC<OrganizerSidebarProps> = ({
     { id: 'ticket-sales', label: 'Ticket Sales', icon: <Ticket className="w-5 h-5" /> },
     { id: 'users', label: 'Users & Customers', icon: <Users className="w-5 h-5" /> },
     { id: 'check-ins', label: 'Check-Ins', icon: <CheckSquare className="w-5 h-5" /> },
+    { id: 'refunds', label: 'Refund Requests', icon: <RefreshCw className="w-5 h-5" /> },
     { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
   ];
 

@@ -13,6 +13,7 @@ import { TicketSalesTab } from './TicketSalesTab';
 import { UsersTab } from './UsersTab';
 import { CheckInsTab } from './CheckInsTab';
 import { SettingsTab } from './SettingsTab';
+import { RefundsTab } from './RefundsTab';
 import { CreateEventModal } from './CreateEventModal';
 import { RevenueWithdrawModal } from './RevenueWithdrawModal';
 import { OrganizerCheckInModal } from './OrganizerCheckInModal';
@@ -191,7 +192,12 @@ export const OrganizerDashboard: React.FC = () => {
             />
           )}
 
-          {/* 6. Settings Tab */}
+          {/* 7. Refunds Tab */}
+          {activeTab === 'refunds' && (
+            <RefundsTab />
+          )}
+
+          {/* 8. Settings Tab */}
           {activeTab === 'settings' && (
             <SettingsTab onLogout={handleLogout} />
           )}
