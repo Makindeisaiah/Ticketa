@@ -852,7 +852,13 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const sendTicketSms = async (orderOrTicket: Order | TicketPass, customPhone?: string) => {
-    const recipient = customPhone || ('customerPhone' in orderOrTicket ? orderOrTicket.customerPhone : orderOrTicket.attendeePhone) || '+234 812 345 6789';
+    let recipient = customPhone || ('customerPhone' in orderOrTicket ? orderOrTicket.customerPhone : orderOrTicket.attendeePhone) || '+2348123456789';
+    
+    // Replace masked X characters if present
+    if (/x/i.test(recipient)) {
+      recipient = recipient.replace(/x/gi, '0');
+    }
+
     const orderId = 'id' in orderOrTicket ? orderOrTicket.id : orderOrTicket.orderId;
     const title = 'eventTitle' in orderOrTicket ? orderOrTicket.eventTitle : 'Ticketa Event';
     const code = 'tickets' in orderOrTicket ? orderOrTicket.tickets[0]?.ticketCode : orderOrTicket.ticketCode;
