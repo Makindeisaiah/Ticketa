@@ -67,7 +67,7 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 30000,
         description: 'Standard arena pass.',
         availableQuantity: 1500,
-        soldQuantity: 1100,
+        soldQuantity: 0,
         maxPerOrder: 6
       },
       {
@@ -76,7 +76,7 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 90000,
         description: 'Elevated VIP access deck with priority bar.',
         availableQuantity: 300,
-        soldQuantity: 210,
+        soldQuantity: 0,
         maxPerOrder: 4
       }
     ]
@@ -114,7 +114,7 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 25000,
         description: 'Standard standing floor pass.',
         availableQuantity: 400,
-        soldQuantity: 180,
+        soldQuantity: 0,
         maxPerOrder: 4
       },
       {
@@ -123,7 +123,7 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 80000,
         description: 'Priority VIP seating with complimentary drink voucher.',
         availableQuantity: 50,
-        soldQuantity: 32,
+        soldQuantity: 0,
         maxPerOrder: 2
       }
     ]
@@ -162,7 +162,7 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 15000,
         description: 'Standing room floor pass to The Savior Tour.',
         availableQuantity: 300,
-        soldQuantity: 185,
+        soldQuantity: 0,
         maxPerOrder: 4
       },
       {
@@ -171,7 +171,7 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 45000,
         description: 'Early door access, Meet & Greet photo with 1300SAINT, signed tour poster.',
         availableQuantity: 50,
-        soldQuantity: 32,
+        soldQuantity: 0,
         maxPerOrder: 2
       }
     ]
@@ -210,7 +210,7 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 45000,
         description: 'Access to the main arena bowl lawn.',
         availableQuantity: 5000,
-        soldQuantity: 5000,
+        soldQuantity: 0,
         maxPerOrder: 4
       },
       {
@@ -219,7 +219,7 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 120000,
         description: 'Priority front row pit pass with exclusive bar access.',
         availableQuantity: 500,
-        soldQuantity: 500,
+        soldQuantity: 0,
         maxPerOrder: 2
       }
     ]
@@ -246,7 +246,7 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 60000,
         description: 'General admission to the main hall.',
         availableQuantity: 800,
-        soldQuantity: 510,
+        soldQuantity: 0,
         maxPerOrder: 6
       }
     ]
@@ -273,7 +273,7 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 45000,
         description: 'Standard floor ticket.',
         availableQuantity: 500,
-        soldQuantity: 210,
+        soldQuantity: 0,
         maxPerOrder: 4
       }
     ]
@@ -300,7 +300,7 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 30000,
         description: 'Standard admission pass.',
         availableQuantity: 300,
-        soldQuantity: 150,
+        soldQuantity: 0,
         maxPerOrder: 4
       }
     ]
@@ -327,7 +327,7 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 30000,
         description: 'Stadium seat pass.',
         availableQuantity: 10000,
-        soldQuantity: 8400,
+        soldQuantity: 0,
         maxPerOrder: 6
       }
     ]
@@ -355,7 +355,7 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 50000,
         description: 'Exclusive seat pass (Limited 100 tickets available).',
         availableQuantity: 100,
-        soldQuantity: 42,
+        soldQuantity: 0,
         maxPerOrder: 4
       }
     ]
@@ -382,7 +382,7 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 30000,
         description: 'General admission seat.',
         availableQuantity: 400,
-        soldQuantity: 300,
+        soldQuantity: 0,
         maxPerOrder: 4
       }
     ]
@@ -403,11 +403,11 @@ export const INITIAL_EVENTS: EventItem[] = [
     featured: false,
     tags: ['Comedy', 'VIP Tables'],
     ticketTiers: [
-      { id: 't-ay-n20k', name: 'Regular', price: 20000, description: 'Standard seat', availableQuantity: 300, soldQuantity: 180, maxPerOrder: 4 },
-      { id: 't-ay-n50k', name: 'Silver VIP', price: 50000, description: 'VIP chair', availableQuantity: 100, soldQuantity: 65, maxPerOrder: 4 },
-      { id: 't-ay-n100k', name: 'VVIP', price: 100000, description: 'VVIP seat', availableQuantity: 50, soldQuantity: 40, maxPerOrder: 2 },
-      { id: 't-ay-1m', name: 'Gold Table', price: 1000000, description: 'Table for 6', availableQuantity: 10, soldQuantity: 7, maxPerOrder: 1 },
-      { id: 't-ay-2m', name: 'Platinum Table', price: 2000000, description: 'Table for 10', availableQuantity: 5, soldQuantity: 4, maxPerOrder: 1 }
+      { id: 't-ay-n20k', name: 'Regular', price: 20000, description: 'Standard seat', availableQuantity: 300, soldQuantity: 0, maxPerOrder: 4 },
+      { id: 't-ay-n50k', name: 'Silver VIP', price: 50000, description: 'VIP chair', availableQuantity: 100, soldQuantity: 0, maxPerOrder: 4 },
+      { id: 't-ay-n100k', name: 'VVIP', price: 100000, description: 'VVIP seat', availableQuantity: 50, soldQuantity: 0, maxPerOrder: 2 },
+      { id: 't-ay-1m', name: 'Gold Table', price: 1000000, description: 'Table for 6', availableQuantity: 10, soldQuantity: 0, maxPerOrder: 1 },
+      { id: 't-ay-2m', name: 'Platinum Table', price: 2000000, description: 'Table for 10', availableQuantity: 5, soldQuantity: 0, maxPerOrder: 1 }
     ]
   },
 
@@ -434,7 +434,7 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 0,
         description: 'Includes hacker kit and meals.',
         availableQuantity: 300,
-        soldQuantity: 280,
+        soldQuantity: 0,
         maxPerOrder: 1
       }
     ]
@@ -461,7 +461,7 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 0,
         description: 'Access to workshop and networking.',
         availableQuantity: 100,
-        soldQuantity: 75,
+        soldQuantity: 0,
         maxPerOrder: 2
       }
     ]
@@ -488,43 +488,14 @@ export const INITIAL_EVENTS: EventItem[] = [
         price: 0,
         description: 'Includes workshop materials.',
         availableQuantity: 150,
-        soldQuantity: 110,
+        soldQuantity: 0,
         maxPerOrder: 2
       }
     ]
   }
 ];
 
-export const INITIAL_ORDERS: Order[] = [
-  {
-    id: '7362992662288',
-    eventId: 'evt-davido',
-    eventTitle: 'The 5IVE Alive Tour',
-    customerName: 'Isaiah Makinde',
-    customerEmail: 'contact@makindeisaiah.com',
-    customerPhone: '+234 812 345 6789',
-    totalAmount: 30000,
-    paymentMethod: 'Credit Card',
-    purchaseDate: 'Dec 2, 2025',
-    tickets: [
-      {
-        ticketCode: '7362992662288',
-        orderId: '7362992662288',
-        eventId: 'evt-davido',
-        eventTitle: 'The 5IVE Alive Tour',
-        eventDate: 'Thu, Dec 25, 2025',
-        eventTime: '19:00 WAT (Gate open: 17:00pm)',
-        venueName: 'Eko Convention Center, VI',
-        tierName: 'Regular',
-        attendeeName: 'Isaiah Makinde',
-        attendeeEmail: 'contact@makindeisaiah.com',
-        pricePaid: 30000,
-        purchaseDate: 'Dec 2, 2025',
-        status: 'VALID'
-      }
-    ]
-  }
-];
+export const INITIAL_ORDERS: Order[] = [];
 
 export const INITIAL_PROMOS: PromoCode[] = [
   { code: 'TICKETA20', discountPercentage: 20, active: true, usedCount: 102 },

@@ -4,17 +4,16 @@ import { Search, Download, CheckCircle2, XCircle, Clock, MoreHorizontal, Chevron
 export const RefundsTab: React.FC = () => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
-  // Sample data to make it easier to mutate for UI demonstration
-  const [refunds, setRefunds] = useState([
-    { id: "RD-346484", attendee: "Olakunle Davis", event: "Davido Live in Lagos", ticketType: "Regular", amount: "₦30,000", reason: "Scheduling Conflict", status: "Pending", requestedOn: "Dec 22, 2025" },
-    { id: "RD-349854", attendee: "Alex Adigun", event: "Asake Live in Lagos", ticketType: "VVIP", amount: "₦1,500,000", reason: "Event Canceled", status: "Approved", requestedOn: "Dec 22, 2025" },
-    { id: "RD-347636", attendee: "George Falana", event: "Davido Live in Lagos", ticketType: "Premium", amount: "₦3,000,000", reason: "Medical Emergency", status: "Rejected", requestedOn: "Dec 21, 2025" },
-    { id: "RD-340974", attendee: "Fisayo Onanuga", event: "Davido Live in Uyo", ticketType: "VIP", amount: "₦100,000", reason: "Scheduling Conflict", status: "Processed", requestedOn: "Dec 21, 2025" },
-    { id: "RD-347643", attendee: "Babalola Anifowoshe", event: "Burna Boy Live in Lagos", ticketType: "Regular", amount: "₦30,000", reason: "Event Canceled", status: "Failed", requestedOn: "Dec 21, 2025" },
-    { id: "RD-349847", attendee: "Kunle Ayomide", event: "Davido Live in Lagos", ticketType: "Regular", amount: "₦30,000", reason: "Medical Emergency", status: "Pending", requestedOn: "Dec 20, 2025" },
-    { id: "RD-347746", attendee: "Obi Joy", event: "Asake Live in Lagos", ticketType: "VVIP", amount: "₦1,500,000", reason: "Scheduling Conflict", status: "Approved", requestedOn: "Dec 20, 2025" },
-    { id: "RD-347464", attendee: "Aminu Ibrahim", event: "Davido Live in Lagos", ticketType: "Premium", amount: "₦3,000,000", reason: "Event Canceled", status: "Rejected", requestedOn: "Dec 19, 2025" },
-  ]);
+  const [refunds, setRefunds] = useState<any[]>([]);
+
+  const pendingCount = refunds.filter(r => r.status === 'Pending').length;
+  const approvedCount = refunds.filter(r => r.status === 'Approved' || r.status === 'Processed').length;
+  const totalRefundedSum = refunds
+    .filter(r => r.status === 'Approved' || r.status === 'Processed')
+    .reduce((sum, r) => {
+      const num = parseInt(r.amount.replace(/[^0-9]/g, ''), 10) || 0;
+      return sum + num;
+    }, 0);
 
   const handleCancelRefund = (id: string) => {
     setRefunds(prev => prev.map(r => r.id === id ? { ...r, status: 'Canceled' } : r));
@@ -34,7 +33,7 @@ export const RefundsTab: React.FC = () => {
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
             <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Pending Refunds</span>
-            <span className="text-xl font-black text-slate-900">12</span>
+            <span className="text-xl font-black text-slate-900">{pendingCount}</span>
           </div>
           <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500">
             <Clock className="w-5 h-5" />
@@ -43,7 +42,7 @@ export const RefundsTab: React.FC = () => {
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
             <span className="text-[10px] font-bold uppercase text-emerald-600/70 block mb-1">Approved Refunds</span>
-            <span className="text-xl font-black text-emerald-600">38</span>
+            <span className="text-xl font-black text-emerald-600">{approvedCount}</span>
           </div>
           <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500">
             <CheckCircle2 className="w-5 h-5" />
@@ -52,7 +51,7 @@ export const RefundsTab: React.FC = () => {
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
             <span className="text-[10px] font-bold uppercase text-[#00C896]/70 block mb-1">Total Refunded</span>
-            <span className="text-xl font-black text-[#00C896] font-mono">₦547,977,000</span>
+            <span className="text-xl font-black text-[#00C896] font-mono">₦{totalRefundedSum.toLocaleString()}</span>
           </div>
           <div className="w-10 h-10 rounded-xl bg-[#00C896]/10 flex items-center justify-center text-[#00C896]">
             <XCircle className="w-5 h-5" />

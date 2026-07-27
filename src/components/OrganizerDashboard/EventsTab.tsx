@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { EventItem } from '../../types';
+import { EventItem, Order, TicketPass } from '../../types';
 import { 
   Plus, 
   Search, 
@@ -22,6 +22,8 @@ import {
 
 interface EventsTabProps {
   events: EventItem[];
+  orders?: Order[];
+  allTickets?: TicketPass[];
   onCreateEventClick: () => void;
   onSelectEvent: (eventId: string) => void;
   onViewRevenue: (eventId: string) => void;
@@ -30,6 +32,8 @@ interface EventsTabProps {
 
 export const EventsTab: React.FC<EventsTabProps> = ({
   events,
+  orders = [],
+  allTickets = [],
   onCreateEventClick,
   onSelectEvent,
   onViewRevenue,
@@ -47,6 +51,8 @@ export const EventsTab: React.FC<EventsTabProps> = ({
     e.venueName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     e.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const totalRevenue = orders.reduce((acc, o) => acc + o.totalAmount, 0);
 
   // Status badge config
   const getSalesVelocityBadge = (index: number) => {
@@ -106,7 +112,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
               Total Event
             </span>
-            <div className="text-2xl font-black text-slate-900 mt-0.5">12</div>
+            <div className="text-2xl font-black text-slate-900 mt-0.5">{events.length}</div>
           </div>
         </div>
 
@@ -118,7 +124,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
               Active Events
             </span>
-            <div className="text-2xl font-black text-slate-900 mt-0.5">8</div>
+            <div className="text-2xl font-black text-slate-900 mt-0.5">{events.length}</div>
           </div>
         </div>
 
@@ -130,7 +136,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
               Total Ticket Sold
             </span>
-            <div className="text-2xl font-black text-slate-900 mt-0.5 font-mono">65,892</div>
+            <div className="text-2xl font-black text-slate-900 mt-0.5 font-mono">{allTickets.length.toLocaleString()}</div>
           </div>
         </div>
 
@@ -143,7 +149,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({
               Net Revenue
             </span>
             <div className="text-base font-black text-slate-900 mt-0.5 font-mono">
-              ₦ 3,134,963,500
+              {formatNaira(totalRevenue)}
             </div>
           </div>
         </div>
@@ -166,12 +172,14 @@ export const EventsTab: React.FC<EventsTabProps> = ({
 
       {/* Events List Cards */}
       <div className="space-y-4">
-        {filteredEvents.map((evt, idx) => {
+        {filteredEvents.map((evt) => {
           const totalTierCap = evt.ticketTiers.reduce((acc, t) => acc + t.availableQuantity, 0);
-          const totalTierSold = evt.ticketTiers.reduce((acc, t) => acc + t.soldQuantity, 0);
-          const percentage = totalTierCap > 0 ? Math.round((totalTierSold / totalTierCap) * 100) : (idx === 0 ? 83 : idx === 1 ? 52 : 35);
-          const eventRevenue = evt.ticketTiers.reduce((acc, t) => acc + (t.price * t.soldQuantity), 0);
-          const displayRev = eventRevenue > 0 ? eventRevenue : (idx === 0 ? 2329909900 : idx === 1 ? 10545000 : 5358000);
+          const eventTickets = allTickets.filter(t => t.eventId === evt.id);
+          const totalTierSold = eventTickets.length || evt.ticketTiers.reduce((acc, t) => acc + t.soldQuantity, 0);
+          const percentage = totalTierCap > 0 ? Math.round((totalTierSold / totalTierCap) * 100) : 0;
+          const eventOrders = orders.filter(o => o.eventId === evt.id);
+          const eventRevenue = eventOrders.reduce((acc, o) => acc + o.totalAmount, 0);
+          const displayRev = eventRevenue;
 
           return (
             <div 

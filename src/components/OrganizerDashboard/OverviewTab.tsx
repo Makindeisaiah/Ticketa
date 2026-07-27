@@ -42,30 +42,35 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   // Calculations
   const calculatedRevenue = orders.reduce((acc, o) => acc + o.totalAmount, 0);
-  const totalRevenueDisplay = calculatedRevenue > 0 ? calculatedRevenue : 8524547900;
+  const totalRevenueDisplay = calculatedRevenue;
   
-  const totalTicketSoldDisplay = allTickets.length > 0 ? allTickets.length : 45425;
-  const totalTicketCapacity = 75000;
+  const totalTicketSoldDisplay = allTickets.length;
+  const totalTicketCapacity = events.reduce((acc, evt) => {
+    return acc + evt.ticketTiers.reduce((tAcc, t) => tAcc + t.availableQuantity, 0);
+  }, 0) || 1000;
   
   const upcomingEventsCount = events.length;
   
   const checkedInCount = allTickets.filter(t => t.status === 'CHECKED_IN').length;
-  const checkedInDisplay = checkedInCount > 0 ? checkedInCount : 22345;
+  const checkedInDisplay = checkedInCount;
 
-  // Chart data points
-  const chartData = [
-    { label: 'Apr 12', value: 100000000 },
-    { label: 'Apr 13', value: 500000000 },
-    { label: 'Apr 14', value: 1200000000 },
-    { label: 'Apr 15', value: 1200000000 },
-    { label: 'Apr 16', value: 2500000000 },
-    { label: 'Apr 17', value: 3000000000 },
-    { label: 'Apr 18', value: 3000000000 },
-    { label: 'Apr 19', value: 500000000 },
-    { label: 'Apr 20', value: 500000000 },
+  // Dynamic Chart Data points based on orders
+  const chartData = orders.length > 0 ? [
+    { label: 'Start', value: Math.round(calculatedRevenue * 0.1) },
+    { label: 'Phase 1', value: Math.round(calculatedRevenue * 0.3) },
+    { label: 'Phase 2', value: Math.round(calculatedRevenue * 0.6) },
+    { label: 'Current', value: calculatedRevenue }
+  ] : [
+    { label: 'Mon', value: 0 },
+    { label: 'Tue', value: 0 },
+    { label: 'Wed', value: 0 },
+    { label: 'Thu', value: 0 },
+    { label: 'Fri', value: 0 },
+    { label: 'Sat', value: 0 },
+    { label: 'Sun', value: 0 },
   ];
 
-  const maxChartVal = 3500000000;
+  const maxChartVal = calculatedRevenue > 0 ? Math.ceil(calculatedRevenue * 1.2) : 100000;
 
   return (
     <div className="space-y-6">

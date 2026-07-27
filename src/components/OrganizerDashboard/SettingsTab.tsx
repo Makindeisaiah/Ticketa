@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useEventContext } from '../../context/EventContext';
 import { 
   Building2, 
   Users, 
@@ -46,6 +47,9 @@ interface SettingsTabProps {
 }
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
+  const { orders } = useEventContext();
+  const calculatedTotalEarnings = orders.reduce((acc, o) => acc + o.totalAmount, 0);
+
   const [activeSubpage, setActiveSubpage] = useState<SettingsSubpage>('grid');
   const [paymentsTab, setPaymentsTab] = useState<'overview' | 'payouts' | 'refunds'>('overview');
 

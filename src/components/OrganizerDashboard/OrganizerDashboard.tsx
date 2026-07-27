@@ -156,6 +156,8 @@ export const OrganizerDashboard: React.FC = () => {
           {activeTab === 'events' && (
             <EventsTab
               events={events}
+              orders={orders}
+              allTickets={allTickets}
               onCreateEventClick={handleOpenCreateModal}
               onSelectEvent={(id) => handleOpenRevenueModal(id)}
               onViewRevenue={(id) => handleOpenRevenueModal(id)}
@@ -165,7 +167,7 @@ export const OrganizerDashboard: React.FC = () => {
 
           {/* 3. Analytics Tab */}
           {activeTab === 'analytics' && (
-            <AnalyticsTab events={events} />
+            <AnalyticsTab events={events} orders={orders} allTickets={allTickets} />
           )}
 
           {/* 4. Ticket Sales Tab */}
@@ -218,6 +220,7 @@ export const OrganizerDashboard: React.FC = () => {
         isOpen={isRevenueModalOpen}
         onClose={() => setIsRevenueModalOpen(false)}
         event={revenueModalEvent}
+        orders={orders}
       />
 
       {/* Organizer Scanner & Check-In Modal */}

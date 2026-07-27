@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { EventItem } from '../../types';
+import { EventItem, Order } from '../../types';
 import { 
   X, 
   DollarSign, 
@@ -16,25 +16,28 @@ interface RevenueWithdrawModalProps {
   isOpen: boolean;
   onClose: () => void;
   event: EventItem | null;
+  orders?: Order[];
 }
 
 export const RevenueWithdrawModal: React.FC<RevenueWithdrawModalProps> = ({
   isOpen,
   onClose,
-  event
+  event,
+  orders = []
 }) => {
   if (!isOpen || !event) return null;
 
   const [withdrawSuccess, setWithdrawSuccess] = useState(false);
-  const [withdrawAmount, setWithdrawAmount] = useState('2271662153');
 
-  const grossSales = 2329909900;
-  const platformFees = 58247747;
-  const netWithdrawable = 2271662153;
+  const eventOrders = orders.filter(o => o.eventId === event.id);
+  const grossSales = eventOrders.reduce((acc, o) => acc + o.totalAmount, 0);
+  const platformFees = Math.round(grossSales * 0.025);
+  const netWithdrawable = Math.max(0, grossSales - platformFees);
 
   const formatNaira = (amount: number) => '₦ ' + amount.toLocaleString('en-US');
 
   const handleWithdraw = () => {
+    if (netWithdrawable <= 0) return;
     setWithdrawSuccess(true);
     setTimeout(() => {
       setWithdrawSuccess(false);
@@ -127,16 +130,22 @@ export const RevenueWithdrawModal: React.FC<RevenueWithdrawModalProps> = ({
               <div className="space-y-3 pt-2 border-t border-slate-100">
                 <h4 className="font-extrabold text-slate-900 text-xs">Payout History for this Event</h4>
                 <div className="space-y-2 text-[11px]">
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex justify-between items-center">
-                    <div>
-                      <div className="font-bold text-slate-900">REF-8923746</div>
-                      <div className="text-[10px] text-slate-400">Dec 01, 2025 • GTBank ****5399</div>
+                  {grossSales > 0 ? (
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex justify-between items-center">
+                      <div>
+                        <div className="font-bold text-slate-900">REF-8923746</div>
+                        <div className="text-[10px] text-slate-400">Dec 01, 2025 • GTBank ****5399</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-black font-mono text-slate-900">{formatNaira(netWithdrawable)}</div>
+                        <span className="text-[9px] text-[#00C896] font-bold">Completed</span>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <div className="font-black font-mono text-slate-900">₦ 500,000,000</div>
-                      <span className="text-[9px] text-[#00C896] font-bold">Completed</span>
+                  ) : (
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-center text-slate-400">
+                      No payouts processed yet for this event.
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             </>

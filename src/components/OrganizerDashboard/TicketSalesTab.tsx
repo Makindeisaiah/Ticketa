@@ -46,7 +46,23 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
     document.body.removeChild(link);
   };
 
-  const filteredOrders = orders.filter(o => 
+  const targetOrders = selectedEvent === 'all' 
+    ? orders 
+    : orders.filter(o => o.eventId === selectedEvent);
+
+  const targetTickets = selectedEvent === 'all'
+    ? allTickets
+    : allTickets.filter(t => t.eventId === selectedEvent);
+
+  const targetCapacity = selectedEvent === 'all'
+    ? events.reduce((acc, e) => acc + e.ticketTiers.reduce((s, t) => s + t.availableQuantity, 0), 0)
+    : (events.find(e => e.id === selectedEvent)?.ticketTiers.reduce((s, t) => s + t.availableQuantity, 0) || 0);
+
+  const totalRevenue = targetOrders.reduce((acc, o) => acc + o.totalAmount, 0);
+  const platformFees = Math.round(totalRevenue * 0.025);
+  const netRevenue = totalRevenue - platformFees;
+
+  const filteredOrders = targetOrders.filter(o => 
     o.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     o.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     o.customerEmail.toLowerCase().includes(searchQuery.toLowerCase())
@@ -91,7 +107,7 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
               Total Tickets Sold
             </span>
             <div className="text-xl font-black text-slate-900 mt-0.5 font-mono">
-              20,425 / 75,000
+              {targetTickets.length.toLocaleString()} / {targetCapacity.toLocaleString()}
             </div>
           </div>
         </div>
@@ -105,7 +121,7 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
               Total Revenue
             </span>
             <div className="text-lg font-black text-slate-900 mt-0.5 font-mono">
-              ₦ 1,524,547,900
+              {formatNaira(totalRevenue)}
             </div>
           </div>
         </div>
@@ -119,7 +135,7 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
               Platform Fees
             </span>
             <div className="text-lg font-black text-slate-900 mt-0.5 font-mono">
-              ₦ 100,377,000
+              {formatNaira(platformFees)}
             </div>
           </div>
         </div>
@@ -133,7 +149,7 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
               Net Revenue
             </span>
             <div className="text-lg font-black text-[#00C896] mt-0.5 font-mono">
-              ₦ 1,489,200,000
+              {formatNaira(netRevenue)}
             </div>
           </div>
         </div>

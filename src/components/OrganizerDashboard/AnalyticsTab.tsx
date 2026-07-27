@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { EventItem } from '../../types';
+import { EventItem, Order, TicketPass } from '../../types';
 import { 
   DollarSign, 
   Ticket, 
@@ -19,15 +19,33 @@ import {
 
 interface AnalyticsTabProps {
   events: EventItem[];
+  orders?: Order[];
+  allTickets?: TicketPass[];
 }
 
-export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events }) => {
+export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events, orders = [], allTickets = [] }) => {
   const [selectedEvent, setSelectedEvent] = useState('all');
   const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
   const formatNaira = (amount: number) => {
     return '₦ ' + amount.toLocaleString('en-US');
   };
+
+  const targetOrders = selectedEvent === 'all' 
+    ? orders 
+    : orders.filter(o => o.eventId === selectedEvent);
+
+  const targetTickets = selectedEvent === 'all'
+    ? allTickets
+    : allTickets.filter(t => t.eventId === selectedEvent);
+
+  const targetCapacity = selectedEvent === 'all'
+    ? events.reduce((acc, e) => acc + e.ticketTiers.reduce((s, t) => s + t.availableQuantity, 0), 0)
+    : (events.find(e => e.id === selectedEvent)?.ticketTiers.reduce((s, t) => s + t.availableQuantity, 0) || 0);
+
+  const totalRevenue = targetOrders.reduce((acc, o) => acc + o.totalAmount, 0);
+  const ticketsRemaining = Math.max(0, targetCapacity - targetTickets.length);
+  const conversionRate = targetTickets.length > 0 ? ((targetTickets.length / (targetCapacity || 1)) * 100).toFixed(1) + '%' : '0.0%';
 
   return (
     <div className="space-y-6">
@@ -69,7 +87,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events }) => {
               Total Revenue
             </span>
             <div className="text-xl font-black text-slate-900 mt-0.5 font-mono">
-              ₦ 545,960,000
+              {formatNaira(totalRevenue)}
             </div>
           </div>
         </div>
@@ -83,7 +101,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events }) => {
               Tickets Sold / Remaining
             </span>
             <div className="text-xl font-black text-slate-900 mt-0.5 font-mono">
-              18,200 / 2,718
+              {targetTickets.length.toLocaleString()} / {ticketsRemaining.toLocaleString()}
             </div>
           </div>
         </div>
@@ -97,7 +115,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events }) => {
               Conversion Rate
             </span>
             <div className="text-2xl font-black text-slate-900 mt-0.5">
-              4.6%
+              {conversionRate}
             </div>
           </div>
         </div>
@@ -111,7 +129,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events }) => {
               Refund Issued
             </span>
             <div className="text-xl font-black text-slate-900 mt-0.5 font-mono">
-              ₦ 1,200,000
+              ₦ 0
             </div>
           </div>
         </div>
