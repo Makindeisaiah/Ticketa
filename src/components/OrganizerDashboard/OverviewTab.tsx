@@ -199,18 +199,36 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <div className="h-64 w-full relative">
             <svg className="w-full h-full overflow-visible" viewBox="0 0 900 240">
               
-              {/* Horizontal Dotted Gridlines */}
-              <line x1="60" y1="20" x2="880" y2="20" stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" />
-              <text x="50" y="24" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">3,000,000,000</text>
+              {/* Dynamic Y-axis labels and horizontal gridlines */}
+              {calculatedRevenue > 0 ? (
+                <>
+                  <line x1="60" y1="20" x2="880" y2="20" stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" />
+                  <text x="50" y="24" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">{formatNaira(calculatedRevenue)}</text>
 
-              <line x1="60" y1="80" x2="880" y2="80" stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" />
-              <text x="50" y="84" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">1,200,000,000</text>
+                  <line x1="60" y1="80" x2="880" y2="80" stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" />
+                  <text x="50" y="84" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">{formatNaira(Math.round(calculatedRevenue * 0.6))}</text>
 
-              <line x1="60" y1="140" x2="880" y2="140" stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" />
-              <text x="50" y="144" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">500,000,000</text>
+                  <line x1="60" y1="140" x2="880" y2="140" stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" />
+                  <text x="50" y="144" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">{formatNaira(Math.round(calculatedRevenue * 0.3))}</text>
 
-              <line x1="60" y1="200" x2="880" y2="200" stroke="#E2E8F0" strokeWidth="1" />
-              <text x="50" y="204" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">0</text>
+                  <line x1="60" y1="200" x2="880" y2="200" stroke="#E2E8F0" strokeWidth="1" />
+                  <text x="50" y="204" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">0</text>
+                </>
+              ) : (
+                <>
+                  <line x1="60" y1="20" x2="880" y2="20" stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" />
+                  <text x="50" y="24" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">₦ 100,000</text>
+
+                  <line x1="60" y1="80" x2="880" y2="80" stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" />
+                  <text x="50" y="84" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">₦ 50,000</text>
+
+                  <line x1="60" y1="140" x2="880" y2="140" stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" />
+                  <text x="50" y="144" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">₦ 10,000</text>
+
+                  <line x1="60" y1="200" x2="880" y2="200" stroke="#E2E8F0" strokeWidth="1" />
+                  <text x="50" y="204" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">0</text>
+                </>
+              )}
 
               {/* Area fill gradient */}
               <defs>
@@ -222,13 +240,19 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
               {/* Area path */}
               <path
-                d="M 100 180 L 190 140 L 280 80 L 370 80 L 460 20 L 550 20 L 640 140 L 730 140 L 820 180 L 820 200 L 100 200 Z"
+                d={calculatedRevenue > 0
+                  ? "M 100 190 L 190 170 L 280 140 L 370 120 L 460 90 L 550 70 L 640 50 L 730 30 L 820 20 L 820 200 L 100 200 Z"
+                  : "M 100 200 L 820 200 L 820 200 L 100 200 Z"
+                }
                 fill="url(#revenueGradient)"
               />
 
               {/* Smooth Line path */}
               <path
-                d="M 100 180 L 190 140 L 280 80 L 370 80 L 460 20 L 550 20 L 640 140 L 730 140 L 820 180"
+                d={calculatedRevenue > 0
+                  ? "M 100 190 L 190 170 L 280 140 L 370 120 L 460 90 L 550 70 L 640 50 L 730 30 L 820 20"
+                  : "M 100 200 L 820 200"
+                }
                 fill="none"
                 stroke="#00C896"
                 strokeWidth="3"
@@ -238,15 +262,15 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
               {/* Data Points */}
               {[
-                { x: 100, y: 180, val: 'Apr 12' },
-                { x: 190, y: 140, val: 'Apr 13' },
-                { x: 280, y: 80, val: 'Apr 14' },
-                { x: 370, y: 80, val: 'Apr 15' },
-                { x: 460, y: 20, val: 'Apr 16' },
-                { x: 550, y: 20, val: 'Apr 17' },
-                { x: 640, y: 140, val: 'Apr 18' },
-                { x: 730, y: 140, val: 'Apr 19' },
-                { x: 820, y: 180, val: 'Apr 20' },
+                { x: 100, y: calculatedRevenue > 0 ? 190 : 200, val: 'Apr 12' },
+                { x: 190, y: calculatedRevenue > 0 ? 170 : 200, val: 'Apr 13' },
+                { x: 280, y: calculatedRevenue > 0 ? 140 : 200, val: 'Apr 14' },
+                { x: 370, y: calculatedRevenue > 0 ? 120 : 200, val: 'Apr 15' },
+                { x: 460, y: calculatedRevenue > 0 ? 90 : 200, val: 'Apr 16' },
+                { x: 550, y: calculatedRevenue > 0 ? 70 : 200, val: 'Apr 17' },
+                { x: 640, y: calculatedRevenue > 0 ? 50 : 200, val: 'Apr 18' },
+                { x: 730, y: calculatedRevenue > 0 ? 30 : 200, val: 'Apr 19' },
+                { x: 820, y: calculatedRevenue > 0 ? 20 : 200, val: 'Apr 20' },
               ].map((pt, idx) => (
                 <g key={idx}>
                   <circle cx={pt.x} cy={pt.y} r="5" fill="#00C896" stroke="#FFFFFF" strokeWidth="2" />

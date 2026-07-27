@@ -55,11 +55,11 @@ export const INITIAL_USERS: TicketaUser[] = [
     email: 'contact@makindeisaiah.com',
     phone: '+234 812 345 6789',
     registeredAt: '2026-01-15',
-    totalOrders: 3,
-    totalSpent: 165000,
+    totalOrders: 0,
+    totalSpent: 0,
     status: 'Verified',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
-    lastPurchaseDate: '2026-07-20'
+    lastPurchaseDate: '-'
   },
   {
     id: 'usr-002',
@@ -67,11 +67,11 @@ export const INITIAL_USERS: TicketaUser[] = [
     email: 'david@30bg.com',
     phone: '+234 803 111 2233',
     registeredAt: '2026-02-10',
-    totalOrders: 2,
-    totalSpent: 450000,
+    totalOrders: 0,
+    totalSpent: 0,
     status: 'Verified',
     avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
-    lastPurchaseDate: '2026-07-18'
+    lastPurchaseDate: '-'
   },
   {
     id: 'usr-003',
@@ -79,11 +79,11 @@ export const INITIAL_USERS: TicketaUser[] = [
     email: 'sarah.j@gmail.com',
     phone: '+1 415 890 1234',
     registeredAt: '2026-03-05',
-    totalOrders: 1,
-    totalSpent: 75000,
+    totalOrders: 0,
+    totalSpent: 0,
     status: 'Active',
     avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80',
-    lastPurchaseDate: '2026-07-12'
+    lastPurchaseDate: '-'
   },
   {
     id: 'usr-004',
@@ -91,11 +91,11 @@ export const INITIAL_USERS: TicketaUser[] = [
     email: 'chuks.okafor@techstars.ng',
     phone: '+234 814 990 0011',
     registeredAt: '2026-04-18',
-    totalOrders: 4,
-    totalSpent: 210000,
+    totalOrders: 0,
+    totalSpent: 0,
     status: 'Verified',
     avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
-    lastPurchaseDate: '2026-07-22'
+    lastPurchaseDate: '-'
   },
   {
     id: 'usr-005',
@@ -103,11 +103,11 @@ export const INITIAL_USERS: TicketaUser[] = [
     email: 'temi@otedola.com',
     phone: '+234 809 777 8899',
     registeredAt: '2026-05-01',
-    totalOrders: 2,
-    totalSpent: 180000,
+    totalOrders: 0,
+    totalSpent: 0,
     status: 'Active',
     avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&q=80',
-    lastPurchaseDate: '2026-07-24'
+    lastPurchaseDate: '-'
   }
 ];
 
@@ -212,12 +212,23 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const [orders, setOrders] = useState<Order[]>(() => {
+    const isCleaned = localStorage.getItem('tix_clean_zero_v2');
+    if (!isCleaned) {
+      localStorage.removeItem('tix_orders');
+      localStorage.removeItem('tix_all_tickets');
+      localStorage.setItem('tix_clean_zero_v2', 'true');
+      return [];
+    }
     const saved = localStorage.getItem('tix_orders');
     const list = saved ? JSON.parse(saved) : INITIAL_ORDERS;
     return Array.isArray(list) ? list.slice(0, 20) : INITIAL_ORDERS;
   });
 
   const [allTickets, setAllTickets] = useState<TicketPass[]>(() => {
+    const isCleaned = localStorage.getItem('tix_clean_zero_v2');
+    if (!isCleaned) {
+      return [];
+    }
     const saved = localStorage.getItem('tix_all_tickets');
     if (saved) return JSON.parse(saved);
     return INITIAL_ORDERS.flatMap(order => order.tickets);

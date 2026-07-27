@@ -163,21 +163,42 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events, orders = [],
           <div className="h-64 w-full relative pt-2">
             <svg className="w-full h-full overflow-visible" viewBox="0 0 700 220">
               {/* Gridlines */}
-              <line x1="60" y1="20" x2="680" y2="20" stroke="#E2E8F0" strokeDasharray="4 4" />
-              <text x="50" y="24" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">3,000,000,000</text>
+              {totalRevenue > 0 ? (
+                <>
+                  <line x1="60" y1="20" x2="680" y2="20" stroke="#E2E8F0" strokeDasharray="4 4" />
+                  <text x="50" y="24" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">{formatNaira(totalRevenue)}</text>
 
-              <line x1="60" y1="80" x2="680" y2="80" stroke="#E2E8F0" strokeDasharray="4 4" />
-              <text x="50" y="84" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">1,200,000,000</text>
+                  <line x1="60" y1="80" x2="680" y2="80" stroke="#E2E8F0" strokeDasharray="4 4" />
+                  <text x="50" y="84" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">{formatNaira(Math.round(totalRevenue * 0.6))}</text>
 
-              <line x1="60" y1="140" x2="680" y2="140" stroke="#E2E8F0" strokeDasharray="4 4" />
-              <text x="50" y="144" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">500,000,000</text>
+                  <line x1="60" y1="140" x2="680" y2="140" stroke="#E2E8F0" strokeDasharray="4 4" />
+                  <text x="50" y="144" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">{formatNaira(Math.round(totalRevenue * 0.3))}</text>
 
-              <line x1="60" y1="190" x2="680" y2="190" stroke="#E2E8F0" />
-              <text x="50" y="194" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">0</text>
+                  <line x1="60" y1="190" x2="680" y2="190" stroke="#E2E8F0" />
+                  <text x="50" y="194" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">0</text>
+                </>
+              ) : (
+                <>
+                  <line x1="60" y1="20" x2="680" y2="20" stroke="#E2E8F0" strokeDasharray="4 4" />
+                  <text x="50" y="24" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">₦ 100,000</text>
+
+                  <line x1="60" y1="80" x2="680" y2="80" stroke="#E2E8F0" strokeDasharray="4 4" />
+                  <text x="50" y="84" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">₦ 50,000</text>
+
+                  <line x1="60" y1="140" x2="680" y2="140" stroke="#E2E8F0" strokeDasharray="4 4" />
+                  <text x="50" y="144" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">₦ 10,000</text>
+
+                  <line x1="60" y1="190" x2="680" y2="190" stroke="#E2E8F0" />
+                  <text x="50" y="194" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">0</text>
+                </>
+              )}
 
               {/* Area */}
               <path
-                d="M 100 180 L 210 140 L 320 80 L 430 80 L 540 20 L 650 20 L 650 190 L 100 190 Z"
+                d={totalRevenue > 0
+                  ? "M 100 180 L 210 140 L 320 80 L 430 80 L 540 20 L 650 20 L 650 190 L 100 190 Z"
+                  : "M 100 190 L 650 190 L 650 190 L 100 190 Z"
+                }
                 fill="url(#revGrad2)"
               />
               <defs>
@@ -189,7 +210,10 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events, orders = [],
 
               {/* Line */}
               <path
-                d="M 100 180 L 210 140 L 320 80 L 430 80 L 540 20 L 650 20"
+                d={totalRevenue > 0
+                  ? "M 100 180 L 210 140 L 320 80 L 430 80 L 540 20 L 650 20"
+                  : "M 100 190 L 650 190"
+                }
                 fill="none"
                 stroke="#00C896"
                 strokeWidth="3"
@@ -197,12 +221,12 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events, orders = [],
 
               {/* Points */}
               {[
-                { x: 100, y: 180, label: 'Apr 12' },
-                { x: 210, y: 140, label: 'Apr 13' },
-                { x: 320, y: 80, label: 'Apr 14' },
-                { x: 430, y: 80, label: 'Apr 15' },
-                { x: 540, y: 20, label: 'Apr 16' },
-                { x: 650, y: 20, label: 'Apr 17' },
+                { x: 100, y: totalRevenue > 0 ? 180 : 190, label: 'Apr 12' },
+                { x: 210, y: totalRevenue > 0 ? 140 : 190, label: 'Apr 13' },
+                { x: 320, y: totalRevenue > 0 ? 80 : 190, label: 'Apr 14' },
+                { x: 430, y: totalRevenue > 0 ? 80 : 190, label: 'Apr 15' },
+                { x: 540, y: totalRevenue > 0 ? 20 : 190, label: 'Apr 16' },
+                { x: 650, y: totalRevenue > 0 ? 20 : 190, label: 'Apr 17' },
               ].map((p, i) => (
                 <g key={i}>
                   <circle cx={p.x} cy={p.y} r="5" fill="#00C896" stroke="#FFFFFF" strokeWidth="2" />
@@ -219,10 +243,10 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events, orders = [],
           
           <div className="space-y-3.5 pt-1">
             {[
-              { name: 'Direct Link', pct: '30%', icon: <Globe className="w-4 h-4 text-slate-500" /> },
-              { name: 'Social Media', pct: '28%', icon: <Share2 className="w-4 h-4 text-blue-500" /> },
-              { name: 'QR Code', pct: '28%', icon: <QrCode className="w-4 h-4 text-emerald-500" /> },
-              { name: 'Search', pct: '28%', icon: <Search className="w-4 h-4 text-amber-500" /> },
+              { name: 'Direct Link', pct: targetOrders.length > 0 ? '30%' : '0%', icon: <Globe className="w-4 h-4 text-slate-500" /> },
+              { name: 'Social Media', pct: targetOrders.length > 0 ? '28%' : '0%', icon: <Share2 className="w-4 h-4 text-blue-500" /> },
+              { name: 'QR Code', pct: targetOrders.length > 0 ? '28%' : '0%', icon: <QrCode className="w-4 h-4 text-emerald-500" /> },
+              { name: 'Search', pct: targetOrders.length > 0 ? '28%' : '0%', icon: <Search className="w-4 h-4 text-amber-500" /> },
             ].map((ts, idx) => (
               <div key={idx} className="flex justify-between items-center text-xs font-bold text-slate-800 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
                 <div className="flex items-center space-x-2.5">
@@ -256,24 +280,62 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events, orders = [],
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {[
-                  { type: 'Regular', sold: '13,600', pct: 85, rem: '2,400', rev: '#535,000.00' },
-                  { type: 'VIP', sold: '3,797', pct: 75, rem: '203', rev: '#252,000.00' },
-                  { type: 'VVIP', sold: '1,235', pct: 60, rem: '65', rev: '#150,000.00' },
-                  { type: 'Premium', sold: '100', pct: 95, rem: '10', rev: '#180,000.00' },
-                ].map((row, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50">
-                    <td className="py-3 px-4 font-bold text-slate-900">{row.type}</td>
-                    <td className="py-3 px-4 font-mono text-slate-700">{row.sold}</td>
-                    <td className="py-3 px-4">
-                      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#00C896] rounded-full" style={{ width: `${row.pct}%` }}></div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 font-mono text-slate-500">{row.rem}</td>
-                    <td className="py-3 px-4 font-mono text-right font-bold text-slate-900">{row.rev}</td>
-                  </tr>
-                ))}
+                {(() => {
+                  // Compute dynamic tier breakdown from events
+                  const activeEvts = selectedEvent === 'all' 
+                    ? events 
+                    : events.filter(e => e.id === selectedEvent);
+
+                  const tierMap: Record<string, { sold: number; capacity: number; revenue: number }> = {};
+                  
+                  activeEvts.forEach(evt => {
+                    evt.ticketTiers.forEach(tier => {
+                      if (!tierMap[tier.name]) {
+                        tierMap[tier.name] = { sold: 0, capacity: 0, revenue: 0 };
+                      }
+                      tierMap[tier.name].capacity += tier.availableQuantity;
+                    });
+                  });
+
+                  targetTickets.forEach(t => {
+                    if (tierMap[t.tierName]) {
+                      tierMap[t.tierName].sold += 1;
+                      tierMap[t.tierName].revenue += t.price;
+                    } else {
+                      tierMap[t.tierName] = { sold: 1, capacity: 1, revenue: t.price };
+                    }
+                  });
+
+                  const rows = Object.entries(tierMap);
+                  if (rows.length === 0) {
+                    return (
+                      <tr>
+                        <td colSpan={5} className="py-6 text-center text-slate-400">
+                          No ticket tier data available.
+                        </td>
+                      </tr>
+                    );
+                  }
+
+                  return rows.map(([tierName, data], idx) => {
+                    const pct = data.capacity > 0 ? Math.round((data.sold / data.capacity) * 100) : 0;
+                    const rem = Math.max(0, data.capacity - data.sold);
+
+                    return (
+                      <tr key={idx} className="hover:bg-slate-50">
+                        <td className="py-3 px-4 font-bold text-slate-900">{tierName}</td>
+                        <td className="py-3 px-4 font-mono text-slate-700">{data.sold.toLocaleString()}</td>
+                        <td className="py-3 px-4">
+                          <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-[#00C896] rounded-full" style={{ width: `${pct}%` }}></div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 font-mono text-slate-500">{rem.toLocaleString()}</td>
+                        <td className="py-3 px-4 font-mono text-right font-bold text-slate-900">{formatNaira(data.revenue)}</td>
+                      </tr>
+                    );
+                  });
+                })()}
               </tbody>
             </table>
           </div>
@@ -291,19 +353,19 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events, orders = [],
                 <span className="flex items-center gap-2 text-pink-600">
                   <Instagram className="w-4 h-4" /> Instagram
                 </span>
-                <span className="font-mono text-slate-900">30%</span>
+                <span className="font-mono text-slate-900">{targetOrders.length > 0 ? '30%' : '0%'}</span>
               </div>
               <div className="flex justify-between items-center text-xs font-bold text-slate-800 p-2 bg-slate-50 rounded-xl">
                 <span className="flex items-center gap-2 text-emerald-600">
                   <MessageCircle className="w-4 h-4" /> WhatsApp
                 </span>
-                <span className="font-mono text-slate-900">25%</span>
+                <span className="font-mono text-slate-900">{targetOrders.length > 0 ? '25%' : '0%'}</span>
               </div>
               <div className="flex justify-between items-center text-xs font-bold text-slate-800 p-2 bg-slate-50 rounded-xl">
                 <span className="flex items-center gap-2 text-sky-500">
                   <Twitter className="w-4 h-4" /> X (Twitter)
                 </span>
-                <span className="font-mono text-slate-900">10%</span>
+                <span className="font-mono text-slate-900">{targetOrders.length > 0 ? '10%' : '0%'}</span>
               </div>
             </div>
           </div>
@@ -316,32 +378,29 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events, orders = [],
               {/* Donut SVG */}
               <div className="w-28 h-28 relative shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                  {/* Segment 1: Card 55% */}
-                  <path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="#00C896"
-                    strokeWidth="4"
-                    strokeDasharray="55, 100"
-                  />
-                  {/* Segment 2: Bank Transfer 38% */}
-                  <path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="#F59E0B"
-                    strokeWidth="4"
-                    strokeDasharray="38, 100"
-                    strokeDashoffset="-55"
-                  />
-                  {/* Segment 3: USSD */}
-                  <path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="#64748B"
-                    strokeWidth="4"
-                    strokeDasharray="15, 100"
-                    strokeDashoffset="-93"
-                  />
+                  {targetOrders.length > 0 ? (
+                    <>
+                      {/* Segment 1: Card 55% */}
+                      <path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke="#00C896"
+                        strokeWidth="4"
+                        strokeDasharray="55, 100"
+                      />
+                      {/* Segment 2: Bank Transfer 38% */}
+                      <path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke="#F59E0B"
+                        strokeWidth="4"
+                        strokeDasharray="38, 100"
+                        strokeDashoffset="-55"
+                      />
+                    </>
+                  ) : (
+                    <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#E2E8F0" strokeWidth="4" />
+                  )}
                 </svg>
               </div>
 
@@ -351,19 +410,19 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events, orders = [],
                   <span className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#00C896]"></span> Card
                   </span>
-                  <span className="font-mono text-slate-900">55%</span>
+                  <span className="font-mono text-slate-900">{targetOrders.length > 0 ? '55%' : '0%'}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Bank Transfer
                   </span>
-                  <span className="font-mono text-slate-900">38%</span>
+                  <span className="font-mono text-slate-900">{targetOrders.length > 0 ? '38%' : '0%'}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-slate-500"></span> USSD
                   </span>
-                  <span className="font-mono text-slate-900">65%</span>
+                  <span className="font-mono text-slate-900">{targetOrders.length > 0 ? '7%' : '0%'}</span>
                 </div>
               </div>
             </div>
