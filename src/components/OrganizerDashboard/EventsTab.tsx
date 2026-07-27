@@ -172,7 +172,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({
 
       {/* Events List Cards */}
       <div className="space-y-4">
-        {filteredEvents.map((evt) => {
+        {filteredEvents.map((evt, idx) => {
           const totalTierCap = evt.ticketTiers.reduce((acc, t) => acc + t.availableQuantity, 0);
           const eventTickets = allTickets.filter(t => t.eventId === evt.id);
           const totalTierSold = eventTickets.length || evt.ticketTiers.reduce((acc, t) => acc + t.soldQuantity, 0);
@@ -233,10 +233,10 @@ export const EventsTab: React.FC<EventsTabProps> = ({
                   {getSalesVelocityBadge(idx)}
                   <div className="mt-2 text-xs font-bold text-slate-800 space-y-0.5">
                     <div className="font-mono text-slate-900 font-extrabold">
-                      {totalTierCap > 0 ? totalTierCap.toLocaleString() : '20,000'} <span className="text-[10px] text-slate-500 font-sans">Tickets</span>
+                      {totalTierCap.toLocaleString()} <span className="text-[10px] text-slate-500 font-sans">Tickets</span>
                     </div>
                     <div className="text-[11px] text-slate-500">
-                      {totalTierSold > 0 ? totalTierSold.toLocaleString() : '16,692'} Check-ins
+                      {totalTierSold.toLocaleString()} Check-ins
                     </div>
                   </div>
                 </div>
