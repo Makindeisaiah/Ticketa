@@ -1,21 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { EventItem, TicketTier } from '../../types';
 import { 
   X, 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  DollarSign, 
-  Ticket, 
   Plus, 
   Trash2, 
-  CheckCircle2, 
   Sparkles, 
-  Tag, 
-  ShieldCheck, 
-  Share2,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Upload,
+  Image as ImageIcon
 } from 'lucide-react';
 
 interface CreateEventModalProps {
@@ -38,25 +31,64 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
   // Form State
   const [title, setTitle] = useState(editingEvent?.title || '');
   const [category, setCategory] = useState(editingEvent?.category || 'Concerts');
-  const [organizerName, setOrganizerName] = useState(editingEvent?.organizerName || 'Event Organizer');
-  const [date, setDate] = useState(editingEvent?.date || 'Thu, Dec 25, 2025');
-  const [time, setTime] = useState(editingEvent?.time || '19:00 WAT');
-  const [venueName, setVenueName] = useState(editingEvent?.venueName || 'Eko Convention Center, VI');
-  const [address, setAddress] = useState(editingEvent?.address || 'Victoria Island, Lagos, Nigeria');
-  const [image, setImage] = useState(
-    editingEvent?.image || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1000&q=80'
-  );
-  const [description, setDescription] = useState(
-    editingEvent?.description || 'Davido returns to Lagos with a powerful live performance showcasing his greatest hits and new favorites.'
-  );
+  const [organizerName, setOrganizerName] = useState(editingEvent?.organizerName || '');
+  const [date, setDate] = useState(editingEvent?.date || '');
+  const [time, setTime] = useState(editingEvent?.time || '');
+  const [venueName, setVenueName] = useState(editingEvent?.venueName || '');
+  const [address, setAddress] = useState(editingEvent?.address || '');
+  const [image, setImage] = useState(editingEvent?.image || '');
+  const [description, setDescription] = useState(editingEvent?.description || '');
+  const [isUploading, setIsUploading] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Ticket Tiers State
   const [ticketTiers, setTicketTiers] = useState<TicketTier[]>(
     editingEvent?.ticketTiers || [
-      { id: 'tier-1', name: 'Regular', price: 30000, availableQuantity: 1000, soldQuantity: 0, maxPerOrder: 6, description: 'Standard arena admission' },
-      { id: 'tier-2', name: 'VIP', price: 100000, availableQuantity: 200, soldQuantity: 0, maxPerOrder: 4, description: 'VIP elevated viewing deck' }
+      { id: 'tier-1', name: 'Regular', price: 10000, availableQuantity: 500, soldQuantity: 0, maxPerOrder: 6, description: 'General Admission' },
+      { id: 'tier-2', name: 'VIP', price: 50000, availableQuantity: 100, soldQuantity: 0, maxPerOrder: 4, description: 'VIP Area Access' }
     ]
   );
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+  };
+
+  const processFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file (PNG, JPG, WEBP, etc.)');
+      return;
+    }
+    setIsUploading(true);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setImage(event.target.result as string);
+      }
+      setIsUploading(false);
+    };
+    reader.onerror = () => {
+      alert('Failed to read image file');
+      setIsUploading(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0]);
+    }
+  };
 
   // Add tier helper
   const handleAddTier = () => {
@@ -65,11 +97,11 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
       {
         id: `tier-${Date.now()}`,
         name: 'New Tier',
-        price: 50000,
-        availableQuantity: 500,
+        price: 25000,
+        availableQuantity: 200,
         soldQuantity: 0,
         maxPerOrder: 4,
-        description: 'Pass access tier'
+        description: 'Ticket access tier'
       }
     ]);
   };
@@ -86,24 +118,27 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
   };
 
   const handleFinalSubmit = () => {
+    const defaultPlaceholderImage = 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1000&q=80';
+    const finalImage = image || defaultPlaceholderImage;
+
     const eventObj: EventItem = {
       id: editingEvent ? editingEvent.id : `evt-${Date.now()}`,
-      title,
-      category,
-      organizerName,
-      date,
-      time,
-      location: address,
-      venueName,
-      address,
-      image,
-      bannerImage: image,
-      description,
+      title: title || 'Untitled Event',
+      category: category || 'Concerts',
+      organizerName: organizerName || 'Event Organizer',
+      date: date || 'Dec 25, 2026',
+      time: time || '19:00 WAT',
+      location: address || venueName || 'Lagos, Nigeria',
+      venueName: venueName || 'Main Arena',
+      address: address || venueName || 'Lagos, Nigeria',
+      image: finalImage,
+      bannerImage: finalImage,
+      description: description || 'Experience an unforgettable event live with us.',
       featured: true,
-      tags: ['Afrobeats', 'Concert', 'Live Music'],
-      expectations: ['Live performance', 'Guest artists', 'Stage lighting'],
+      tags: ['Live Event', category],
+      expectations: ['Live performance', 'High energy atmosphere', 'E-tickets scanning'],
       refundPolicy: 'Non-refundable except event cancellation.',
-      importantInfo: ['Gates open 5:00 PM', 'E-tickets required'],
+      importantInfo: ['Gates open 2 hours prior', 'E-tickets required for entry'],
       ticketTiers
     };
 
@@ -169,7 +204,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                   type="text"
                   value={title}
                   onChange={e => setTitle(e.target.value)}
-                  placeholder="e.g. Davido Live in Lagos"
+                  placeholder="e.g. Lagos Afrobeats Festival 2026"
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold text-sm outline-none"
                 />
               </div>
@@ -196,6 +231,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                     type="text"
                     value={organizerName}
                     onChange={e => setOrganizerName(e.target.value)}
+                    placeholder="e.g. Ticketa Events Ltd"
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none"
                   />
                 </div>
@@ -208,7 +244,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                     type="text"
                     value={date}
                     onChange={e => setDate(e.target.value)}
-                    placeholder="Thu, Dec 25, 2025"
+                    placeholder="e.g. Fri, Dec 25, 2026"
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none"
                   />
                 </div>
@@ -219,7 +255,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                     type="text"
                     value={time}
                     onChange={e => setTime(e.target.value)}
-                    placeholder="19:00 WAT"
+                    placeholder="e.g. 19:00 WAT"
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none"
                   />
                 </div>
@@ -232,7 +268,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                     type="text"
                     value={venueName}
                     onChange={e => setVenueName(e.target.value)}
-                    placeholder="Eko Convention Center, VI"
+                    placeholder="e.g. Eko Hotel Arena"
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none"
                   />
                 </div>
@@ -243,21 +279,73 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                     type="text"
                     value={address}
                     onChange={e => setAddress(e.target.value)}
-                    placeholder="Victoria Island, Lagos"
+                    placeholder="e.g. Victoria Island, Lagos"
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none"
                   />
                 </div>
               </div>
 
+              {/* Cover Image Upload from Device */}
               <div>
-                <label className="block text-slate-700 font-bold mb-1">Cover Image URL</label>
+                <label className="block text-slate-700 font-bold mb-1 flex items-center justify-between">
+                  <span>Cover Image</span>
+                  <span className="text-[10px] text-slate-400 font-normal">Upload photo from device</span>
+                </label>
+
                 <input
-                  type="text"
-                  value={image}
-                  onChange={e => setImage(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 outline-none"
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
                 />
+
+                {image ? (
+                  <div className="relative rounded-2xl overflow-hidden border border-slate-200 group bg-slate-900/5">
+                    <img
+                      src={image}
+                      alt="Cover Preview"
+                      className="w-full h-44 object-cover rounded-2xl"
+                    />
+                    <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-3.5 py-2 bg-white/95 hover:bg-white text-slate-900 font-extrabold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition"
+                      >
+                        <Upload className="w-3.5 h-3.5 text-[#00C896]" />
+                        <span>Change Photo</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setImage('')}
+                        className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Remove</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-slate-300 hover:border-[#00C896] bg-slate-50 hover:bg-emerald-50/40 rounded-2xl p-6 text-center cursor-pointer transition flex flex-col items-center justify-center space-y-2 group"
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-[#00C896] group-hover:scale-105 transition flex items-center justify-center shadow-sm">
+                      <Upload className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="font-extrabold text-slate-800 text-xs">
+                        {isUploading ? 'Processing image...' : 'Click to select image file from device'}
+                      </p>
+                      <p className="text-[10px] text-slate-400 font-medium">
+                        Supports PNG, JPG, WEBP, GIF (Drag & drop available)
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -266,6 +354,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                   rows={3}
                   value={description}
                   onChange={e => setDescription(e.target.value)}
+                  placeholder="Provide details about your event, line-up, performance schedule..."
                   className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-normal outline-none"
                 />
               </div>
