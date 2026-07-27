@@ -23,27 +23,39 @@ interface AnalyticsTabProps {
   allTickets?: TicketPass[];
 }
 
-export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events, orders = [], allTickets = [] }) => {
+export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders = [], allTickets = [] }) => {
   const [selectedEvent, setSelectedEvent] = useState('all');
   const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
   const formatNaira = (amount: number) => {
-    return '₦ ' + amount.toLocaleString('en-US');
+    const val = Number.isNaN(amount) || amount === undefined || amount === null ? 0 : amount;
+    return '₦ ' + val.toLocaleString('en-US');
   };
 
+  const safeEvents = Array.isArray(events) ? events : [];
+  const safeOrders = Array.isArray(orders) ? orders : [];
+  const safeTickets = Array.isArray(allTickets) ? allTickets : [];
+
   const targetOrders = selectedEvent === 'all' 
-    ? orders 
-    : orders.filter(o => o.eventId === selectedEvent);
+    ? safeOrders 
+    : safeOrders.filter(o => o && o.eventId === selectedEvent);
 
   const targetTickets = selectedEvent === 'all'
-    ? allTickets
-    : allTickets.filter(t => t.eventId === selectedEvent);
+    ? safeTickets
+    : safeTickets.filter(t => t && t.eventId === selectedEvent);
 
   const targetCapacity = selectedEvent === 'all'
-    ? events.reduce((acc, e) => acc + e.ticketTiers.reduce((s, t) => s + t.availableQuantity, 0), 0)
-    : (events.find(e => e.id === selectedEvent)?.ticketTiers.reduce((s, t) => s + t.availableQuantity, 0) || 0);
+    ? safeEvents.reduce((acc, e) => {
+        const tiers = Array.isArray(e?.ticketTiers) ? e.ticketTiers : [];
+        return acc + tiers.reduce((s, t) => s + (t?.availableQuantity || 0), 0);
+      }, 0)
+    : (() => {
+        const found = safeEvents.find(e => e && e.id === selectedEvent);
+        const tiers = Array.isArray(found?.ticketTiers) ? found.ticketTiers : [];
+        return tiers.reduce((s, t) => s + (t?.availableQuantity || 0), 0);
+      })();
 
-  const totalRevenue = targetOrders.reduce((acc, o) => acc + o.totalAmount, 0);
+  const totalRevenue = targetOrders.reduce((acc, o) => acc + (o?.totalAmount || 0), 0);
   const ticketsRemaining = Math.max(0, targetCapacity - targetTickets.length);
   const conversionRate = targetTickets.length > 0 ? ((targetTickets.length / (targetCapacity || 1)) * 100).toFixed(1) + '%' : '0.0%';
 
@@ -67,9 +79,9 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events, orders = [],
             className="px-4 py-2 bg-[#00C896] text-white font-extrabold text-xs rounded-xl border-none outline-none cursor-pointer pr-8 appearance-none shadow-md shadow-[#00C896]/20"
           >
             <option value="all">All Events</option>
-            {events.map(e => (
-              <option key={e.id} value={e.id}>{e.title}</option>
-            ))}
+            {safeEvents.map(e => e && e.id ? (
+              <option key={e.id} value={e.id}>{e.title || 'Untitled Event'}</option>
+            ) : null)}
           </select>
           <ChevronDown className="w-4 h-4 text-white absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
@@ -283,26 +295,31 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events, orders = [],
                 {(() => {
                   // Compute dynamic tier breakdown from events
                   const activeEvts = selectedEvent === 'all' 
-                    ? events 
-                    : events.filter(e => e.id === selectedEvent);
+                    ? safeEvents 
+                    : safeEvents.filter(e => e && e.id === selectedEvent);
 
                   const tierMap: Record<string, { sold: number; capacity: number; revenue: number }> = {};
                   
                   activeEvts.forEach(evt => {
-                    evt.ticketTiers.forEach(tier => {
-                      if (!tierMap[tier.name]) {
-                        tierMap[tier.name] = { sold: 0, capacity: 0, revenue: 0 };
+                    const tiers = Array.isArray(evt?.ticketTiers) ? evt.ticketTiers : [];
+                    tiers.forEach(tier => {
+                      if (tier && tier.name) {
+                        if (!tierMap[tier.name]) {
+                          tierMap[tier.name] = { sold: 0, capacity: 0, revenue: 0 };
+                        }
+                        tierMap[tier.name].capacity += (tier.availableQuantity || 0);
                       }
-                      tierMap[tier.name].capacity += tier.availableQuantity;
                     });
                   });
 
                   targetTickets.forEach(t => {
-                    if (tierMap[t.tierName]) {
-                      tierMap[t.tierName].sold += 1;
-                      tierMap[t.tierName].revenue += t.price;
+                    const tName = t?.tierName || 'Regular';
+                    const tPrice = t?.price || 0;
+                    if (tierMap[tName]) {
+                      tierMap[tName].sold += 1;
+                      tierMap[tName].revenue += tPrice;
                     } else {
-                      tierMap[t.tierName] = { sold: 1, capacity: 1, revenue: t.price };
+                      tierMap[tName] = { sold: 1, capacity: 1, revenue: tPrice };
                     }
                   });
 
