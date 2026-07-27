@@ -15,6 +15,7 @@ import { CheckInsTab } from './CheckInsTab';
 import { SettingsTab } from './SettingsTab';
 import { RefundsTab } from './RefundsTab';
 import { CreateEventModal } from './CreateEventModal';
+import { DeleteEventModal } from './DeleteEventModal';
 import { RevenueWithdrawModal } from './RevenueWithdrawModal';
 import { OrganizerCheckInModal } from './OrganizerCheckInModal';
 import { NotificationCenterModal } from '../NotificationCenterModal';
@@ -26,6 +27,7 @@ export const OrganizerDashboard: React.FC = () => {
     orders, 
     allTickets, 
     createNewEvent, 
+    deleteEvent,
     seedLiveSales 
   } = useEventContext();
 
@@ -54,6 +56,14 @@ export const OrganizerDashboard: React.FC = () => {
 
   const [revenueModalEvent, setRevenueModalEvent] = useState<EventItem | null>(null);
   const [isRevenueModalOpen, setIsRevenueModalOpen] = useState(false);
+
+  const [deletingEvent, setDeletingEvent] = useState<EventItem | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const handleOpenDeleteModal = (evt: EventItem) => {
+    setDeletingEvent(evt);
+    setIsDeleteModalOpen(true);
+  };
 
   const [isCheckInModalOpen, setIsCheckInModalOpen] = useState(false);
   const [checkInModalMode, setCheckInModalMode] = useState<'scan' | 'manual'>('scan');
@@ -163,6 +173,7 @@ export const OrganizerDashboard: React.FC = () => {
               onSelectEvent={(id) => handleOpenRevenueModal(id)}
               onViewRevenue={(id) => handleOpenRevenueModal(id)}
               onEditEvent={(evt) => handleOpenEditModal(evt)}
+              onDeleteEvent={(evt) => handleOpenDeleteModal(evt)}
             />
           )}
 
@@ -222,6 +233,16 @@ export const OrganizerDashboard: React.FC = () => {
         onClose={() => setIsRevenueModalOpen(false)}
         event={revenueModalEvent}
         orders={orders}
+      />
+
+      {/* Delete Event Safety Modal */}
+      <DeleteEventModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        event={deletingEvent}
+        orders={orders}
+        allTickets={allTickets}
+        onConfirmDelete={deleteEvent}
       />
 
       {/* Organizer Scanner & Check-In Modal */}

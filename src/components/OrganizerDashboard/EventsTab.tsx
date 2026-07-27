@@ -17,7 +17,8 @@ import {
   Edit,
   ExternalLink,
   Eye,
-  ArrowUpRight
+  ArrowUpRight,
+  Trash2
 } from 'lucide-react';
 
 interface EventsTabProps {
@@ -28,6 +29,7 @@ interface EventsTabProps {
   onSelectEvent: (eventId: string) => void;
   onViewRevenue: (eventId: string) => void;
   onEditEvent: (event: EventItem) => void;
+  onDeleteEvent?: (event: EventItem) => void;
 }
 
 export const EventsTab: React.FC<EventsTabProps> = ({
@@ -37,7 +39,8 @@ export const EventsTab: React.FC<EventsTabProps> = ({
   onCreateEventClick,
   onSelectEvent,
   onViewRevenue,
-  onEditEvent
+  onEditEvent,
+  onDeleteEvent
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
@@ -270,37 +273,51 @@ export const EventsTab: React.FC<EventsTabProps> = ({
                   </button>
 
                   {openDropdownId === evt.id && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-1 z-50 text-xs font-bold text-slate-700">
-                      <button
-                        onClick={() => {
-                          onSelectEvent(evt.id);
-                          setOpenDropdownId(null);
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2"
-                      >
-                        <Eye className="w-3.5 h-3.5 text-[#00C896]" />
-                        Manage Event
-                      </button>
-                      <button
-                        onClick={() => {
-                          onEditEvent(evt);
-                          setOpenDropdownId(null);
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2"
-                      >
-                        <Edit className="w-3.5 h-3.5 text-blue-500" />
-                        Edit Event
-                      </button>
-                      <button
-                        onClick={() => {
-                          onViewRevenue(evt.id);
-                          setOpenDropdownId(null);
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2"
-                      >
-                        <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500" />
-                        Withdraw Earnings
-                      </button>
+                    <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-200 py-1 z-50 text-xs font-bold text-slate-700 divide-y divide-slate-100">
+                      <div className="py-1">
+                        <button
+                          onClick={() => {
+                            onSelectEvent(evt.id);
+                            setOpenDropdownId(null);
+                          }}
+                          className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2.5 transition"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-[#00C896]" />
+                          <span>Manage Event</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            onEditEvent(evt);
+                            setOpenDropdownId(null);
+                          }}
+                          className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2.5 transition"
+                        >
+                          <Edit className="w-3.5 h-3.5 text-blue-500" />
+                          <span>Edit Event</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            onViewRevenue(evt.id);
+                            setOpenDropdownId(null);
+                          }}
+                          className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2.5 transition"
+                        >
+                          <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500" />
+                          <span>Withdraw Earnings</span>
+                        </button>
+                      </div>
+                      <div className="py-1">
+                        <button
+                          onClick={() => {
+                            if (onDeleteEvent) onDeleteEvent(evt);
+                            setOpenDropdownId(null);
+                          }}
+                          className="w-full text-left px-4 py-2 hover:bg-rose-50 text-rose-600 flex items-center gap-2.5 transition"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                          <span>Delete Event</span>
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

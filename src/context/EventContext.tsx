@@ -160,6 +160,7 @@ interface EventContextType {
   loginUser: (email: string) => TicketaUser | null;
   logoutUser: () => void;
   createNewEvent: (eventData: Omit<EventItem, 'id'>) => void;
+  deleteEvent: (eventId: string) => Promise<void>;
   purchaseTickets: (
     eventId: string,
     tierId: string,
@@ -522,6 +523,57 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     triggerNotification(`Event "${newEvent.title}" published successfully!`);
+  };
+
+  const deleteEvent = async (eventId: string) => {
+    const targetEvent = events.find(e => e.id === eventId);
+    if (!targetEvent) return;
+
+    const affectedOrders = orders.filter(o => o.eventId === eventId);
+    const affectedTickets = allTickets.filter(t => t.eventId === eventId);
+    const totalRefundAmount = affectedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
+
+    // Update local states
+    setEvents(prev => prev.filter(e => e.id !== eventId));
+    setOrders(prev => prev.filter(o => o.eventId !== eventId));
+    setAllTickets(prev => prev.filter(t => t.eventId !== eventId));
+
+    // Log cancellation & refund notifications
+    if (affectedOrders.length > 0) {
+      affectedOrders.forEach(ord => {
+        const notifLog: NotificationLog = {
+          id: `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          orderId: ord.id,
+          type: 'EMAIL',
+          recipient: ord.customerEmail,
+          subject: `🚨 EVENT CANCELLED: ${targetEvent.title} - Full Refund Processed`,
+          bodyPreview: `We regret to inform you that "${targetEvent.title}" has been cancelled. A full refund of ₦${ord.totalAmount.toLocaleString()} has been initiated to your original payment method.`,
+          sentAt: new Date().toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
+          status: 'DELIVERED'
+        };
+        setNotificationLogs(prev => [notifLog, ...prev]);
+      });
+    }
+
+    // Delete from Firestore
+    try {
+      await deleteDoc(doc(db, 'events', eventId));
+      for (const ord of affectedOrders) {
+        await deleteDoc(doc(db, 'orders', ord.id));
+      }
+      for (const tkt of affectedTickets) {
+        await deleteDoc(doc(db, 'tickets', tkt.ticketCode));
+        await deleteDoc(doc(db, 'qr_tickets', `qr-${tkt.ticketCode}`));
+      }
+    } catch (err) {
+      console.error('Error deleting event from Firestore:', err);
+    }
+
+    if (affectedOrders.length > 0) {
+      triggerNotification(`Event "${targetEvent.title}" deleted. ₦${totalRefundAmount.toLocaleString()} refunded to ${affectedOrders.length} buyer(s).`);
+    } else {
+      triggerNotification(`Event "${targetEvent.title}" deleted successfully.`);
+    }
   };
 
   const registerUser = (details: { fullName: string; email: string; phone: string; emailVerified?: boolean }): TicketaUser => {
@@ -1238,6 +1290,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         loginUser,
         logoutUser,
         createNewEvent,
+        deleteEvent,
         purchaseTickets,
         scanAndCheckInTicket,
         manualCheckInByEmail,
