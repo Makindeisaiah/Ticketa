@@ -49,7 +49,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   const totalTicketSoldDisplay = allTickets.length;
   const totalTicketCapacity = events.reduce((acc, evt) => {
     return acc + evt.ticketTiers.reduce((tAcc, t) => tAcc + t.availableQuantity, 0);
-  }, 0) || 1000;
+  }, 0);
   
   const upcomingEventsCount = events.length;
   

@@ -221,20 +221,56 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {[
-                { type: 'Regular', price: '#10,000', sold: '23,530', left: '1,750', rev: '#450,000,000' },
-                { type: 'VIP', price: '#30,000', sold: '12,095', left: '405', rev: '#350,000,000' },
-                { type: 'VVIP', price: '#100,000', sold: '2,100', left: '0', rev: '#350,000,000' },
-                { type: 'Premium', price: '#3,500,000', sold: '250', left: '0', rev: '#369,000,000' },
-              ].map((row, idx) => (
-                <tr key={idx} className="hover:bg-slate-50">
-                  <td className="py-3.5 px-4 font-bold text-slate-900">{row.type}</td>
-                  <td className="py-3.5 px-4 font-mono text-slate-600">{row.price}</td>
-                  <td className="py-3.5 px-4 font-mono text-slate-900 font-bold">{row.sold}</td>
-                  <td className="py-3.5 px-4 font-mono text-slate-500">{row.left}</td>
-                  <td className="py-3.5 px-4 font-mono text-right font-black text-[#00C896]">{row.rev}</td>
-                </tr>
-              ))}
+              {(() => {
+                const relevantEvents = selectedEvent === 'all' 
+                  ? events 
+                  : events.filter(e => e.id === selectedEvent);
+
+                const tierPerformanceMap = new Map<string, { price: number; sold: number; available: number; rev: number }>();
+
+                relevantEvents.forEach(evt => {
+                  evt.ticketTiers.forEach(tier => {
+                    const existing = tierPerformanceMap.get(tier.name) || { price: tier.price, sold: 0, available: 0, rev: 0 };
+                    const tierTickets = targetTickets.filter(t => t.tierName.toLowerCase() === tier.name.toLowerCase());
+                    const soldCount = tierTickets.length || tier.soldQuantity;
+                    const rev = soldCount * tier.price;
+                    tierPerformanceMap.set(tier.name, {
+                      price: tier.price,
+                      sold: existing.sold + soldCount,
+                      available: existing.available + tier.availableQuantity,
+                      rev: existing.rev + rev
+                    });
+                  });
+                });
+
+                const tierRows = Array.from(tierPerformanceMap.entries()).map(([type, data]) => ({
+                  type,
+                  price: formatNaira(data.price),
+                  sold: data.sold.toLocaleString(),
+                  left: data.available.toLocaleString(),
+                  rev: formatNaira(data.rev)
+                }));
+
+                if (tierRows.length === 0) {
+                  return (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-400 font-semibold text-xs">
+                        No ticket performance data available.
+                      </td>
+                    </tr>
+                  );
+                }
+
+                return tierRows.map((row, idx) => (
+                  <tr key={idx} className="hover:bg-slate-50">
+                    <td className="py-3.5 px-4 font-bold text-slate-900">{row.type}</td>
+                    <td className="py-3.5 px-4 font-mono text-slate-600">{row.price}</td>
+                    <td className="py-3.5 px-4 font-mono text-slate-900 font-bold">{row.sold}</td>
+                    <td className="py-3.5 px-4 font-mono text-slate-500">{row.left}</td>
+                    <td className="py-3.5 px-4 font-mono text-right font-black text-[#00C896]">{row.rev}</td>
+                  </tr>
+                ));
+              })()}
             </tbody>
           </table>
         </div>
@@ -286,48 +322,45 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {[
-                { id: 'ORD-362782', buyer: 'Makinde Isaiah', tier: 'VIP', qty: 2, amount: '#200,000', method: 'Card', status: 'Pending', date: 'Dec 10, 2025 - 10:25' },
-                { id: 'ORD-362437', buyer: 'Taofeek Alabi', tier: 'Regular', qty: 1, amount: '#30,000', method: 'Transfer', status: 'Paid', date: 'Dec 11, 2025 - 11:50' },
-                { id: 'ORD-362290', buyer: 'Mary Alexander', tier: 'VVIP', qty: 1, amount: '#1,500,000', method: 'USSD', status: 'Failed', date: 'Dec 11, 2025 - 12:00' },
-                { id: 'ORD-362111', buyer: 'Tokunbo Popoola', tier: 'Premium', qty: 2, amount: '#6,000,000', method: 'Card', status: 'Paid', date: 'Dec 11, 2025 - 12:30' },
-                { id: 'ORD-362202', buyer: 'Shina Alade', tier: 'Regular', qty: 3, amount: '#90,000', method: 'Transfer', status: 'Paid', date: 'Dec 12, 2025 - 10:00' },
-                { id: 'ORD-366552', buyer: 'Pedro Alex', tier: 'VIP', qty: 1, amount: '#100,000', method: 'Card', status: 'Paid', date: 'Dec 12, 2025 - 11:45' },
-                { id: 'ORD-361823', buyer: 'John Olanrewaju', tier: 'Regular', qty: 2, amount: '#60,000', method: 'USSD', status: 'Paid', date: 'Dec 12, 2025 - 14:39' },
-              ].map((row, idx) => (
-                <tr key={idx} className="hover:bg-slate-50">
-                  <td className="py-3 px-4 font-mono font-bold text-[#00C896]">{row.id}</td>
-                  <td className="py-3 px-4 font-bold text-slate-900">{row.buyer}</td>
-                  <td className="py-3 px-4 text-slate-600">{row.tier}</td>
-                  <td className="py-3 px-4 font-mono text-slate-800">{row.qty}</td>
-                  <td className="py-3 px-4 font-mono font-bold text-slate-900">{row.amount}</td>
-                  <td className="py-3 px-4 text-slate-600">{row.method}</td>
-                  <td className="py-3 px-4">
-                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${
-                      row.status === 'Paid'
-                        ? 'bg-emerald-100 text-[#00C896]'
-                        : row.status === 'Pending'
-                        ? 'bg-amber-100 text-amber-700'
-                        : 'bg-rose-100 text-rose-600'
-                    }`}>
-                      {row.status}
-                    </span>
+              {filteredOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-8 text-center text-slate-400 font-semibold text-xs">
+                    No ticket sales or buyer transactions recorded yet.
                   </td>
-                  <td className="py-3 px-4 text-[11px] text-slate-400 font-mono">{row.date}</td>
                 </tr>
-              ))}
+              ) : (
+                filteredOrders.map((ord) => (
+                  <tr key={ord.id} className="hover:bg-slate-50 transition">
+                    <td className="py-3 px-4 font-mono font-bold text-[#00C896]">{ord.id}</td>
+                    <td className="py-3 px-4 font-bold text-slate-900">{ord.customerName}</td>
+                    <td className="py-3 px-4 text-slate-600">{ord.tickets[0]?.tierName || 'Regular'}</td>
+                    <td className="py-3 px-4 font-mono text-slate-800">{ord.tickets.length}</td>
+                    <td className="py-3 px-4 font-mono font-bold text-slate-900">{formatNaira(ord.totalAmount)}</td>
+                    <td className="py-3 px-4 text-slate-600">{ord.paymentMethod || 'Card'}</td>
+                    <td className="py-3 px-4">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-emerald-100 text-[#00C896]">
+                        PAID
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-[11px] text-slate-400 font-mono">{ord.purchaseDate}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
         <div className="flex justify-between items-center text-xs font-bold pt-2">
-          <span className="text-slate-500">Showing 1 to 10 of 40</span>
-          <div className="flex space-x-1">
-            <button className="w-7 h-7 rounded-lg bg-[#00C896] text-white flex items-center justify-center">1</button>
-            <button className="w-7 h-7 rounded-lg border border-slate-200 text-slate-600 flex items-center justify-center">2</button>
-            <button className="w-7 h-7 rounded-lg border border-slate-200 text-slate-600 flex items-center justify-center">3</button>
-            <button className="w-7 h-7 rounded-lg border border-slate-200 text-slate-600 flex items-center justify-center">4</button>
-          </div>
+          <span className="text-slate-500">
+            {filteredOrders.length === 0 
+              ? 'Showing 0 of 0 transactions' 
+              : `Showing 1 to ${filteredOrders.length} of ${filteredOrders.length}`}
+          </span>
+          {filteredOrders.length > 0 && (
+            <div className="flex space-x-1">
+              <button className="w-7 h-7 rounded-lg bg-[#00C896] text-white flex items-center justify-center">1</button>
+            </div>
+          )}
         </div>
       </div>
 

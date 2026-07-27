@@ -185,53 +185,46 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [currentPlatform, setCurrentPlatform] = useState<PlatformType>('attendee-mobile');
   
   const [events, setEvents] = useState<EventItem[]>(() => {
+    const isCleaned = localStorage.getItem('tix_clean_zero_v4');
+    if (!isCleaned) {
+      localStorage.removeItem('tix_events');
+      localStorage.removeItem('tix_orders');
+      localStorage.removeItem('tix_all_tickets');
+      localStorage.removeItem('tix_qr_tickets');
+      localStorage.removeItem('tix_users');
+      localStorage.removeItem('tix_saved_events');
+      localStorage.removeItem('tix_promos');
+      localStorage.setItem('tix_clean_zero_v4', 'true');
+      return [];
+    }
     const saved = localStorage.getItem('tix_events');
-    if (!saved) return INITIAL_EVENTS;
+    if (!saved) return [];
     try {
-      const parsed = JSON.parse(saved) as EventItem[];
-      const mapped = parsed.map(data => {
-        const defaultEvt = INITIAL_EVENTS.find(i => i.id === data.id);
-        if (defaultEvt) {
-          return {
-            ...data,
-            image: defaultEvt.image,
-            bannerImage: defaultEvt.bannerImage,
-            title: defaultEvt.title,
-            location: defaultEvt.location,
-            venueName: defaultEvt.venueName,
-          };
-        }
-        return data;
-      });
-      // Append any new initial events not present in stored state
-      const missingInitial = INITIAL_EVENTS.filter(initEvt => !mapped.some(m => m.id === initEvt.id));
-      return [...missingInitial, ...mapped];
+      return JSON.parse(saved) as EventItem[];
     } catch {
-      return INITIAL_EVENTS;
+      return [];
     }
   });
 
   const [orders, setOrders] = useState<Order[]>(() => {
-    const isCleaned = localStorage.getItem('tix_clean_zero_v2');
-    if (!isCleaned) {
-      localStorage.removeItem('tix_orders');
-      localStorage.removeItem('tix_all_tickets');
-      localStorage.setItem('tix_clean_zero_v2', 'true');
+    const saved = localStorage.getItem('tix_orders');
+    if (!saved) return [];
+    try {
+      const list = JSON.parse(saved);
+      return Array.isArray(list) ? list : [];
+    } catch {
       return [];
     }
-    const saved = localStorage.getItem('tix_orders');
-    const list = saved ? JSON.parse(saved) : INITIAL_ORDERS;
-    return Array.isArray(list) ? list.slice(0, 20) : INITIAL_ORDERS;
   });
 
   const [allTickets, setAllTickets] = useState<TicketPass[]>(() => {
-    const isCleaned = localStorage.getItem('tix_clean_zero_v2');
-    if (!isCleaned) {
+    const saved = localStorage.getItem('tix_all_tickets');
+    if (!saved) return [];
+    try {
+      return JSON.parse(saved);
+    } catch {
       return [];
     }
-    const saved = localStorage.getItem('tix_all_tickets');
-    if (saved) return JSON.parse(saved);
-    return INITIAL_ORDERS.flatMap(order => order.tickets);
   });
 
   const [qrTickets, setQrTickets] = useState<QrTicket[]>(() => {
@@ -241,12 +234,12 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [promos, setPromos] = useState<PromoCode[]>(() => {
     const saved = localStorage.getItem('tix_promos');
-    return saved ? JSON.parse(saved) : INITIAL_PROMOS;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [savedEventIds, setSavedEventIds] = useState<string[]>(() => {
     const saved = localStorage.getItem('tix_saved_events');
-    return saved ? JSON.parse(saved) : ['evt-davido-crystal-palace', 'evt-burna'];
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [userProfile, setUserProfile] = useState<UserProfile>(() => {
@@ -256,7 +249,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [users, setUsers] = useState<TicketaUser[]>(() => {
     const saved = localStorage.getItem('tix_users');
-    return saved ? JSON.parse(saved) : INITIAL_USERS;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [currentUser, setCurrentUser] = useState<TicketaUser | null>(() => {
@@ -264,7 +257,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return saved ? JSON.parse(saved) : null;
   });
 
-  const [selectedEventId, setSelectedEventId] = useState<string | null>('evt-davido-crystal-palace');
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [activeNotification, setActiveNotification] = useState<string | null>(null);
 
   // Offline Mode & Sync Queue States
@@ -344,43 +337,28 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const eventsCol = collection(db, 'events');
       unsubscribeEvents = onSnapshot(eventsCol, (snapshot) => {
         if (!snapshot.empty) {
-          const loadedEvents = snapshot.docs.map(docSnap => {
-            const data = docSnap.data() as EventItem;
-            const defaultEvt = INITIAL_EVENTS.find(i => i.id === data.id);
-            
-            let image = data.image;
-            let bannerImage = data.bannerImage;
-
-            if (EVENT_IMAGE_OVERRIDE_MAP[data.id]) {
-              image = EVENT_IMAGE_OVERRIDE_MAP[data.id];
-              bannerImage = EVENT_IMAGE_OVERRIDE_MAP[data.id];
-            } else if (data.title?.toLowerCase().includes('asake')) {
-              image = EVENT_IMAGE_OVERRIDE_MAP['evt-asake'];
-              bannerImage = EVENT_IMAGE_OVERRIDE_MAP['evt-asake'];
-            } else if (data.title?.toLowerCase().includes('davido') || data.title?.toLowerCase().includes('crystal palace')) {
-              image = EVENT_IMAGE_OVERRIDE_MAP['evt-davido-crystal-palace'];
-              bannerImage = EVENT_IMAGE_OVERRIDE_MAP['evt-davido-crystal-palace'];
-            } else if (defaultEvt) {
-              image = defaultEvt.image;
-              bannerImage = defaultEvt.bannerImage;
+          const legacyIds = [
+            'evt-asake', 'evt-ay-lojik-koko-bar', 'evt-1300saint-savior-tour', 
+            'evt-davido-crystal-palace', 'evt-burna', 'evt-hardy', 'evt-c5', 
+            'evt-travis', 'evt-bovi', 'evt-ayuk', 'evt-ayjam', 'evt-lagoshack', 
+            'evt-devops', 'evt-igbesa', 'evt-davido'
+          ];
+          
+          // Purge legacy mock documents from Firestore if present
+          snapshot.docs.forEach(async (docSnap) => {
+            if (legacyIds.includes(docSnap.id)) {
+              try { await deleteDoc(doc(db, 'events', docSnap.id)); } catch (e) {}
             }
-
-            return {
-              ...data,
-              image,
-              bannerImage,
-              title: defaultEvt ? defaultEvt.title : data.title,
-              location: defaultEvt ? defaultEvt.location : data.location,
-              venueName: defaultEvt ? defaultEvt.venueName : data.venueName,
-            };
           });
+
+          const loadedEvents = snapshot.docs
+            .map(docSnap => docSnap.data() as EventItem)
+            .filter(e => !legacyIds.includes(e.id));
+
           setEvents(loadedEvents);
           localStorage.setItem('tix_events', JSON.stringify(loadedEvents));
         } else {
-          // Seed Initial Events to Firestore if empty
-          INITIAL_EVENTS.forEach(async (evt) => {
-            await setDoc(doc(db, 'events', evt.id), evt);
-          });
+          setEvents([]);
         }
       }, (err) => {
         console.warn('Firestore events listener error, using local state:', err);
@@ -390,26 +368,28 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const ordersCol = collection(db, 'orders');
       unsubscribeOrders = onSnapshot(ordersCol, (snapshot) => {
         if (!snapshot.empty) {
-          const loadedOrders = snapshot.docs.map(docSnap => docSnap.data() as Order);
-          const cappedOrders = loadedOrders.slice(0, 20);
-          setOrders(cappedOrders);
-          localStorage.setItem('tix_orders', JSON.stringify(cappedOrders));
+          const legacyEventIds = [
+            'evt-asake', 'evt-ay-lojik-koko-bar', 'evt-1300saint-savior-tour', 
+            'evt-davido-crystal-palace', 'evt-burna', 'evt-hardy', 'evt-c5', 
+            'evt-travis', 'evt-bovi', 'evt-ayuk', 'evt-ayjam', 'evt-lagoshack', 
+            'evt-devops', 'evt-igbesa', 'evt-davido'
+          ];
 
-          // Delete excess order records from Firestore
-          if (snapshot.docs.length > 20) {
-            snapshot.docs.slice(20).forEach(async (docSnap) => {
-              try {
-                await deleteDoc(doc(db, 'orders', docSnap.id));
-              } catch (e) {
-                console.error('Error deleting excess order from Firestore:', e);
-              }
-            });
-          }
-        } else {
-          // Seed Initial Orders to Firestore if empty
-          INITIAL_ORDERS.forEach(async (ord) => {
-            await setDoc(doc(db, 'orders', ord.id), ord);
+          snapshot.docs.forEach(async (docSnap) => {
+            const ord = docSnap.data() as Order;
+            if (legacyEventIds.includes(ord.eventId) || docSnap.id.startsWith('ORD-10')) {
+              try { await deleteDoc(doc(db, 'orders', docSnap.id)); } catch (e) {}
+            }
           });
+
+          const loadedOrders = snapshot.docs
+            .map(docSnap => docSnap.data() as Order)
+            .filter(ord => !legacyEventIds.includes(ord.eventId));
+
+          setOrders(loadedOrders);
+          localStorage.setItem('tix_orders', JSON.stringify(loadedOrders));
+        } else {
+          setOrders([]);
         }
       }, (err) => {
         console.warn('Firestore orders listener error, using local state:', err);
@@ -422,10 +402,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           const loadedUsers = snapshot.docs.map(docSnap => docSnap.data() as TicketaUser);
           setUsers(loadedUsers);
         } else {
-          // Seed Initial Users to Firestore if empty
-          INITIAL_USERS.forEach(async (usr) => {
-            await setDoc(doc(db, 'users', usr.id), usr);
-          });
+          setUsers([]);
         }
       }, (err) => {
         console.warn('Firestore users listener error, using local state:', err);
@@ -435,15 +412,28 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const ticketsCol = collection(db, 'tickets');
       unsubscribeTickets = onSnapshot(ticketsCol, (snapshot) => {
         if (!snapshot.empty) {
-          const loadedTickets = snapshot.docs.map(docSnap => docSnap.data() as TicketPass);
+          const legacyEventIds = [
+            'evt-asake', 'evt-ay-lojik-koko-bar', 'evt-1300saint-savior-tour', 
+            'evt-davido-crystal-palace', 'evt-burna', 'evt-hardy', 'evt-c5', 
+            'evt-travis', 'evt-bovi', 'evt-ayuk', 'evt-ayjam', 'evt-lagoshack', 
+            'evt-devops', 'evt-igbesa', 'evt-davido'
+          ];
+
+          snapshot.docs.forEach(async (docSnap) => {
+            const tk = docSnap.data() as TicketPass;
+            if (legacyEventIds.includes(tk.eventId)) {
+              try { await deleteDoc(doc(db, 'tickets', docSnap.id)); } catch (e) {}
+            }
+          });
+
+          const loadedTickets = snapshot.docs
+            .map(docSnap => docSnap.data() as TicketPass)
+            .filter(t => !legacyEventIds.includes(t.eventId));
+
           setAllTickets(loadedTickets);
           localStorage.setItem('tix_all_tickets', JSON.stringify(loadedTickets));
         } else {
-          // Seed Initial Tickets
-          const allInitial = INITIAL_ORDERS.flatMap(o => o.tickets);
-          allInitial.forEach(async (t) => {
-            await setDoc(doc(db, 'tickets', t.ticketCode), t);
-          });
+          setAllTickets([]);
         }
       }, (err) => {
         console.warn('Firestore tickets listener error:', err);
@@ -1167,34 +1157,38 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const resetAllData = async () => {
-    setEvents(INITIAL_EVENTS);
-    setOrders(INITIAL_ORDERS);
-    setPromos(INITIAL_PROMOS);
-    setSavedEventIds(['evt-davido-crystal-palace', 'evt-burna']);
+    setEvents([]);
+    setOrders([]);
+    setAllTickets([]);
+    setQrTickets([]);
+    setPromos([]);
+    setSavedEventIds([]);
+    setUsers([]);
     setUserProfile(DEFAULT_PROFILE);
+
     localStorage.removeItem('tix_events');
     localStorage.removeItem('tix_orders');
+    localStorage.removeItem('tix_all_tickets');
+    localStorage.removeItem('tix_qr_tickets');
     localStorage.removeItem('tix_promos');
     localStorage.removeItem('tix_saved_events');
+    localStorage.removeItem('tix_users');
     localStorage.removeItem('tix_user_profile');
 
-    // Reset Firestore collections
+    // Wipe Firestore collections
     try {
-      for (const evt of INITIAL_EVENTS) {
-        await setDoc(doc(db, 'events', evt.id), evt);
-      }
-      const initialAllTickets = INITIAL_ORDERS.flatMap(o => o.tickets);
-      for (const ord of INITIAL_ORDERS) {
-        await setDoc(doc(db, 'orders', ord.id), ord);
-      }
-      for (const t of initialAllTickets) {
-        await setDoc(doc(db, 'tickets', t.ticketCode), t);
+      const collectionsToWipe = ['events', 'orders', 'tickets', 'users', 'qr_tickets'];
+      for (const colName of collectionsToWipe) {
+        const snap = await getDocs(collection(db, colName));
+        for (const docSnap of snap.docs) {
+          await deleteDoc(doc(db, colName, docSnap.id));
+        }
       }
     } catch (e) {
-      console.error('Error resetting Firestore data:', e);
+      console.error('Error wiping Firestore data:', e);
     }
 
-    triggerNotification('Platform dataset restored to factory initial state.');
+    triggerNotification('Platform dataset reset to clean zero state.');
   };
 
   const seedLiveSales = () => {
