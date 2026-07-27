@@ -41,7 +41,7 @@ export const OrganizerDashboard: React.FC = () => {
         console.error('Error parsing organizer session:', e);
       }
     }
-    return { isLoggedIn: true, name: 'Flytimefest Ltd', email: 'info@flytimefest.com' };
+    return { isLoggedIn: false, name: '', email: '' };
   });
 
   const [activeTab, setActiveTab] = useState<OrganizerTabType>('dashboard');
@@ -144,6 +144,7 @@ export const OrganizerDashboard: React.FC = () => {
               events={events}
               orders={orders}
               allTickets={allTickets}
+              organizerName={organizerAuth.name || 'Organizer'}
               onSelectEvent={(id) => handleOpenRevenueModal(id)}
               onNavigateToEvents={() => setActiveTab('events')}
               onNavigateToSales={() => setActiveTab('ticket-sales')}

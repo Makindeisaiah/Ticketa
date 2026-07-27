@@ -38,7 +38,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
   // Form State
   const [title, setTitle] = useState(editingEvent?.title || '');
   const [category, setCategory] = useState(editingEvent?.category || 'Concerts');
-  const [organizerName, setOrganizerName] = useState(editingEvent?.organizerName || 'Flytimefest');
+  const [organizerName, setOrganizerName] = useState(editingEvent?.organizerName || 'Event Organizer');
   const [date, setDate] = useState(editingEvent?.date || 'Thu, Dec 25, 2025');
   const [time, setTime] = useState(editingEvent?.time || '19:00 WAT');
   const [venueName, setVenueName] = useState(editingEvent?.venueName || 'Eko Convention Center, VI');

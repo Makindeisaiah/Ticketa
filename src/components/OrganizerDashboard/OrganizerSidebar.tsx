@@ -39,8 +39,8 @@ export const OrganizerSidebar: React.FC<OrganizerSidebarProps> = ({
   isMobileOpen,
   setIsMobileOpen,
   onLogout,
-  organizerName = 'Flytimefest Ltd',
-  organizerEmail = 'info@flytimefest.com'
+  organizerName = 'Event Organizer',
+  organizerEmail = 'organizer@ticketa.com'
 }) => {
   const menuItems: { id: OrganizerTabType; label: string; icon: React.ReactNode }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },

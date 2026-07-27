@@ -27,8 +27,8 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
   onOpenNotifs,
   onOpenPrinter,
   onLogout,
-  organizerName = 'Flytimefest Ltd',
-  organizerEmail = 'info@flytimefest.com'
+  organizerName = 'Event Organizer',
+  organizerEmail = 'organizer@ticketa.com'
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);

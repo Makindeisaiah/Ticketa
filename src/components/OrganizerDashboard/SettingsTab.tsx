@@ -54,15 +54,15 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
   const [paymentsTab, setPaymentsTab] = useState<'overview' | 'payouts' | 'refunds'>('overview');
 
   // Organization Info State
-  const [orgName, setOrgName] = useState('Flytimefest');
+  const [orgName, setOrgName] = useState('Event Organizer');
   const [orgType, setOrgType] = useState('Company');
-  const [orgDesc, setOrgDesc] = useState('Davido returns to Lagos with a powerful live performance showcasing his greatest hits and new favorites.');
+  const [orgDesc, setOrgDesc] = useState('Live event and ticketing management organization.');
   const [orgCountry, setOrgCountry] = useState('Nigeria');
   const [orgCity, setOrgCity] = useState('Lagos');
   const [orgAddress, setOrgAddress] = useState('146 Freedom Way, Victoria Island');
-  const [supportEmail, setSupportEmail] = useState('info@flytimefest.com');
+  const [supportEmail, setSupportEmail] = useState('contact@ticketa.com');
   const [phone, setPhone] = useState('+2349048372638');
-  const [website, setWebsite] = useState('flytimefest.com');
+  const [website, setWebsite] = useState('ticketa.com');
   const [instagram, setInstagram] = useState('flytimefest');
   const [facebook, setFacebook] = useState('flytimefest');
   const [twitter, setTwitter] = useState('flytimefest');
@@ -671,7 +671,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                         <div className="w-8 h-8 bg-orange-600 rounded flex items-center justify-center text-white text-[10px] font-bold">GTBank</div>
                         <div>
                           <div className="font-extrabold text-slate-900 text-sm">GTBank **** 5399</div>
-                          <div className="text-xs text-slate-500">Account Holder: Flytimefest Ltd.</div>
+                          <div className="text-xs text-slate-500">Account Holder: Event Organizer</div>
                         </div>
                       </div>
                       <button className="px-3 py-1.5 bg-[#00C896] text-white rounded-lg text-xs font-bold hover:bg-[#00b386] transition">Edit</button>
@@ -796,7 +796,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                       <div className="w-10 h-10 bg-orange-600 rounded flex items-center justify-center text-white text-xs font-bold">GTBank</div>
                       <div>
                         <div className="font-extrabold text-slate-900 text-sm">GTBank **** 5399</div>
-                        <div className="text-xs text-slate-500">Flytimefest Ltd.</div>
+                        <div className="text-xs text-slate-500">Event Organizer</div>
                       </div>
                     </div>
                     <div className="px-3 py-1 bg-[#00C896] text-white rounded text-xs font-bold">NGN</div>

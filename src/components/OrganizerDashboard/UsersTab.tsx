@@ -34,19 +34,20 @@ export const UsersTab: React.FC = () => {
 
   // Metrics
   const totalUsersCount = users.length;
-  const activeBuyersCount = users.filter(u => u.totalOrders > 0).length;
-  const totalSpentByUsers = users.reduce((acc, u) => acc + u.totalSpent, 0);
+  const activeBuyersCount = users.filter(u => orders.some(o => o.customerEmail.toLowerCase() === u.email.toLowerCase())).length;
+  const totalSpentByUsers = orders.reduce((acc, o) => acc + o.totalAmount, 0);
   const verifiedCount = users.filter(u => u.status === 'Verified').length;
 
   // Filtered Users
   const filteredUsers = users.filter(u => {
+    const userOrdersCount = orders.filter(o => o.customerEmail.toLowerCase() === u.email.toLowerCase()).length;
     const matchesSearch = 
       u.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.phone.toLowerCase().includes(searchQuery.toLowerCase());
 
     if (!matchesSearch) return false;
-    if (filterType === 'buyers') return u.totalOrders > 0;
+    if (filterType === 'buyers') return userOrdersCount > 0;
     if (filterType === 'verified') return u.status === 'Verified';
     return true;
   });
@@ -290,16 +291,16 @@ export const UsersTab: React.FC = () => {
 
                       <td className="py-4 px-6 text-center">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
-                          user.totalOrders > 0
+                          userOrders.length > 0
                             ? 'bg-emerald-100 text-emerald-800'
                             : 'bg-slate-100 text-slate-600'
                         }`}>
-                          {user.totalOrders} {user.totalOrders === 1 ? 'Order' : 'Orders'}
+                          {userOrders.length} {userOrders.length === 1 ? 'Order' : 'Orders'}
                         </span>
                       </td>
 
                       <td className="py-4 px-6 text-right font-bold text-slate-900">
-                        ₦{user.totalSpent.toLocaleString()}
+                        ₦{userOrders.reduce((acc, o) => acc + o.totalAmount, 0).toLocaleString()}
                       </td>
 
                       <td className="py-4 px-6 text-center">

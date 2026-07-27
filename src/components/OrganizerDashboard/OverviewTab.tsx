@@ -16,6 +16,7 @@ interface OverviewTabProps {
   events: EventItem[];
   orders: Order[];
   allTickets: TicketPass[];
+  organizerName?: string;
   onSelectEvent: (eventId: string) => void;
   onNavigateToEvents: () => void;
   onNavigateToSales: () => void;
@@ -27,6 +28,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   events,
   orders,
   allTickets,
+  organizerName = 'Organizer',
   onSelectEvent,
   onNavigateToEvents,
   onNavigateToSales,
@@ -79,7 +81,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Welcome, Flytimefest
+            Welcome, {organizerName}
           </h1>
           <p className="text-xs font-semibold text-slate-500 mt-0.5">
             Here are your current event stats and performance overview.
