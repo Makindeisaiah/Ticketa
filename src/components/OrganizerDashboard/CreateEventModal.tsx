@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { EventItem, TicketTier } from '../../types';
 import { 
   X, 
@@ -24,31 +24,65 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
   onSubmit,
   editingEvent
 }) => {
-  if (!isOpen) return null;
-
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
 
   // Form State
-  const [title, setTitle] = useState(editingEvent?.title || '');
-  const [category, setCategory] = useState(editingEvent?.category || 'Concerts');
-  const [organizerName, setOrganizerName] = useState(editingEvent?.organizerName || '');
-  const [date, setDate] = useState(editingEvent?.date || '');
-  const [time, setTime] = useState(editingEvent?.time || '');
-  const [venueName, setVenueName] = useState(editingEvent?.venueName || '');
-  const [address, setAddress] = useState(editingEvent?.address || '');
-  const [image, setImage] = useState(editingEvent?.image || '');
-  const [description, setDescription] = useState(editingEvent?.description || '');
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState('Concerts');
+  const [organizerName, setOrganizerName] = useState('');
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  const [venueName, setVenueName] = useState('');
+  const [address, setAddress] = useState('');
+  const [image, setImage] = useState('');
+  const [description, setDescription] = useState('');
   const [isUploading, setIsUploading] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Ticket Tiers State
-  const [ticketTiers, setTicketTiers] = useState<TicketTier[]>(
-    editingEvent?.ticketTiers || [
-      { id: 'tier-1', name: 'Regular', price: 10000, availableQuantity: 500, soldQuantity: 0, maxPerOrder: 6, description: 'General Admission' },
-      { id: 'tier-2', name: 'VIP', price: 50000, availableQuantity: 100, soldQuantity: 0, maxPerOrder: 4, description: 'VIP Area Access' }
-    ]
-  );
+  const [ticketTiers, setTicketTiers] = useState<TicketTier[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setStep(1);
+      if (editingEvent) {
+        setTitle(editingEvent.title || '');
+        setCategory(editingEvent.category || 'Concerts');
+        setOrganizerName(editingEvent.organizerName || '');
+        setDate(editingEvent.date || '');
+        setTime(editingEvent.time || '');
+        setVenueName(editingEvent.venueName || '');
+        setAddress(editingEvent.address || editingEvent.location || '');
+        setImage(editingEvent.image || '');
+        setDescription(editingEvent.description || '');
+        setTicketTiers(
+          editingEvent.ticketTiers && editingEvent.ticketTiers.length > 0
+            ? editingEvent.ticketTiers
+            : [
+                { id: 'tier-1', name: 'Regular', price: 10000, availableQuantity: 500, soldQuantity: 0, maxPerOrder: 6, description: 'General Admission' },
+                { id: 'tier-2', name: 'VIP', price: 50000, availableQuantity: 100, soldQuantity: 0, maxPerOrder: 4, description: 'VIP Area Access' }
+              ]
+        );
+      } else {
+        setTitle('');
+        setCategory('Concerts');
+        setOrganizerName('');
+        setDate('');
+        setTime('');
+        setVenueName('');
+        setAddress('');
+        setImage('');
+        setDescription('');
+        setTicketTiers([
+          { id: 'tier-1', name: 'Regular', price: 10000, availableQuantity: 500, soldQuantity: 0, maxPerOrder: 6, description: 'General Admission' },
+          { id: 'tier-2', name: 'VIP', price: 50000, availableQuantity: 100, soldQuantity: 0, maxPerOrder: 4, description: 'VIP Area Access' }
+        ]);
+      }
+    }
+  }, [isOpen, editingEvent]);
+
+  if (!isOpen) return null;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

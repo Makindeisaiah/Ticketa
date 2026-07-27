@@ -27,6 +27,7 @@ export const OrganizerDashboard: React.FC = () => {
     orders, 
     allTickets, 
     createNewEvent, 
+    updateEvent,
     deleteEvent,
     seedLiveSales 
   } = useEventContext();
@@ -94,8 +95,13 @@ export const OrganizerDashboard: React.FC = () => {
     }
   };
 
-  const handleEventFormSubmit = (newEventData: EventItem) => {
-    createNewEvent(newEventData);
+  const handleEventFormSubmit = async (eventData: EventItem) => {
+    if (editingEvent || events.some(e => e.id === eventData.id)) {
+      await updateEvent(eventData);
+    } else {
+      await createNewEvent(eventData);
+    }
+    setEditingEvent(null);
   };
 
   const handleLoginSuccess = (data: { name: string; email: string }) => {
@@ -222,7 +228,10 @@ export const OrganizerDashboard: React.FC = () => {
       {/* Create / Edit Event Modal Wizard */}
       <CreateEventModal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setEditingEvent(null);
+        }}
         onSubmit={handleEventFormSubmit}
         editingEvent={editingEvent}
       />

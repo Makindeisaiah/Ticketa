@@ -159,7 +159,8 @@ interface EventContextType {
   registerUser: (details: { fullName: string; email: string; phone: string; emailVerified?: boolean }) => TicketaUser;
   loginUser: (email: string) => TicketaUser | null;
   logoutUser: () => void;
-  createNewEvent: (eventData: Omit<EventItem, 'id'>) => void;
+  createNewEvent: (eventData: Omit<EventItem, 'id'> | EventItem) => void;
+  updateEvent: (updatedEvent: EventItem) => Promise<void>;
   deleteEvent: (eventId: string) => Promise<void>;
   purchaseTickets: (
     eventId: string,
@@ -505,8 +506,28 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, 4500);
   };
 
-  const createNewEvent = async (eventData: Omit<EventItem, 'id'>) => {
-    const newId = `evt-${Date.now().toString().slice(-4)}`;
+  const updateEvent = async (updatedEvent: EventItem) => {
+    // Update local state immediately
+    setEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEvent : e));
+
+    // Update in Firestore
+    try {
+      await setDoc(doc(db, 'events', updatedEvent.id), updatedEvent, { merge: true });
+    } catch (err) {
+      console.error('Error updating event in Firestore:', err);
+    }
+
+    triggerNotification(`Event "${updatedEvent.title}" updated successfully!`);
+  };
+
+  const createNewEvent = async (eventData: Omit<EventItem, 'id'> | EventItem) => {
+    const candidateId = (eventData as EventItem).id;
+    if (candidateId && events.some(e => e.id === candidateId)) {
+      await updateEvent(eventData as EventItem);
+      return;
+    }
+
+    const newId = candidateId || `evt-${Date.now().toString().slice(-4)}`;
     const newEvent: EventItem = {
       ...eventData,
       id: newId
@@ -1290,6 +1311,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         loginUser,
         logoutUser,
         createNewEvent,
+        updateEvent,
         deleteEvent,
         purchaseTickets,
         scanAndCheckInTicket,
