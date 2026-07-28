@@ -886,7 +886,10 @@ export const AttendeeMobile: React.FC = () => {
               <button
                 onClick={() => {
                   setBuyingEvent(viewingEvent);
-                  setSelectedTier(viewingEvent.ticketTiers[0]);
+                  const availableTier = viewingEvent.ticketTiers.find(t => (t.availableQuantity - t.soldQuantity) > 0) || viewingEvent.ticketTiers[0];
+                  setSelectedTier(availableTier);
+                  const tierAvail = availableTier ? Math.max(0, availableTier.availableQuantity - availableTier.soldQuantity) : 0;
+                  setQuantity(tierAvail > 0 ? 1 : 0);
                   setViewingEvent(null);
                 }}
                 className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20"
@@ -898,7 +901,11 @@ export const AttendeeMobile: React.FC = () => {
         )}
 
         {/* Dynamic Modal 2: Ticket Purchase Drawer */}
-        {buyingEvent && selectedTier && (
+        {buyingEvent && selectedTier && (() => {
+          const selectedAvail = Math.max(0, selectedTier.availableQuantity - selectedTier.soldQuantity);
+          const isSelectedSoldOut = selectedAvail <= 0;
+
+          return (
           <div className="absolute inset-x-0 bottom-0 top-16 bg-slate-950 z-50 rounded-t-[32px] border-t border-slate-800 p-4 flex flex-col justify-between scrollbar-none animate-in slide-in-from-bottom duration-300">
             <div className="space-y-4">
               <div className="flex justify-between items-center pb-2 border-b border-slate-800">
@@ -910,41 +917,62 @@ export const AttendeeMobile: React.FC = () => {
 
               {/* Tier Selection */}
               <div className="space-y-2">
-                {buyingEvent.ticketTiers.map(tier => (
-                  <div
-                    key={tier.id}
-                    onClick={() => setSelectedTier(tier)}
-                    className={`p-3 rounded-2xl border cursor-pointer transition ${
-                      selectedTier.id === tier.id
-                        ? 'bg-emerald-500/10 border-emerald-500 text-white'
-                        : 'bg-slate-900 border-slate-800 text-slate-300'
-                    }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold text-xs">{tier.name}</span>
-                      <span className="font-black text-emerald-400 text-xs">
-                        {tier.price === 0 ? 'FREE' : `₦${tier.price.toLocaleString()}`}
-                      </span>
+                {buyingEvent.ticketTiers.map(tier => {
+                  const avail = Math.max(0, tier.availableQuantity - tier.soldQuantity);
+                  const isSold = avail <= 0;
+
+                  return (
+                    <div
+                      key={tier.id}
+                      onClick={() => {
+                        setSelectedTier(tier);
+                        setQuantity(avail > 0 ? 1 : 0);
+                      }}
+                      className={`p-3 rounded-2xl border cursor-pointer transition ${
+                        isSold
+                          ? 'bg-slate-950/50 border-slate-800 text-slate-500 opacity-80'
+                          : selectedTier.id === tier.id
+                          ? 'bg-emerald-500/10 border-emerald-500 text-white'
+                          : 'bg-slate-900 border-slate-800 text-slate-300'
+                      }`}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="font-bold text-xs">{tier.name}</span>
+                          {isSold && (
+                            <span className="text-[9px] font-black text-rose-400 bg-rose-500/10 border border-rose-500/30 px-1.5 py-0.5 rounded uppercase">
+                              SOLD OUT
+                            </span>
+                          )}
+                        </div>
+                        <span className={`font-black text-xs ${isSold ? 'text-slate-500 line-through' : 'text-emerald-400'}`}>
+                          {tier.price === 0 ? 'FREE' : `₦${tier.price.toLocaleString()}`}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 mt-1">{tier.description}</p>
                     </div>
-                    <p className="text-[10px] text-slate-400 mt-1">{tier.description}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Quantity Selector */}
               <div className="flex justify-between items-center bg-slate-900 p-3 rounded-2xl border border-slate-800">
-                <span className="text-xs font-semibold text-slate-300">Quantity</span>
+                <span className="text-xs font-semibold text-slate-300">
+                  {isSelectedSoldOut ? <span className="text-rose-400 font-bold">Sold Out</span> : `Quantity (${selectedAvail} left)`}
+                </span>
                 <div className="flex items-center space-x-3">
                   <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-7 h-7 bg-slate-800 text-white font-bold rounded-lg flex items-center justify-center text-xs"
+                    onClick={() => setQuantity(Math.max(0, quantity - 1))}
+                    disabled={quantity <= 0 || isSelectedSoldOut}
+                    className="w-7 h-7 bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold rounded-lg flex items-center justify-center text-xs"
                   >
                     -
                   </button>
-                  <span className="font-bold text-sm text-white">{quantity}</span>
+                  <span className="font-bold text-sm text-white">{isSelectedSoldOut ? 0 : quantity}</span>
                   <button
-                    onClick={() => setQuantity(Math.min(selectedTier.maxPerOrder, quantity + 1))}
-                    className="w-7 h-7 bg-emerald-500 text-slate-950 font-bold rounded-lg flex items-center justify-center text-xs"
+                    onClick={() => setQuantity(Math.min(Math.min(selectedTier.maxPerOrder, selectedAvail), quantity + 1))}
+                    disabled={isSelectedSoldOut || quantity >= selectedAvail || quantity >= selectedTier.maxPerOrder}
+                    className="w-7 h-7 bg-emerald-500 disabled:opacity-30 disabled:cursor-not-allowed text-slate-950 font-bold rounded-lg flex items-center justify-center text-xs"
                   >
                     +
                   </button>
@@ -1017,12 +1045,18 @@ export const AttendeeMobile: React.FC = () => {
 
             <button
               onClick={handleCheckout}
-              className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20"
+              disabled={isSelectedSoldOut || quantity <= 0}
+              className={`w-full py-3 font-black text-xs rounded-xl shadow-lg transition ${
+                isSelectedSoldOut || quantity <= 0
+                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                  : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/20'
+              }`}
             >
-              Pay & Reserve Pass
+              {isSelectedSoldOut ? 'Sold Out' : 'Pay & Reserve Pass'}
             </button>
           </div>
-        )}
+          );
+        })()}
 
         {/* Dynamic Modal 3: Checkout Success */}
         {checkoutSuccessOrder && (

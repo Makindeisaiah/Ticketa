@@ -148,10 +148,11 @@ export const AttendeeWeb: React.FC = () => {
   // Open Event Details
   const handleOpenEventDetails = (evt: EventItem) => {
     setActiveEvent(evt);
-    // Initialize ticket quantities (1 for regular tier)
+    // Initialize ticket quantities (1 for the first tier that actually has available tickets)
     const initialTiers: { [tierId: string]: number } = {};
-    if (evt.ticketTiers.length > 0) {
-      initialTiers[evt.ticketTiers[0].id] = 1;
+    const availableTier = evt.ticketTiers.find(t => (t.availableQuantity - t.soldQuantity) > 0);
+    if (availableTier) {
+      initialTiers[availableTier.id] = 1;
     }
     setSelectedTiers(initialTiers);
     setCurrentView('details');
@@ -159,10 +160,11 @@ export const AttendeeWeb: React.FC = () => {
   };
 
   // Tier quantity controls
-  const handleQuantityChange = (tierId: string, delta: number, max: number) => {
+  const handleQuantityChange = (tierId: string, delta: number, max: number, available: number) => {
     setSelectedTiers(prev => {
       const current = prev[tierId] || 0;
-      const updated = Math.max(0, Math.min(max, current + delta));
+      const maxAllowed = Math.min(max, available);
+      const updated = Math.max(0, Math.min(maxAllowed, current + delta));
       if (updated === 0) {
         const next = { ...prev };
         delete next[tierId];
@@ -550,6 +552,7 @@ export const AttendeeWeb: React.FC = () => {
                 {filteredEvents.map(evt => {
                   const lowestPrice = Math.min(...evt.ticketTiers.map(t => t.price));
                   const isSaved = savedEventIds.includes(evt.id);
+                  const isEventSoldOut = evt.ticketTiers.length > 0 && evt.ticketTiers.every(t => (t.availableQuantity - t.soldQuantity) <= 0);
 
                   return (
                     <div
@@ -566,8 +569,15 @@ export const AttendeeWeb: React.FC = () => {
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
                         
                         {/* Category Badge */}
-                        <div className="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-black uppercase text-emerald-400 border border-slate-800">
-                          {evt.category}
+                        <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                          <div className="bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-black uppercase text-emerald-400 border border-slate-800">
+                            {evt.category}
+                          </div>
+                          {isEventSoldOut && (
+                            <div className="bg-rose-600 text-white font-black px-2.5 py-1 rounded-lg text-[10px] uppercase tracking-wider shadow-md">
+                              SOLD OUT
+                            </div>
+                          )}
                         </div>
 
                         {/* Save Bookmark */}
@@ -581,8 +591,8 @@ export const AttendeeWeb: React.FC = () => {
                         </button>
 
                         {/* Price Tag Pill */}
-                        <div className="absolute bottom-3 right-3 bg-emerald-500 text-slate-950 px-2.5 py-1 rounded-lg text-xs font-black shadow-md">
-                          {lowestPrice === 0 ? 'FREE' : `From ₦${lowestPrice.toLocaleString()}`}
+                        <div className={`absolute bottom-3 right-3 px-2.5 py-1 rounded-lg text-xs font-black shadow-md ${isEventSoldOut ? 'bg-slate-800 text-rose-400 border border-rose-500/30' : 'bg-emerald-500 text-slate-950'}`}>
+                          {isEventSoldOut ? 'SOLD OUT' : lowestPrice === 0 ? 'FREE' : `From ₦${lowestPrice.toLocaleString()}`}
                         </div>
                       </div>
 
@@ -621,9 +631,13 @@ export const AttendeeWeb: React.FC = () => {
 
                           <button
                             onClick={() => handleOpenEventDetails(evt)}
-                            className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black transition flex items-center space-x-1 shadow-md shadow-emerald-500/10"
+                            className={`px-4 py-2 rounded-xl text-xs font-black transition flex items-center space-x-1 shadow-md ${
+                              isEventSoldOut
+                                ? 'bg-slate-800 text-rose-400 hover:bg-slate-700'
+                                : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/10'
+                            }`}
                           >
-                            <span>Buy Tickets</span>
+                            <span>{isEventSoldOut ? 'Sold Out' : 'Buy Tickets'}</span>
                             <ChevronRight className="w-4 h-4" />
                           </button>
                         </div>
@@ -715,15 +729,24 @@ export const AttendeeWeb: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredEvents.map(evt => {
                 const lowestPrice = Math.min(...evt.ticketTiers.map(t => t.price));
+                const isEventSoldOut = evt.ticketTiers.length > 0 && evt.ticketTiers.every(t => (t.availableQuantity - t.soldQuantity) <= 0);
+
                 return (
                   <div key={evt.id} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col hover:border-emerald-500/50 transition">
                     <div className="relative h-48 bg-slate-950">
                       <img src={evt.image} alt={evt.title} className="w-full h-full object-cover" />
-                      <div className="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold text-emerald-400 border border-slate-800">
-                        {evt.category}
+                      <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                        <div className="bg-slate-950/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold text-emerald-400 border border-slate-800">
+                          {evt.category}
+                        </div>
+                        {isEventSoldOut && (
+                          <div className="bg-rose-600 text-white font-black px-2 py-0.5 rounded text-[10px] uppercase tracking-wider shadow-md">
+                            SOLD OUT
+                          </div>
+                        )}
                       </div>
-                      <div className="absolute bottom-3 right-3 bg-emerald-500 text-slate-950 px-2 py-1 rounded text-xs font-black">
-                        {lowestPrice === 0 ? 'FREE' : `From ₦${lowestPrice.toLocaleString()}`}
+                      <div className={`absolute bottom-3 right-3 px-2 py-1 rounded text-xs font-black ${isEventSoldOut ? 'bg-slate-800 text-rose-400 border border-rose-500/30' : 'bg-emerald-500 text-slate-950'}`}>
+                        {isEventSoldOut ? 'SOLD OUT' : lowestPrice === 0 ? 'FREE' : `From ₦${lowestPrice.toLocaleString()}`}
                       </div>
                     </div>
 
@@ -739,9 +762,13 @@ export const AttendeeWeb: React.FC = () => {
 
                       <button
                         onClick={() => handleOpenEventDetails(evt)}
-                        className="mt-5 w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-xs transition"
+                        className={`mt-5 w-full py-2.5 font-black rounded-xl text-xs transition ${
+                          isEventSoldOut
+                            ? 'bg-slate-800 text-rose-400 hover:bg-slate-700'
+                            : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+                        }`}
                       >
-                        View & Buy Tickets
+                        {isEventSoldOut ? 'Sold Out' : 'View & Buy Tickets'}
                       </button>
                     </div>
                   </div>
@@ -908,24 +935,34 @@ export const AttendeeWeb: React.FC = () => {
                 <div className="space-y-3">
                   {activeEvent.ticketTiers.map(tier => {
                     const quantity = selectedTiers[tier.id] || 0;
-                    const available = tier.availableQuantity - tier.soldQuantity;
+                    const available = Math.max(0, tier.availableQuantity - tier.soldQuantity);
+                    const isSoldOut = available <= 0;
 
                     return (
                       <div
                         key={tier.id}
                         className={`p-4 rounded-2xl border transition ${
-                          quantity > 0
+                          isSoldOut
+                            ? 'bg-slate-950/40 border-slate-800/60 opacity-85'
+                            : quantity > 0
                             ? 'bg-slate-950 border-emerald-500 shadow-md shadow-emerald-500/10'
                             : 'bg-slate-950/60 border-slate-800'
                         }`}
                       >
                         <div className="flex justify-between items-start">
                           <div>
-                            <h4 className="text-sm font-bold text-white">{tier.name}</h4>
+                            <div className="flex items-center space-x-2">
+                              <h4 className="text-sm font-bold text-white">{tier.name}</h4>
+                              {isSoldOut && (
+                                <span className="text-[10px] font-black text-rose-400 bg-rose-500/10 border border-rose-500/30 px-2 py-0.5 rounded uppercase tracking-wider">
+                                  SOLD OUT
+                                </span>
+                              )}
+                            </div>
                             <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{tier.description}</p>
                           </div>
                           <div className="text-right">
-                            <span className="text-base font-black text-emerald-400">
+                            <span className={`text-base font-black ${isSoldOut ? 'text-slate-500 line-through' : 'text-emerald-400'}`}>
                               {tier.price === 0 ? 'FREE' : `₦${tier.price.toLocaleString()}`}
                             </span>
                           </div>
@@ -933,23 +970,29 @@ export const AttendeeWeb: React.FC = () => {
 
                         {/* Quantity Counter */}
                         <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                          <span className="text-[11px] text-slate-400">
-                            {available < 50 ? `Only ${available} left` : 'Available'}
+                          <span className="text-[11px]">
+                            {isSoldOut ? (
+                              <span className="font-extrabold text-rose-400">● Sold Out</span>
+                            ) : available < 50 ? (
+                              <span className="text-amber-400 font-bold">Only {available} left</span>
+                            ) : (
+                              <span className="text-slate-400">Available</span>
+                            )}
                           </span>
 
                           <div className="flex items-center space-x-3">
                             <button
-                              onClick={() => handleQuantityChange(tier.id, -1, tier.maxPerOrder)}
-                              disabled={quantity === 0}
-                              className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-white font-bold text-sm flex items-center justify-center transition"
+                              onClick={() => handleQuantityChange(tier.id, -1, tier.maxPerOrder, available)}
+                              disabled={quantity === 0 || isSoldOut}
+                              className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold text-sm flex items-center justify-center transition"
                             >
                               -
                             </button>
-                            <span className="text-sm font-black text-white w-4 text-center">{quantity}</span>
+                            <span className="text-sm font-black text-white w-4 text-center">{isSoldOut ? 0 : quantity}</span>
                             <button
-                              onClick={() => handleQuantityChange(tier.id, 1, tier.maxPerOrder)}
-                              disabled={quantity >= tier.maxPerOrder || available === 0}
-                              className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-white font-bold text-sm flex items-center justify-center transition"
+                              onClick={() => handleQuantityChange(tier.id, 1, tier.maxPerOrder, available)}
+                              disabled={isSoldOut || quantity >= available || quantity >= tier.maxPerOrder}
+                              className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold text-sm flex items-center justify-center transition"
                             >
                               +
                             </button>
