@@ -100,7 +100,7 @@ export interface Order {
   customerEmail: string;
   customerPhone: string;
   totalAmount: number;
-  paymentMethod: 'Credit Card' | 'Bank Transfer' | 'Apple Pay' | 'Google Pay' | 'PayPal';
+  paymentMethod: 'Credit Card' | 'Bank Transfer' | 'Apple Pay' | 'Google Pay' | 'PayPal' | 'Flutterwave' | 'USSD' | string;
   purchaseDate: string;
   tickets: TicketPass[];
 }

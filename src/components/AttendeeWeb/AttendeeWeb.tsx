@@ -212,7 +212,6 @@ export const AttendeeWeb: React.FC = () => {
     if (!activeEvent || totalSelectedTicketsCount === 0) return;
 
     setIsProcessingPayment(true);
-    const primaryTierId = Object.keys(selectedTiers)[0] || activeEvent.ticketTiers[0].id;
 
     if (paymentMethod === 'Flutterwave') {
       // Trigger Official Flutterwave Popup Modal
@@ -225,8 +224,7 @@ export const AttendeeWeb: React.FC = () => {
         onSuccess: (flwResponse) => {
           const newOrder = purchaseTickets(
             activeEvent.id,
-            primaryTierId,
-            totalSelectedTicketsCount,
+            selectedTiers,
             { name: fullName, email, phone },
             'Flutterwave',
             discountPercent
@@ -246,8 +244,7 @@ export const AttendeeWeb: React.FC = () => {
           // Fallback simulation if network or script fails
           const newOrder = purchaseTickets(
             activeEvent.id,
-            primaryTierId,
-            totalSelectedTicketsCount,
+            selectedTiers,
             { name: fullName, email, phone },
             'Flutterwave',
             discountPercent
@@ -265,8 +262,7 @@ export const AttendeeWeb: React.FC = () => {
     setTimeout(() => {
       const newOrder = purchaseTickets(
         activeEvent.id,
-        primaryTierId,
-        totalSelectedTicketsCount,
+        selectedTiers,
         { name: fullName, email, phone },
         paymentMethod === 'USSD' || paymentMethod === 'Bank Transfer' ? 'Bank Transfer' : 'Credit Card',
         discountPercent

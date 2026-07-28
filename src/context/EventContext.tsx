@@ -164,10 +164,10 @@ interface EventContextType {
   deleteEvent: (eventId: string) => Promise<void>;
   purchaseTickets: (
     eventId: string,
-    tierId: string,
-    quantity: number,
-    attendeeDetails: { name: string; email: string; phone: string },
-    paymentMethod: Order['paymentMethod'],
+    tierIdOrSelections: string | { [tierId: string]: number },
+    quantityOrDetails: number | { name: string; email: string; phone: string },
+    attendeeDetailsOrPayment?: { name: string; email: string; phone: string } | Order['paymentMethod'],
+    paymentMethodOrDiscount?: Order['paymentMethod'] | number,
     discountPercentage?: number
   ) => Order | null;
   scanAndCheckInTicket: (ticketCode: string, gateName?: string) => ScanResult;
@@ -745,22 +745,57 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const purchaseTickets = (
     eventId: string,
-    tierId: string,
-    quantity: number,
-    attendeeDetails: { name: string; email: string; phone: string },
-    paymentMethod: Order['paymentMethod'],
-    discountPercentage = 0
+    tierIdOrSelections: string | { [tierId: string]: number },
+    quantityOrDetails: number | { name: string; email: string; phone: string },
+    attendeeDetailsOrPayment?: { name: string; email: string; phone: string } | Order['paymentMethod'],
+    paymentMethodOrDiscount?: Order['paymentMethod'] | number,
+    discountPercentageParam = 0
   ): Order | null => {
     const eventObj = events.find(e => e.id === eventId);
     if (!eventObj) return null;
 
-    const tier = eventObj.ticketTiers.find(t => t.id === tierId);
-    if (!tier || tier.availableQuantity - tier.soldQuantity < quantity) return null;
+    let selectionsMap: { [tierId: string]: number } = {};
+    let attendeeDetails: { name: string; email: string; phone: string };
+    let paymentMethod: Order['paymentMethod'] = 'Flutterwave';
+    let discountPercentage = 0;
 
-    // Updated ticket tiers
+    if (typeof tierIdOrSelections === 'object' && tierIdOrSelections !== null) {
+      selectionsMap = tierIdOrSelections;
+      if (typeof quantityOrDetails === 'object' && quantityOrDetails !== null) {
+        attendeeDetails = quantityOrDetails;
+        paymentMethod = (attendeeDetailsOrPayment as Order['paymentMethod']) || 'Flutterwave';
+        discountPercentage = (paymentMethodOrDiscount as number) || 0;
+      } else {
+        attendeeDetails = attendeeDetailsOrPayment as { name: string; email: string; phone: string };
+        paymentMethod = (paymentMethodOrDiscount as Order['paymentMethod']) || 'Flutterwave';
+        discountPercentage = discountPercentageParam || 0;
+      }
+    } else {
+      const tierId = tierIdOrSelections as string;
+      const quantity = quantityOrDetails as number;
+      selectionsMap = { [tierId]: quantity };
+      attendeeDetails = attendeeDetailsOrPayment as { name: string; email: string; phone: string };
+      paymentMethod = (paymentMethodOrDiscount as Order['paymentMethod']) || 'Flutterwave';
+      discountPercentage = discountPercentageParam || 0;
+    }
+
+    const validEntries = Object.entries(selectionsMap).filter(([_, qty]) => qty > 0);
+    if (validEntries.length === 0) return null;
+
+    // Check availability for all selected tiers
+    for (const [tId, qty] of validEntries) {
+      const tier = eventObj.ticketTiers.find(t => t.id === tId);
+      if (!tier || (tier.availableQuantity - tier.soldQuantity) < qty) {
+        console.error(`Insufficient tickets available for tier ${tId}`);
+        return null;
+      }
+    }
+
+    // Updated ticket tiers sold quantities
     const updatedTicketTiers = eventObj.ticketTiers.map(t => {
-      if (t.id !== tierId) return t;
-      return { ...t, soldQuantity: t.soldQuantity + quantity };
+      const qty = selectionsMap[t.id] || 0;
+      if (qty <= 0) return t;
+      return { ...t, soldQuantity: t.soldQuantity + qty };
     });
 
     const updatedEventObj: EventItem = {
@@ -782,29 +817,38 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       hour12: false
     });
 
-    const unitPrice = tier.price * (1 - discountPercentage / 100);
-    const totalPaid = unitPrice * quantity;
     const orderId = `ORD-${Math.floor(10000 + Math.random() * 90000)}`;
-
     const tickets: TicketPass[] = [];
-    for (let i = 0; i < quantity; i++) {
-      const ticketCode = `TKT-${Math.floor(1000 + Math.random() * 9000)}-${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${i + 1}`;
-      tickets.push({
-        ticketCode,
-        orderId,
-        eventId: eventObj.id,
-        eventTitle: eventObj.title,
-        eventDate: eventObj.date,
-        eventTime: eventObj.time,
-        venueName: eventObj.venueName,
-        tierName: tier.name,
-        attendeeName: i === 0 ? attendeeDetails.name : `${attendeeDetails.name} Guest ${i}`,
-        attendeeEmail: attendeeDetails.email,
-        attendeePhone: attendeeDetails.phone,
-        pricePaid: unitPrice,
-        purchaseDate: nowStr,
-        status: 'VALID'
-      });
+    let totalPaid = 0;
+    let totalTicketsIssued = 0;
+
+    for (const [tId, qty] of validEntries) {
+      const tier = eventObj.ticketTiers.find(t => t.id === tId);
+      if (!tier) continue;
+
+      const unitPrice = tier.price * (1 - discountPercentage / 100);
+      totalPaid += unitPrice * qty;
+
+      for (let i = 0; i < qty; i++) {
+        totalTicketsIssued++;
+        const ticketCode = `TKT-${Math.floor(1000 + Math.random() * 9000)}-${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${totalTicketsIssued}`;
+        tickets.push({
+          ticketCode,
+          orderId,
+          eventId: eventObj.id,
+          eventTitle: eventObj.title,
+          eventDate: eventObj.date,
+          eventTime: eventObj.time,
+          venueName: eventObj.venueName,
+          tierName: tier.name,
+          attendeeName: totalTicketsIssued === 1 ? attendeeDetails.name : `${attendeeDetails.name} Guest ${totalTicketsIssued - 1}`,
+          attendeeEmail: attendeeDetails.email,
+          attendeePhone: attendeeDetails.phone,
+          pricePaid: unitPrice,
+          purchaseDate: nowStr,
+          status: 'VALID'
+        });
+      }
     }
 
     const newOrder: Order = {
@@ -822,6 +866,9 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Update local orders state
     setOrders(prev => [newOrder, ...prev]);
+
+    // Update allTickets state so tickets show up immediately in all ticket lists
+    setAllTickets(prev => [...tickets, ...prev]);
 
     // Create or update TicketaUser for this attendee
     const cleanEmail = attendeeDetails.email.trim().toLowerCase();
@@ -888,7 +935,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     sendTicketEmail(newOrder, attendeeDetails.email);
     sendTicketSms(newOrder, attendeeDetails.phone);
 
-    triggerNotification(`Order #${orderId} confirmed! ${quantity} x ${tier.name} issued.`);
+    triggerNotification(`Order #${orderId} confirmed! ${totalTicketsIssued} ticket(s) issued.`);
     return newOrder;
   };
 
