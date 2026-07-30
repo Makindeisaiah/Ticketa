@@ -41,9 +41,19 @@ export const AttendeeWeb: React.FC = () => {
   const [currentView, setCurrentView] = useState<'home' | 'browse' | 'details' | 'checkout' | 'orders' | 'how-it-works'>('home');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchError, setSearchError] = useState<string>('');
   const [locationFilter, setLocationFilter] = useState<string>('All Locations');
   const [dateFilter, setDateFilter] = useState<string>('Any Date');
   const [priceSort, setPriceSort] = useState<'trending' | 'price-low' | 'price-high' | 'date'>('trending');
+
+  const handleHeroSearch = () => {
+    if (!searchQuery.trim() && locationFilter === 'All Locations' && dateFilter === 'Any Date') {
+      setSearchError('Please fill in the search term or select a location / date filter before searching.');
+      return;
+    }
+    setSearchError('');
+    setCurrentView('browse');
+  };
   
   // Selected Event & Checkout Selection State
   const [activeEvent, setActiveEvent] = useState<EventItem | null>(events[0] || null);
@@ -326,20 +336,6 @@ export const AttendeeWeb: React.FC = () => {
                 >
                   How it works
                 </button>
-                <button
-                  onClick={() => handleNav('orders')}
-                  className={`px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5 ${
-                    currentView === 'orders' ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
-                  }`}
-                >
-                  <Ticket className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>My Tickets</span>
-                  {orders.length > 0 && (
-                    <span className="ml-1 bg-emerald-500 text-slate-950 text-[10px] font-black px-1.5 py-0.2 rounded-full">
-                      {orders.length}
-                    </span>
-                  )}
-                </button>
               </nav>
             </div>
 
@@ -428,7 +424,10 @@ export const AttendeeWeb: React.FC = () => {
                         type="text"
                         placeholder="Search event, artist or venue..."
                         value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
+                        onChange={e => {
+                          setSearchQuery(e.target.value);
+                          if (searchError) setSearchError('');
+                        }}
                         className="w-full pl-10 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500 font-medium"
                       />
                     </div>
@@ -438,7 +437,10 @@ export const AttendeeWeb: React.FC = () => {
                       <MapPin className="absolute left-3 top-3.5 w-4 h-4 text-emerald-400" />
                       <select
                         value={locationFilter}
-                        onChange={e => setLocationFilter(e.target.value)}
+                        onChange={e => {
+                          setLocationFilter(e.target.value);
+                          if (searchError) setSearchError('');
+                        }}
                         className="w-full pl-9 pr-8 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white appearance-none focus:outline-none focus:border-emerald-500 font-medium"
                       >
                         {locations.map(loc => (
@@ -453,7 +455,10 @@ export const AttendeeWeb: React.FC = () => {
                       <Calendar className="absolute left-3 top-3.5 w-4 h-4 text-teal-400" />
                       <select
                         value={dateFilter}
-                        onChange={e => setDateFilter(e.target.value)}
+                        onChange={e => {
+                          setDateFilter(e.target.value);
+                          if (searchError) setSearchError('');
+                        }}
                         className="w-full pl-9 pr-6 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white appearance-none focus:outline-none focus:border-emerald-500 font-medium"
                       >
                         <option value="Any Date">Any Date</option>
@@ -467,13 +472,20 @@ export const AttendeeWeb: React.FC = () => {
                     {/* Search Action Button */}
                     <div className="sm:col-span-2">
                       <button
-                        onClick={() => setCurrentView('browse')}
-                        className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black rounded-xl text-xs transition shadow-lg shadow-emerald-500/20 flex items-center justify-center space-x-1.5"
+                        onClick={handleHeroSearch}
+                        className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black rounded-xl text-xs transition shadow-lg shadow-emerald-500/20 flex items-center justify-center space-x-1.5 cursor-pointer"
                       >
                         <Search className="w-4 h-4" />
                         <span>Search</span>
                       </button>
                     </div>
+
+                    {searchError && (
+                      <div className="sm:col-span-12 flex items-center space-x-2 text-rose-400 text-xs font-bold bg-rose-500/10 border border-rose-500/30 px-3.5 py-2.5 rounded-xl">
+                        <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                        <span>{searchError}</span>
+                      </div>
+                    )}
 
                   </div>
 
