@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Bell, Menu, X, ArrowLeft, ChevronDown, Sparkles, Plus, LogOut, User, Mail, Printer } from 'lucide-react';
+import { Search, Bell, Menu, X, ArrowLeft, ChevronDown, Plus, LogOut, User, Mail, Printer } from 'lucide-react';
 
 interface OrganizerHeaderProps {
   searchQuery: string;
@@ -76,7 +76,7 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
               ))}
             </div>
           ) : (
-            <div className="relative max-w-xs sm:max-w-sm w-full">
+            <div className="relative max-w-sm sm:max-w-md w-full">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
@@ -92,18 +92,6 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
         {/* Right Side: Quick Actions & Profile */}
         <div className="flex items-center space-x-3">
           
-          {/* Quick Simulation Live Sales trigger */}
-          {onSeedLiveSales && (
-            <button
-              onClick={onSeedLiveSales}
-              className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-50 text-[#00C896] hover:bg-emerald-100 rounded-xl text-xs font-bold transition border border-emerald-200/60"
-              title="Simulate Live Order Purchase"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Simulate Sale</span>
-            </button>
-          )}
-
           {/* Email / SMS Dispatch Logs Trigger */}
           {onOpenNotifs && (
             <button
