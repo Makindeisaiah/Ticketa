@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
   EventItem, Order, TicketPass, PlatformType, PromoCode, 
-  UserProfile, PaymentCard, TicketaUser, OfflineScanRecord, NotificationLog, QrTicket
+  UserProfile, PaymentCard, TicketaUser, OrganizerUser, OfflineScanRecord, NotificationLog, QrTicket
 } from '../types';
 import { INITIAL_EVENTS, INITIAL_ORDERS, INITIAL_PROMOS, EVENT_IMAGE_OVERRIDE_MAP } from '../data/mockEvents';
 import { db } from '../lib/firebase';
@@ -138,6 +138,8 @@ interface EventContextType {
   userProfile: UserProfile;
   users: TicketaUser[];
   currentUser: TicketaUser | null;
+  organizers: OrganizerUser[];
+  currentOrganizer: OrganizerUser | null;
   activeNotification: string | null;
   selectedEventId: string | null;
   setSelectedEventId: (id: string | null) => void;
@@ -159,6 +161,9 @@ interface EventContextType {
   registerUser: (details: { fullName: string; email: string; phone: string; emailVerified?: boolean }) => TicketaUser;
   loginUser: (email: string) => TicketaUser | null;
   logoutUser: () => void;
+  registerOrganizer: (details: { organizationName: string; email: string; phone?: string; category?: string }) => OrganizerUser;
+  loginOrganizer: (email: string) => OrganizerUser | null;
+  logoutOrganizer: () => void;
   createNewEvent: (eventData: Omit<EventItem, 'id'> | EventItem) => void;
   updateEvent: (updatedEvent: EventItem) => Promise<void>;
   deleteEvent: (eventId: string) => Promise<void>;
@@ -259,6 +264,16 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return saved ? JSON.parse(saved) : null;
   });
 
+  const [organizers, setOrganizers] = useState<OrganizerUser[]>(() => {
+    const saved = localStorage.getItem('tix_organizers');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [currentOrganizer, setCurrentOrganizer] = useState<OrganizerUser | null>(() => {
+    const saved = localStorage.getItem('tix_current_organizer');
+    return saved ? JSON.parse(saved) : null;
+  });
+
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [activeNotification, setActiveNotification] = useState<string | null>(null);
 
@@ -333,6 +348,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     let unsubscribeUsers: () => void;
     let unsubscribeTickets: () => void;
     let unsubscribeQrTickets: () => void;
+    let unsubscribeOrganizers: () => void;
 
     try {
       // 1. Sync Events from Firestore
@@ -453,6 +469,20 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         console.warn('Firestore qr_tickets listener error:', err);
       });
 
+      // 6. Sync Organizers from Firestore
+      const organizersCol = collection(db, 'organizers');
+      unsubscribeOrganizers = onSnapshot(organizersCol, (snapshot) => {
+        if (!snapshot.empty) {
+          const loadedOrganizers = snapshot.docs.map(docSnap => docSnap.data() as OrganizerUser);
+          setOrganizers(loadedOrganizers);
+          localStorage.setItem('tix_organizers', JSON.stringify(loadedOrganizers));
+        } else {
+          setOrganizers([]);
+        }
+      }, (err) => {
+        console.warn('Firestore organizers listener error, using local state:', err);
+      });
+
     } catch (e) {
       console.error('Failed to connect to Firestore:', e);
     }
@@ -463,6 +493,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (unsubscribeUsers) unsubscribeUsers();
       if (unsubscribeTickets) unsubscribeTickets();
       if (unsubscribeQrTickets) unsubscribeQrTickets();
+      if (unsubscribeOrganizers) unsubscribeOrganizers();
     };
   }, []);
 
@@ -770,6 +801,91 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     });
     triggerNotification('Signed out of Ticketa session.');
+  };
+
+  const registerOrganizer = (details: { organizationName: string; email: string; phone?: string; category?: string }): OrganizerUser => {
+    const cleanEmail = details.email.trim().toLowerCase();
+    const cleanName = details.organizationName.trim();
+    const cleanPhone = (details.phone || '').trim();
+    const category = details.category || 'Concerts & Festivals';
+
+    const existing = organizers.find(o => o.email.toLowerCase() === cleanEmail);
+    if (existing) {
+      const updatedExisting: OrganizerUser = {
+        ...existing,
+        organizationName: cleanName || existing.organizationName,
+        phone: cleanPhone || existing.phone,
+        category: category || existing.category
+      };
+      setOrganizers(prev => prev.map(o => o.id === existing.id ? updatedExisting : o));
+      setCurrentOrganizer(updatedExisting);
+
+      (async () => {
+        try {
+          await setDoc(doc(db, 'organizers', existing.id), updatedExisting);
+        } catch (err) {
+          console.error('Error updating organizer in Firestore:', err);
+        }
+      })();
+
+      triggerNotification(`Organizer account logged in for ${updatedExisting.organizationName}`);
+      return updatedExisting;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const newOrgId = `org-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newOrganizer: OrganizerUser = {
+      id: newOrgId,
+      organizationName: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone || '+234 800 000 0000',
+      category: category,
+      registeredAt: todayStr,
+      status: 'Verified',
+      eventsCount: events.filter(e => e.organizerName.toLowerCase() === cleanName.toLowerCase()).length
+    };
+
+    setOrganizers(prev => [newOrganizer, ...prev]);
+    setCurrentOrganizer(newOrganizer);
+
+    // Persist to Firestore
+    (async () => {
+      try {
+        await setDoc(doc(db, 'organizers', newOrgId), newOrganizer);
+        console.log(`Organizer stored in Firebase Firestore at path organizers/${newOrgId}:`, newOrganizer);
+      } catch (err) {
+        console.error('Error writing organizer to Firestore:', err);
+      }
+    })();
+
+    triggerNotification(`Organizer account created for ${newOrganizer.organizationName}! Saved to Firestore.`);
+    return newOrganizer;
+  };
+
+  const loginOrganizer = (email: string): OrganizerUser | null => {
+    const cleanEmail = email.trim().toLowerCase();
+    let found = organizers.find(o => o.email.toLowerCase() === cleanEmail);
+    if (!found) {
+      const nameFromEmail = cleanEmail.split('@')[0];
+      const nameFormatted = nameFromEmail ? nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1) : 'Event Organizer';
+      found = registerOrganizer({
+        organizationName: nameFormatted,
+        email: cleanEmail,
+        phone: '+234 800 000 0000',
+        category: 'Concerts & Festivals'
+      });
+    } else {
+      setCurrentOrganizer(found);
+      triggerNotification(`Logged in as Organizer ${found.organizationName}`);
+    }
+    return found;
+  };
+
+  const logoutOrganizer = () => {
+    setCurrentOrganizer(null);
+    localStorage.removeItem('organizer_session');
+    localStorage.removeItem('tix_current_organizer');
+    triggerNotification('Organizer logged out.');
   };
 
   const purchaseTickets = (
@@ -1321,6 +1437,8 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setPromos([]);
     setSavedEventIds([]);
     setUsers([]);
+    setOrganizers([]);
+    setCurrentOrganizer(null);
     setUserProfile(DEFAULT_PROFILE);
 
     localStorage.removeItem('tix_events');
@@ -1330,11 +1448,14 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.removeItem('tix_promos');
     localStorage.removeItem('tix_saved_events');
     localStorage.removeItem('tix_users');
+    localStorage.removeItem('tix_organizers');
+    localStorage.removeItem('tix_current_organizer');
+    localStorage.removeItem('organizer_session');
     localStorage.removeItem('tix_user_profile');
 
     // Wipe Firestore collections
     try {
-      const collectionsToWipe = ['events', 'orders', 'tickets', 'users', 'qr_tickets'];
+      const collectionsToWipe = ['events', 'orders', 'tickets', 'users', 'organizers', 'qr_tickets'];
       for (const colName of collectionsToWipe) {
         const snap = await getDocs(collection(db, colName));
         for (const docSnap of snap.docs) {
@@ -1379,6 +1500,8 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         userProfile,
         users,
         currentUser,
+        organizers,
+        currentOrganizer,
         activeNotification,
         selectedEventId,
         setSelectedEventId,
@@ -1394,6 +1517,9 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         registerUser,
         loginUser,
         logoutUser,
+        registerOrganizer,
+        loginOrganizer,
+        logoutOrganizer,
         createNewEvent,
         updateEvent,
         deleteEvent,

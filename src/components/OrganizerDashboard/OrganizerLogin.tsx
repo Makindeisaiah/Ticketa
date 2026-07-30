@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Ticket, ShieldCheck, ArrowRight, Lock, Mail, Building2, Phone, Sparkles, CheckCircle2 } from 'lucide-react';
+import { useEventContext } from '../../context/EventContext';
 
 interface OrganizerLoginProps {
   onLoginSuccess: (organizerData: { name: string; email: string }) => void;
 }
 
 export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }) => {
+  const { loginOrganizer, registerOrganizer } = useEventContext();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   
   // Login form state
@@ -29,12 +31,13 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
       return;
     }
 
-    // Success login
-    const name = email.split('@')[0];
-    onLoginSuccess({
-      name: name ? name.charAt(0).toUpperCase() + name.slice(1) : 'Event Organizer',
-      email: email.trim()
-    });
+    const orgUser = loginOrganizer(email.trim());
+    if (orgUser) {
+      onLoginSuccess({
+        name: orgUser.organizationName,
+        email: orgUser.email
+      });
+    }
   };
 
   const handleRegisterSubmit = (e: React.FormEvent) => {
@@ -44,10 +47,19 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
       return;
     }
 
-    onLoginSuccess({
-      name: orgName.trim(),
-      email: regEmail.trim()
+    const orgUser = registerOrganizer({
+      organizationName: orgName.trim(),
+      email: regEmail.trim(),
+      phone: phone.trim(),
+      category: category
     });
+
+    if (orgUser) {
+      onLoginSuccess({
+        name: orgUser.organizationName,
+        email: orgUser.email
+      });
+    }
   };
 
   return (

@@ -29,7 +29,8 @@ export const OrganizerDashboard: React.FC = () => {
     createNewEvent, 
     updateEvent,
     deleteEvent,
-    seedLiveSales 
+    seedLiveSales,
+    logoutOrganizer
   } = useEventContext();
 
   const [organizerAuth, setOrganizerAuth] = useState<{ isLoggedIn: boolean; name: string; email: string }>(() => {
@@ -111,6 +112,7 @@ export const OrganizerDashboard: React.FC = () => {
   };
 
   const handleLogout = () => {
+    logoutOrganizer();
     const loggedOutSession = { isLoggedIn: false, name: '', email: '' };
     setOrganizerAuth(loggedOutSession);
     localStorage.setItem('organizer_session', JSON.stringify(loggedOutSession));

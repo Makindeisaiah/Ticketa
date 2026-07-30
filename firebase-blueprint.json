@@ -78,6 +78,19 @@
         "totalSpent": { "type": "number", "description": "Total amount spent on tickets" },
         "status": { "type": "string", "description": "Account status (Active, Verified)" }
       }
+    },
+    "organizers": {
+      "title": "Organizers",
+      "description": "Registered Ticketa event hosts and organization accounts",
+      "properties": {
+        "organizationName": { "type": "string", "description": "Organization or host name" },
+        "email": { "type": "string", "description": "Organizer email" },
+        "phone": { "type": "string", "description": "Organizer phone" },
+        "category": { "type": "string", "description": "Host category" },
+        "registeredAt": { "type": "string", "description": "Registration date" },
+        "status": { "type": "string", "description": "Status (Active, Verified)" },
+        "eventsCount": { "type": "number", "description": "Number of published events" }
+      }
     }
   },
   "firestore": {
@@ -85,6 +98,7 @@
     "/orders/{orderId}": { "schema": "orders", "description": "Ticket orders" },
     "/tickets/{ticketId}": { "schema": "tickets", "description": "Purchased tickets" },
     "/qr_tickets/{qrTicketId}": { "schema": "qr_tickets", "description": "QR scan records and payloads" },
-    "/users/{userId}": { "schema": "users", "description": "User profiles" }
+    "/users/{userId}": { "schema": "users", "description": "Attendee user profiles" },
+    "/organizers/{organizerId}": { "schema": "organizers", "description": "Organizer user profiles" }
   }
 }

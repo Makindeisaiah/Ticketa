@@ -92,6 +92,17 @@ export interface TicketaUser {
   lastPurchaseDate?: string;
 }
 
+export interface OrganizerUser {
+  id: string;
+  organizationName: string;
+  email: string;
+  phone: string;
+  category?: string;
+  registeredAt: string;
+  status: 'Active' | 'Verified';
+  eventsCount?: number;
+}
+
 export interface Order {
   id: string;
   eventId: string;
