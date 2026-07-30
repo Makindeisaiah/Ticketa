@@ -129,9 +129,25 @@ export const AttendeeWeb: React.FC = () => {
   const categories = ['All', 'Concerts', 'Comedy', 'Tech', 'Festival', 'Exhibition'];
   const locations = ['All Locations', 'Lagos, Nigeria', 'Edmonton, AB', 'Durham, NC', 'Washington, DC', 'Johannesburg, SA'];
 
+  const isCategoryMatch = (eventCat: string, selCat: string) => {
+    if (!selCat || selCat === 'All') return true;
+    if (!eventCat) return false;
+    const eCat = eventCat.toLowerCase().trim();
+    const sCat = selCat.toLowerCase().trim();
+    return eCat === sCat ||
+           eCat === sCat + 's' ||
+           sCat === eCat + 's' ||
+           eCat.includes(sCat) ||
+           sCat.includes(eCat);
+  };
+
+  const getCategoryCount = (catName: string) => {
+    return events.filter(e => isCategoryMatch(e.category, catName)).length;
+  };
+
   // Filtered Events logic
   const filteredEvents = events.filter(e => {
-    const matchesCategory = selectedCategory === 'All' || e.category.toLowerCase() === selectedCategory.toLowerCase();
+    const matchesCategory = isCategoryMatch(e.category, selectedCategory);
     const matchesSearch = e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           e.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           e.organizerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -511,25 +527,28 @@ export const AttendeeWeb: React.FC = () => {
 
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                 {[
-                  { name: 'Concerts', img: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80', count: '12 Events' },
-                  { name: 'Comedy', img: 'https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&w=600&q=80', count: '8 Events' },
-                  { name: 'Tech', img: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80', count: '6 Events' },
-                  { name: 'Festival', img: 'https://images.unsplash.com/photo-1508997449629-303059a039c0?auto=format&fit=crop&w=600&q=80', count: '5 Events' },
-                  { name: 'Exhibition', img: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=600&q=80', count: '4 Events' },
-                ].map(cat => (
-                  <div
-                    key={cat.name}
-                    onClick={() => { setSelectedCategory(cat.name); setCurrentView('browse'); }}
-                    className="group relative h-40 rounded-2xl overflow-hidden cursor-pointer border border-slate-800 hover:border-emerald-500/60 transition-all duration-300 shadow-lg"
-                  >
-                    <img src={cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-                    <div className="absolute bottom-3 left-3 right-3">
-                      <h3 className="text-sm font-extrabold text-white group-hover:text-emerald-400 transition-colors">{cat.name}</h3>
-                      <p className="text-[10px] text-slate-300 font-medium">{cat.count}</p>
+                  { name: 'Concerts', img: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80' },
+                  { name: 'Comedy', img: 'https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&w=600&q=80' },
+                  { name: 'Tech', img: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80' },
+                  { name: 'Festival', img: 'https://images.unsplash.com/photo-1508997449629-303059a039c0?auto=format&fit=crop&w=600&q=80' },
+                  { name: 'Exhibition', img: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=600&q=80' },
+                ].map(cat => {
+                  const eventCount = getCategoryCount(cat.name);
+                  return (
+                    <div
+                      key={cat.name}
+                      onClick={() => { setSelectedCategory(cat.name); setCurrentView('browse'); }}
+                      className="group relative h-40 rounded-2xl overflow-hidden cursor-pointer border border-slate-800 hover:border-emerald-500/60 transition-all duration-300 shadow-lg"
+                    >
+                      <img src={cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+                      <div className="absolute bottom-3 left-3 right-3">
+                        <h3 className="text-sm font-extrabold text-white group-hover:text-emerald-400 transition-colors">{cat.name}</h3>
+                        <p className="text-[10px] text-slate-300 font-medium">{eventCount} {eventCount === 1 ? 'Event' : 'Events'}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
 
