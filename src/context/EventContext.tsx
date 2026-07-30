@@ -487,6 +487,26 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [currentUser]);
 
+  // Continuously sync currentUser totalOrders & totalSpent with actual orders in state
+  useEffect(() => {
+    if (currentUser) {
+      const userOrders = orders.filter(o => 
+        (o.customerEmail && o.customerEmail.toLowerCase() === currentUser.email.toLowerCase()) || 
+        (currentUser.phone && o.customerPhone === currentUser.phone)
+      );
+      const computedTotalOrders = userOrders.length;
+      const computedTotalSpent = userOrders.reduce((sum, o) => sum + o.totalAmount, 0);
+
+      if (currentUser.totalOrders !== computedTotalOrders || currentUser.totalSpent !== computedTotalSpent) {
+        setCurrentUser(prev => prev ? {
+          ...prev,
+          totalOrders: computedTotalOrders,
+          totalSpent: computedTotalSpent
+        } : null);
+      }
+    }
+  }, [orders, currentUser?.email, currentUser?.phone]);
+
   useEffect(() => {
     localStorage.setItem('tix_promos', JSON.stringify(promos));
   }, [promos]);
@@ -709,7 +729,16 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const cleanEmail = email.trim().toLowerCase();
     const found = users.find(u => u.email.toLowerCase() === cleanEmail);
     if (found) {
-      setCurrentUser(found);
+      const userOrders = orders.filter(o => 
+        (o.customerEmail && o.customerEmail.toLowerCase() === cleanEmail) || 
+        (found.phone && o.customerPhone === found.phone)
+      );
+      const userWithSyncedStats: TicketaUser = {
+        ...found,
+        totalOrders: userOrders.length,
+        totalSpent: userOrders.reduce((acc, o) => acc + o.totalAmount, 0)
+      };
+      setCurrentUser(userWithSyncedStats);
       const nameParts = found.fullName.split(' ');
       setUserProfile(prev => ({
         ...prev,
@@ -719,7 +748,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         phone: found.phone
       }));
       triggerNotification(`Logged in as ${found.fullName}`);
-      return found;
+      return userWithSyncedStats;
     }
     return null;
   };
@@ -875,14 +904,22 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const existingUser = users.find(u => u.email.toLowerCase() === cleanEmail);
     const todayDate = new Date().toISOString().split('T')[0];
 
+    // Calculate updated total orders and total spent from existing orders + new order
+    const userAllOrders = [newOrder, ...orders].filter(o => 
+      (o.customerEmail && o.customerEmail.toLowerCase() === cleanEmail) || 
+      (attendeeDetails.phone && o.customerPhone === attendeeDetails.phone)
+    );
+    const newTotalOrders = userAllOrders.length;
+    const newTotalSpent = userAllOrders.reduce((sum, o) => sum + o.totalAmount, 0);
+
     let targetUser: TicketaUser;
     if (existingUser) {
       targetUser = {
         ...existingUser,
         fullName: attendeeDetails.name || existingUser.fullName,
         phone: attendeeDetails.phone || existingUser.phone,
-        totalOrders: existingUser.totalOrders + 1,
-        totalSpent: existingUser.totalSpent + totalPaid,
+        totalOrders: newTotalOrders,
+        totalSpent: newTotalSpent,
         lastPurchaseDate: todayDate
       };
       setUsers(prev => prev.map(u => (u.id === targetUser.id ? targetUser : u)));
@@ -893,16 +930,16 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         email: cleanEmail,
         phone: attendeeDetails.phone || '',
         registeredAt: todayDate,
-        totalOrders: 1,
-        totalSpent: totalPaid,
+        totalOrders: newTotalOrders,
+        totalSpent: newTotalSpent,
         status: 'Active',
         lastPurchaseDate: todayDate
       };
       setUsers(prev => [targetUser, ...prev]);
     }
 
-    // Set active current user if none is set
-    if (!currentUser) {
+    // Set or update active current user session
+    if (!currentUser || currentUser.email.toLowerCase() === cleanEmail) {
       setCurrentUser(targetUser);
     }
 

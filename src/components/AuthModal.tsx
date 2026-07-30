@@ -9,8 +9,18 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode = 'signup' }) => {
-  const { registerUser, loginUser, currentUser, logoutUser } = useEventContext();
+  const { registerUser, loginUser, currentUser, logoutUser, orders } = useEventContext();
   const [mode, setMode] = useState<'signup' | 'verify-email' | 'login'>(defaultMode);
+
+  // Compute live orders and spent stats for currentUser to match My Wallet
+  const userOrders = currentUser 
+    ? orders.filter(o => 
+        (o.customerEmail && o.customerEmail.toLowerCase() === currentUser.email.toLowerCase()) || 
+        (currentUser.phone && o.customerPhone === currentUser.phone)
+      )
+    : [];
+  const totalOrdersCount = userOrders.length;
+  const totalSpentAmount = userOrders.reduce((sum, o) => sum + o.totalAmount, 0);
 
   // Form State
   const [fullName, setFullName] = useState('');
@@ -206,11 +216,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
               <div className="grid grid-cols-2 gap-2 text-center pt-2 border-t border-slate-800/80 text-xs">
                 <div className="bg-slate-900 p-2 rounded-xl">
                   <span className="text-[10px] text-slate-500 uppercase font-bold block">Orders</span>
-                  <span className="font-bold text-emerald-400">{currentUser.totalOrders}</span>
+                  <span className="font-bold text-emerald-400">{totalOrdersCount}</span>
                 </div>
                 <div className="bg-slate-900 p-2 rounded-xl">
                   <span className="text-[10px] text-slate-500 uppercase font-bold block">Total Spent</span>
-                  <span className="font-bold text-teal-300">₦{currentUser.totalSpent.toLocaleString()}</span>
+                  <span className="font-bold text-teal-300">₦{totalSpentAmount.toLocaleString()}</span>
                 </div>
               </div>
             </div>
