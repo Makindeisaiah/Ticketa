@@ -477,7 +477,51 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setOrganizers(loadedOrganizers);
           localStorage.setItem('tix_organizers', JSON.stringify(loadedOrganizers));
         } else {
-          setOrganizers([]);
+          // Seed default organizers into Firestore so the 'organizers' collection is created immediately
+          const defaultOrganizers: OrganizerUser[] = [
+            {
+              id: 'org-1001',
+              organizationName: 'Flytime Fest Productions',
+              email: 'organizer@flytime.com',
+              phone: '+234 803 111 2233',
+              category: 'Concerts & Festivals',
+              registeredAt: '2026-01-15',
+              status: 'Verified',
+              eventsCount: 3
+            },
+            {
+              id: 'org-1002',
+              organizationName: 'TechNation Africa',
+              email: 'events@technation.africa',
+              phone: '+234 802 444 5566',
+              category: 'Tech Summits',
+              registeredAt: '2026-02-01',
+              status: 'Verified',
+              eventsCount: 2
+            },
+            {
+              id: 'org-1003',
+              organizationName: 'LiveNation West Africa',
+              email: 'contact@livenation.ng',
+              phone: '+234 805 777 8899',
+              category: 'Concerts & Festivals',
+              registeredAt: '2026-03-10',
+              status: 'Verified',
+              eventsCount: 4
+            }
+          ];
+
+          setOrganizers(defaultOrganizers);
+          localStorage.setItem('tix_organizers', JSON.stringify(defaultOrganizers));
+
+          defaultOrganizers.forEach(async (org) => {
+            try {
+              await setDoc(doc(db, 'organizers', org.id), org);
+              console.log(`Seeded default organizer ${org.organizationName} into Firestore path organizers/${org.id}`);
+            } catch (err) {
+              console.error('Error seeding organizer to Firestore:', err);
+            }
+          });
         }
       }, (err) => {
         console.warn('Firestore organizers listener error, using local state:', err);
