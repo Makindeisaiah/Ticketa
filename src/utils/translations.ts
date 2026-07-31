@@ -1,0 +1,215 @@
+export type Language = 'en' | 'fr';
+
+export const TRANSLATIONS = {
+  en: {
+    // Header & Mode
+    organizerPortal: 'Organizer Portal',
+    signIn: 'Sign In',
+    createAccount: 'Create Account',
+    logIn: 'Log in',
+    registerAsHost: 'Register as Host',
+    alreadyHaveAccount: 'Already have an account?',
+    dontHaveAccount: "Don't have an organizer account?",
+    language: 'Language',
+    
+    // Login Screen
+    signInTitle: 'Sign in to your Organizer Portal',
+    signInDesc: 'Manage events, track ticket sales, and view real-time gate attendance metrics.',
+    emailAddress: 'Email Address',
+    password: 'Password',
+    rememberMe: 'Remember me',
+    forgotPassword: 'Forgot password?',
+    signInBtn: 'Sign In to Dashboard',
+
+    // Onboarding Step 1
+    step1Title: 'Create Your Organizer Account',
+    step1Desc: 'Set up your organizer account to start selling tickets and managing events.',
+    fullName: 'Full Name',
+    confirmPassword: 'Confirm Password',
+    continue: 'Continue',
+    passwordsDoNotMatch: 'Passwords do not match. Please check and try again.',
+
+    // Onboarding Step 2
+    step2Title: 'Tell us about your organization',
+    step2Desc: 'Help us understand who you are to offer the best event management experience.',
+    organizationName: 'Organization Name',
+    organizerTypeLabel: 'Organizer Type',
+    countryLabel: 'Country',
+    phoneNumber: 'Phone Number',
+    back: 'Back',
+
+    // Organizer Types
+    eventAgency: 'Event Agency',
+    individualHost: 'Individual Host',
+    corporateBrand: 'Corporate Brand',
+    concertPromoter: 'Concert & Festival Promoter',
+    techSummitHost: 'Tech & Summit Host',
+
+    // Onboarding Step 3
+    step3Title: "Set Up How You'll Get Paid",
+    step3Desc: 'Add your payout details to receive ticket sales earnings safely.',
+    step3TitleChoice: "Set Up How You'll Get Paid",
+    step3DescChoice: 'Add your payout details to receive ticket sales earnings safely.',
+    payoutOptionNow: 'Set Up Payout Now',
+    payoutOptionNowDesc: 'Connect your bank account or mobile wallet to receive earnings.',
+    payoutNowTitle: 'Set Up Payout Now',
+    payoutNowDesc: 'Connect your bank account or mobile wallet to receive earnings.',
+    addBankAccount: 'Add Bank Account / Wallet',
+    skipForNow: 'Skip for Now',
+    skipForNowDesc: 'Set up payout later in the dashboard settings.',
+    skipForNowTitle: 'Skip for Now',
+    skipForNowBtn: 'Skip for Now',
+
+    setupPayoutAccount: 'Set up your payout account',
+    setupPayoutDesc: "This is where we'll send your ticket sales revenue",
+    step3TitleDetails: 'Set up your payout account',
+    step3DescDetails: "This is where we'll send your ticket sales revenue",
+    countryAndCurrency: 'Country & Currency',
+    bankAccountDetails: 'Bank Account & Mobile Payout Details',
+    selectBank: 'Select Bank / Mobile Wallet',
+    accountNumber: 'Account Number / Mobile Number',
+    accountName: 'Account Name',
+    verifying: 'Verifying...',
+    verifiedAccount: 'Verified Account',
+    holderTypeCheck: 'Account Holder Type & Legitimacy Check',
+    accountHolderType: 'Account Holder Type & Legitimacy Check',
+    individual: 'Individual',
+    businessOrg: 'Business / Organization',
+    businessName: 'Business Name',
+    taxIdPlaceholder: 'CAC / Tax ID / RCCM (e.g. ND65478477664)',
+    taxRegistration: 'Registration / Tax ID (e.g. ND65478477664)',
+    encryptedBankNotice: 'Your bank details are encrypted and securely stored.',
+    securityNotice: 'Your payout details are encrypted and securely stored.',
+    saveBankAccount: 'Save payout account',
+
+    // Onboarding Step 4
+    step4Title: 'Your organizer account is ready',
+    step4Desc: 'You can now start organizing events, selling tickets, and managing payouts on your dashboard.',
+    hostVerificationCompleted: 'Host Verification Completed',
+    hostVerifiedNotice: 'Your brand account is verified. Anti-fraud checks cleared successfully.',
+    orgNameSummary: 'Organizer Name',
+    organizerType: 'Category / Type',
+    categorySummary: 'Category / Type',
+    payoutStatus: 'Payout Status',
+    payoutStatusSummary: 'Payout Status',
+    bankAccountLinked: 'Bank Account Linked',
+    payoutLinked: 'Account Linked',
+    pendingConfig: 'Pending (Configure in Settings)',
+    payoutPending: 'Pending (Configure in Settings)',
+    goToDashboard: 'Go to Dashboard',
+
+    // Validation Errors
+    enterFullName: 'Please enter your full name.',
+    enterValidEmail: 'Please enter a valid email address.',
+    passwordMinLength: 'Password must be at least 6 characters long.',
+    enterOrgName: 'Please enter your Organization / Brand Name.',
+    selectBankError: 'Please select a bank or mobile money service.',
+    enterValidAccountNum: 'Please enter a valid account or phone number.'
+  },
+
+  fr: {
+    // Header & Mode
+    organizerPortal: 'Portail Organisateur',
+    signIn: 'Se Connecter',
+    createAccount: 'Créer un Compte',
+    logIn: 'Se connecter',
+    registerAsHost: "S'inscrire comme Organisateur",
+    alreadyHaveAccount: 'Vous avez déjà un compte ?',
+    dontHaveAccount: "Vous n'avez pas de compte organisateur ?",
+    language: 'Langue',
+    
+    // Login Screen
+    signInTitle: 'Connectez-vous à votre Portail Organisateur',
+    signInDesc: 'Gérez vos événements, suivez la vente de billets et consultez le contrôle d\'accès en temps réel.',
+    emailAddress: 'Adresse e-mail',
+    password: 'Mot de passe',
+    rememberMe: 'Se souvenir de moi',
+    forgotPassword: 'Mot de passe oublié ?',
+    signInBtn: 'Accéder au Tableau de Bord',
+
+    // Onboarding Step 1
+    step1Title: 'Créer votre compte organisateur',
+    step1Desc: 'Configurez votre compte organisateur pour commencer à vendre des billets et gérer vos événements.',
+    fullName: 'Nom complet',
+    confirmPassword: 'Confirmer le mot de passe',
+    continue: 'Continuer',
+    passwordsDoNotMatch: 'Les mots de passe ne correspondent pas. Veuillez vérifier.',
+
+    // Onboarding Step 2
+    step2Title: 'Parlez-nous de votre organisation',
+    step2Desc: 'Aidez-nous à mieux vous connaître pour vous offrir la meilleure expérience de gestion d\'événements.',
+    organizationName: 'Nom de l\'organisation / Marque',
+    organizerTypeLabel: 'Type d\'organisateur',
+    countryLabel: 'Pays',
+    phoneNumber: 'Numéro de téléphone',
+    back: 'Retour',
+
+    // Organizer Types
+    eventAgency: 'Agence événementielle',
+    individualHost: 'Organisateur individuel',
+    corporateBrand: 'Entreprise / Marque',
+    concertPromoter: 'Promoteur de concerts et festivals',
+    techSummitHost: 'Organisateur de sommets & conférences tech',
+
+    // Onboarding Step 3
+    step3Title: 'Configurez votre mode de paiement',
+    step3Desc: 'Ajoutez vos coordonnées bancaires ou Mobile Money pour recevoir vos revenus en toute sécurité.',
+    step3TitleChoice: 'Configurez votre mode de paiement',
+    step3DescChoice: 'Ajoutez vos coordonnées bancaires ou Mobile Money pour recevoir vos revenus de billetterie en toute sécurité.',
+    payoutOptionNow: 'Configurer le versement maintenant',
+    payoutOptionNowDesc: 'Connectez votre compte bancaire ou compte Mobile Money pour recevoir vos gains.',
+    payoutNowTitle: 'Configurer le versement maintenant',
+    payoutNowDesc: 'Connectez votre compte bancaire ou compte Mobile Money pour recevoir vos gains.',
+    addBankAccount: 'Ajouter un compte bancaire / Wallet',
+    skipForNow: "Passer pour l'instant",
+    skipForNowDesc: "Vous pourrez configurer votre compte de paiement plus tard dans les paramètres.",
+    skipForNowTitle: "Passer pour l'instant",
+    skipForNowBtn: "Passer pour l'instant",
+
+    setupPayoutAccount: 'Configurez votre compte de versement',
+    setupPayoutDesc: "C'est ici que nous vous enverrons les recettes de vos ventes de billets",
+    step3TitleDetails: 'Configurez votre compte de versement',
+    step3DescDetails: "C'est ici que nous vous enverrons les recettes de vos ventes de billets",
+    countryAndCurrency: 'Pays & Devise',
+    bankAccountDetails: 'Coordonnées bancaires & Mobile Money',
+    selectBank: 'Sélectionner la Banque / Mobile Money',
+    accountNumber: 'Numéro de compte / Numéro Mobile Money',
+    accountName: 'Nom du titulaire du compte',
+    verifying: 'Vérification en cours...',
+    verifiedAccount: 'Compte vérifié',
+    holderTypeCheck: 'Type de titulaire & Contrôle de légitimité',
+    accountHolderType: 'Type de titulaire & Contrôle de légitimité',
+    individual: 'Individuel',
+    businessOrg: 'Entreprise / Organisation',
+    businessName: "Nom de l'entreprise",
+    taxIdPlaceholder: 'Numéro RCCM / Fiscal (ex. CI-ABJ-2026-B)',
+    taxRegistration: 'Numéro RCCM / Fiscal (ex. CI-ABJ-2026-B)',
+    encryptedBankNotice: 'Vos coordonnées bancaires sont cryptées et conservées en toute sécurité.',
+    securityNotice: 'Vos coordonnées bancaires sont cryptées et conservées en toute sécurité.',
+    saveBankAccount: 'Enregistrer le compte de paiement',
+
+    // Onboarding Step 4
+    step4Title: 'Votre compte organisateur est prêt !',
+    step4Desc: 'Vous pouvez maintenant créer des événements, vendre des billets et gérer vos versements sur votre tableau de bord.',
+    hostVerificationCompleted: "Vérification de l'organisateur terminée",
+    hostVerifiedNotice: "Votre compte organisateur est vérifié. Les contrôles anti-fraude ont été validés avec succès.",
+    orgNameSummary: "Nom de l'organisation",
+    organizerType: 'Catégorie / Type',
+    categorySummary: 'Catégorie / Type',
+    payoutStatus: 'Statut du versement',
+    payoutStatusSummary: 'Statut du versement',
+    bankAccountLinked: 'Compte bancaire lié',
+    payoutLinked: 'Compte lié',
+    pendingConfig: 'En attente (à configurer dans les paramètres)',
+    payoutPending: 'En attente (à configurer dans les paramètres)',
+    goToDashboard: 'Accéder au Tableau de Bord',
+
+    // Validation Errors
+    enterFullName: 'Veuillez entrer votre nom complet.',
+    enterValidEmail: 'Veuillez entrer une adresse e-mail valide.',
+    passwordMinLength: 'Le mot de passe doit contenir au moins 6 caractères.',
+    enterOrgName: 'Veuillez entrer le nom de votre organisation ou marque.',
+    selectBankError: 'Veuillez choisir une banque ou un service Mobile Money.',
+    enterValidAccountNum: 'Veuillez entrer un numéro de compte ou de téléphone valide.'
+  }
+};

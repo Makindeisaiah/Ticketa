@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Search, Bell, Menu, X, ArrowLeft, ChevronDown, Plus, LogOut, User, Mail, Printer } from 'lucide-react';
+import { Search, Bell, Menu, X, ArrowLeft, ChevronDown, Plus, LogOut, User, Mail, Printer, Languages } from 'lucide-react';
+import { Language, TRANSLATIONS } from '../../utils/translations';
 
 interface OrganizerHeaderProps {
   searchQuery: string;
@@ -91,6 +92,34 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
 
         {/* Right Side: Quick Actions & Profile */}
         <div className="flex items-center space-x-3">
+          
+          {/* Language Toggle Pill */}
+          <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-xs shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                const event = new CustomEvent('ticketa-lang-change', { detail: 'en' });
+                window.dispatchEvent(event);
+              }}
+              className="px-2 py-1 rounded-lg font-bold text-slate-700 hover:text-slate-900 transition flex items-center space-x-1"
+              title="English"
+            >
+              <span>🇬🇧</span>
+              <span className="hidden sm:inline">EN</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const event = new CustomEvent('ticketa-lang-change', { detail: 'fr' });
+                window.dispatchEvent(event);
+              }}
+              className="px-2 py-1 rounded-lg font-bold text-slate-700 hover:text-slate-900 transition flex items-center space-x-1"
+              title="Français (Côte d'Ivoire)"
+            >
+              <span>🇫🇷</span>
+              <span className="hidden sm:inline">FR</span>
+            </button>
+          </div>
           
           {/* Email / SMS Dispatch Logs Trigger */}
           {onOpenNotifs && (

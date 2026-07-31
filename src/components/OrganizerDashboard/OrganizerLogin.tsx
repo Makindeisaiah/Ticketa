@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { 
   Ticket, ShieldCheck, ArrowRight, Lock, Mail, Building2, Phone, CheckCircle2, 
   Globe, Calendar, Eye, EyeOff, Building, User, CreditCard, ChevronDown, 
-  Check, Sparkles, AlertCircle, Shield
+  Check, Sparkles, AlertCircle, Shield, Languages
 } from 'lucide-react';
 import { useEventContext } from '../../context/EventContext';
 import { OrganizerPayoutAccount } from '../../types';
+import { Language, TRANSLATIONS } from '../../utils/translations';
 
 export interface CountryConfig {
   name: string;
@@ -109,11 +110,20 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
   const [taxOrRegistrationNumber, setTaxOrRegistrationNumber] = useState('ND65478477664');
   const [isPayoutConfigured, setIsPayoutConfigured] = useState(false);
 
+  // Language state: English / French
+  const [lang, setLang] = useState<Language>('en');
+  const t = (key: keyof typeof TRANSLATIONS['en']) => TRANSLATIONS[lang][key] || TRANSLATIONS['en'][key];
+
   // Handle country selection change
   const handleCountrySelect = (selectedCountry: string) => {
     setCountry(selectedCountry);
     const config = SUPPORTED_COUNTRIES[selectedCountry] || SUPPORTED_COUNTRIES['Nigeria'];
     setBankName(config.defaultBank);
+
+    // Auto switch language to French if Côte d'Ivoire is selected
+    if (selectedCountry === "Côte d'Ivoire") {
+      setLang('fr');
+    }
   };
 
   const currentCountryConfig = SUPPORTED_COUNTRIES[country] || SUPPORTED_COUNTRIES['Nigeria'];
@@ -151,19 +161,19 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
     e.preventDefault();
     setErrorMsg('');
     if (!fullName.trim()) {
-      setErrorMsg('Please enter your full name.');
+      setErrorMsg(t('enterFullName'));
       return;
     }
     if (!email.trim() || !email.includes('@')) {
-      setErrorMsg('Please enter a valid email address.');
+      setErrorMsg(t('enterValidEmail'));
       return;
     }
     if (!password || password.length < 6) {
-      setErrorMsg('Password must be at least 6 characters long.');
+      setErrorMsg(t('passwordMinLength'));
       return;
     }
     if (password !== confirmPassword) {
-      setErrorMsg('Passwords do not match. Please check and try again.');
+      setErrorMsg(t('passwordsDoNotMatch'));
       return;
     }
     setStep(2);
@@ -174,7 +184,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
     e.preventDefault();
     setErrorMsg('');
     if (!organizationName.trim()) {
-      setErrorMsg('Please enter your Organization / Brand Name.');
+      setErrorMsg(t('enterOrgName'));
       return;
     }
     setStep(3);
@@ -186,11 +196,11 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
     e.preventDefault();
     setErrorMsg('');
     if (!bankName) {
-      setErrorMsg('Please select a bank.');
+      setErrorMsg(t('selectBankError'));
       return;
     }
-    if (!accountNumber || accountNumber.length < 10) {
-      setErrorMsg('Please enter a valid 10-digit account number.');
+    if (!accountNumber || accountNumber.length < 5) {
+      setErrorMsg(t('enterValidAccountNum'));
       return;
     }
     setIsPayoutConfigured(true);
@@ -271,24 +281,50 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
             </div>
             <span className="text-xl font-black tracking-tight text-slate-900">TICKETA</span>
             <span className="text-[10px] font-bold text-[#00C896] bg-[#00C896]/10 px-2.5 py-0.5 rounded-full uppercase border border-[#00C896]/20">
-              Organizer Portal
+              {t('organizerPortal')}
             </span>
           </div>
 
-          <button
-            onClick={() => {
-              if (mode === 'onboarding') {
-                setMode('login');
-              } else {
-                setMode('onboarding');
-                setStep(1);
-              }
-              setErrorMsg('');
-            }}
-            className="text-xs font-bold text-[#00C896] hover:underline"
-          >
-            {mode === 'onboarding' ? 'Sign In' : 'Create Account'}
-          </button>
+          <div className="flex items-center space-x-3">
+            {/* Language Selector Pill */}
+            <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-xs">
+              <button
+                type="button"
+                onClick={() => setLang('en')}
+                className={`px-2 py-1 rounded-lg font-bold transition flex items-center space-x-1 ${
+                  lang === 'en' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <span>🇬🇧</span>
+                <span>EN</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLang('fr')}
+                className={`px-2 py-1 rounded-lg font-bold transition flex items-center space-x-1 ${
+                  lang === 'fr' ? 'bg-[#00C896] text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <span>🇫🇷</span>
+                <span>FR</span>
+              </button>
+            </div>
+
+            <button
+              onClick={() => {
+                if (mode === 'onboarding') {
+                  setMode('login');
+                } else {
+                  setMode('onboarding');
+                  setStep(1);
+                }
+                setErrorMsg('');
+              }}
+              className="text-xs font-bold text-[#00C896] hover:underline"
+            >
+              {mode === 'onboarding' ? t('signIn') : t('createAccount')}
+            </button>
+          </div>
         </div>
 
         {/* ERROR NOTIFICATION ALERT */}
@@ -304,13 +340,13 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
           /* STANDARD SIGN IN SCREEN */
           <div className="p-6 sm:p-10 max-w-md mx-auto space-y-6">
             <div>
-              <h2 className="text-2xl font-black text-slate-900">Sign in to your Organizer Portal</h2>
-              <p className="text-xs text-slate-500 mt-1">Manage events, track ticket sales, and view real-time gate attendance metrics.</p>
+              <h2 className="text-2xl font-black text-slate-900">{t('signInTitle')}</h2>
+              <p className="text-xs text-slate-500 mt-1">{t('signInDesc')}</p>
             </div>
 
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{t('emailAddress')}</label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
@@ -325,7 +361,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Password</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{t('password')}</label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
@@ -347,10 +383,10 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                     onChange={(e) => setRememberMe(e.target.checked)}
                     className="rounded border-slate-300 text-[#00C896] focus:ring-[#00C896]"
                   />
-                  <span>Remember me</span>
+                  <span>{t('rememberMe')}</span>
                 </label>
                 <a href="#forgot" onClick={(e) => e.preventDefault()} className="text-[#00C896] hover:underline font-bold">
-                  Forgot password?
+                  {t('forgotPassword')}
                 </a>
               </div>
 
@@ -358,18 +394,18 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                 type="submit"
                 className="w-full py-3 bg-[#00C896] hover:bg-[#00b084] text-white font-bold rounded-xl text-xs transition shadow-lg shadow-[#00C896]/20 cursor-pointer"
               >
-                Sign In to Dashboard
+                {t('signInBtn')}
               </button>
             </form>
 
             <div className="text-center text-xs text-slate-500 pt-2">
-              Don't have an organizer account?{' '}
+              {t('dontHaveAccount')}{' '}
               <button
                 type="button"
                 onClick={() => { setMode('onboarding'); setStep(1); }}
                 className="text-[#00C896] font-bold hover:underline"
               >
-                Register as Host
+                {t('registerAsHost')}
               </button>
             </div>
           </div>
@@ -388,10 +424,10 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                   <>
                     <div>
                       <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                        Create Your Organizer Account
+                        {t('step1Title')}
                       </h2>
                       <p className="text-xs text-slate-500 mt-1">
-                        Set up your organizer account to start selling tickets and managing events.
+                        {t('step1Desc')}
                       </p>
                     </div>
 
@@ -402,7 +438,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                         <input
                           type="text"
                           required
-                          placeholder="Full Name"
+                          placeholder={t('fullName')}
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
                           className="w-full pl-10 pr-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896] transition"
@@ -415,7 +451,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                         <input
                           type="email"
                           required
-                          placeholder="Email Address"
+                          placeholder={t('emailAddress')}
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           className="w-full pl-10 pr-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896] transition"
@@ -428,7 +464,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                         <input
                           type={showPassword ? 'text' : 'password'}
                           required
-                          placeholder="Password"
+                          placeholder={t('password')}
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           className="w-full pl-10 pr-10 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896] transition"
@@ -448,7 +484,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                         <input
                           type={showConfirmPassword ? 'text' : 'password'}
                           required
-                          placeholder="Confirm Password"
+                          placeholder={t('confirmPassword')}
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           className="w-full pl-10 pr-10 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896] transition"
@@ -466,18 +502,18 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                         type="submit"
                         className="w-full py-3 bg-[#00C896] hover:bg-[#00b084] text-white font-bold rounded-xl text-xs shadow-md shadow-[#00C896]/20 transition cursor-pointer"
                       >
-                        Continue
+                        {t('continue')}
                       </button>
                     </form>
 
                     <div className="text-center text-xs text-slate-500 pt-1">
-                      Already have an account?{' '}
+                      {t('alreadyHaveAccount')}{' '}
                       <button
                         type="button"
                         onClick={() => setMode('login')}
                         className="text-[#00C896] font-bold hover:underline"
                       >
-                        Log in
+                        {t('logIn')}
                       </button>
                     </div>
                   </>
@@ -488,10 +524,10 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                   <>
                     <div>
                       <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                        Tell us about your organization
+                        {t('step2Title')}
                       </h2>
                       <p className="text-xs text-slate-500 mt-1">
-                        Help us understand who you are to offer the best event management experience.
+                        {t('step2Desc')}
                       </p>
                     </div>
 
@@ -502,7 +538,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                         <input
                           type="text"
                           required
-                          placeholder="Organization Name"
+                          placeholder={t('organizationName')}
                           value={organizationName}
                           onChange={(e) => setOrganizationName(e.target.value)}
                           className="w-full pl-10 pr-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896] transition"
@@ -517,11 +553,11 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                           onChange={(e) => setOrganizerType(e.target.value)}
                           className="w-full pl-10 pr-8 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896] appearance-none transition"
                         >
-                          <option value="Event Agency">Event Agency</option>
-                          <option value="Individual Host">Individual Host</option>
-                          <option value="Corporate Brand">Corporate Brand</option>
-                          <option value="Concert & Festival Promoter">Concert & Festival Promoter</option>
-                          <option value="Tech & Summit Host">Tech & Summit Host</option>
+                          <option value="Event Agency">{t('eventAgency')}</option>
+                          <option value="Individual Host">{t('individualHost')}</option>
+                          <option value="Corporate Brand">{t('corporateBrand')}</option>
+                          <option value="Concert & Festival Promoter">{t('concertPromoter')}</option>
+                          <option value="Tech & Summit Host">{t('techSummitHost')}</option>
                         </select>
                         <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       </div>
@@ -543,6 +579,13 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                         <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       </div>
 
+                      {country === "Côte d'Ivoire" && (
+                        <div className="p-2.5 bg-indigo-50 border border-indigo-200 rounded-xl text-[11px] text-indigo-700 font-semibold flex items-center space-x-2">
+                          <Languages className="w-4 h-4 text-indigo-600 shrink-0" />
+                          <span>🇫🇷 Mode Français activé automatiquement pour la Côte d'Ivoire.</span>
+                        </div>
+                      )}
+
                       {/* Phone Number with country flag & dial code */}
                       <div className="flex items-center space-x-2">
                         <div className="flex items-center space-x-1.5 px-3 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 shrink-0">
@@ -551,7 +594,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                         </div>
                         <input
                           type="tel"
-                          placeholder="Phone Number"
+                          placeholder={t('phoneNumber')}
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
                           className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896] transition"
@@ -564,25 +607,25 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                           onClick={() => setStep(1)}
                           className="px-4 py-2.5 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50"
                         >
-                          Back
+                          {t('back')}
                         </button>
                         <button
                           type="submit"
                           className="flex-1 py-3 bg-[#00C896] hover:bg-[#00b084] text-white font-bold rounded-xl text-xs shadow-md shadow-[#00C896]/20 transition cursor-pointer"
                         >
-                          Continue
+                          {t('continue')}
                         </button>
                       </div>
                     </form>
 
                     <div className="text-center text-xs text-slate-500 pt-1">
-                      Already have an account?{' '}
+                      {t('alreadyHaveAccount')}{' '}
                       <button
                         type="button"
                         onClick={() => setMode('login')}
                         className="text-[#00C896] font-bold hover:underline"
                       >
-                        Log in
+                        {t('logIn')}
                       </button>
                     </div>
                   </>
@@ -596,10 +639,10 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                       <div className="space-y-4">
                         <div>
                           <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                            Set Up How You'll Get Paid
+                            {t('step3Title')}
                           </h2>
                           <p className="text-xs text-slate-500 mt-1">
-                            Add your payout details to receive ticket sales earnings safely.
+                            {t('step3Desc')}
                           </p>
                         </div>
 
@@ -610,8 +653,8 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                               <Building className="w-5 h-5" />
                             </div>
                             <div>
-                              <h3 className="font-bold text-slate-900 text-sm">Set Up Payout Now</h3>
-                              <p className="text-xs text-slate-500">Connect your bank account to receive earnings.</p>
+                              <h3 className="font-bold text-slate-900 text-sm">{t('payoutOptionNow')}</h3>
+                              <p className="text-xs text-slate-500">{t('payoutOptionNowDesc')}</p>
                             </div>
                           </div>
                           <button
@@ -619,7 +662,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                             onClick={() => setPayoutSubStep('details')}
                             className="w-full py-2.5 bg-[#00C896] hover:bg-[#00b084] text-white font-bold rounded-xl text-xs shadow-sm transition"
                           >
-                            Add Bank Account
+                            {t('addBankAccount')}
                           </button>
                         </div>
 
@@ -630,8 +673,8 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                               <Globe className="w-5 h-5" />
                             </div>
                             <div>
-                              <h3 className="font-bold text-slate-900 text-sm">Skip for Now</h3>
-                              <p className="text-xs text-slate-500">Set up payout later in the dashboard settings.</p>
+                              <h3 className="font-bold text-slate-900 text-sm">{t('skipForNow')}</h3>
+                              <p className="text-xs text-slate-500">{t('skipForNowDesc')}</p>
                             </div>
                           </div>
                           <button
@@ -642,18 +685,18 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                             }}
                             className="w-full py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition"
                           >
-                            Skip for Now
+                            {t('skipForNow')}
                           </button>
                         </div>
 
                         <div className="text-center text-xs text-slate-500 pt-1">
-                          Already have an account?{' '}
+                          {t('alreadyHaveAccount')}{' '}
                           <button
                             type="button"
                             onClick={() => setMode('login')}
                             className="text-[#00C896] font-bold hover:underline"
                           >
-                            Log in
+                            {t('logIn')}
                           </button>
                         </div>
                       </div>
@@ -662,17 +705,17 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                       <form onSubmit={handleSavePayout} className="space-y-4">
                         <div>
                           <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                            Set up your payout account
+                            {t('setupPayoutAccount')}
                           </h2>
                           <p className="text-xs text-slate-500 mt-1">
-                            This is where we'll send your ticket sales revenue
+                            {t('setupPayoutDesc')}
                           </p>
                         </div>
 
                         {/* Country & Currency Section */}
                         <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
                           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                            Country & Currency
+                            {t('countryAndCurrency')}
                           </span>
                           <div className="grid grid-cols-2 gap-2">
                             <div className="flex items-center space-x-2 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">
@@ -691,7 +734,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                         {/* Bank Account Details */}
                         <div className="space-y-2">
                           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                            Bank Account Details
+                            {t('bankAccountDetails')}
                           </span>
                           
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -713,7 +756,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                               <input
                                 type="text"
                                 maxLength={10}
-                                placeholder="Account number"
+                                placeholder={t('accountNumber')}
                                 value={accountNumber}
                                 onChange={(e) => handleAccountNumberChange(e.target.value)}
                                 className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896]"
@@ -725,20 +768,20 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                           <div className="relative">
                             <input
                               type="text"
-                              placeholder="Account name"
+                              placeholder={t('accountName')}
                               value={accountName}
                               onChange={(e) => setAccountName(e.target.value)}
                               className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896]"
                             />
                             {isResolvingAccount && (
                               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-[#00C896] font-bold animate-pulse">
-                                Verifying...
+                                {t('verifying')}
                               </span>
                             )}
                             {accountResolved && (
                               <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center space-x-1 text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                                 <Check className="w-3 h-3 text-emerald-600" />
-                                <span>Verified Account</span>
+                                <span>{t('verifiedAccount')}</span>
                               </span>
                             )}
                           </div>
@@ -747,7 +790,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                         {/* Account Holder Type & KYC Verification */}
                         <div className="space-y-2 pt-1">
                           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-                            Account Holder Type & Legitimacy Check
+                            {t('holderTypeCheck')}
                           </span>
 
                           <div className="flex items-center space-x-4 text-xs">
@@ -759,7 +802,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                                 onChange={() => setHolderType('Individual')}
                                 className="text-[#00C896] focus:ring-[#00C896]"
                               />
-                              <span>Individual</span>
+                              <span>{t('individual')}</span>
                             </label>
 
                             <label className="flex items-center space-x-1.5 cursor-pointer">
@@ -770,14 +813,14 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                                 onChange={() => setHolderType('Business / Organization')}
                                 className="text-[#00C896] focus:ring-[#00C896]"
                               />
-                              <span>Business / Organization</span>
+                              <span>{t('businessOrg')}</span>
                             </label>
                           </div>
 
                           {holderType === 'Individual' ? (
                             <input
                               type="text"
-                              placeholder="Full name"
+                              placeholder={t('fullName')}
                               value={fullName}
                               onChange={(e) => setFullName(e.target.value)}
                               className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#00C896]/30"
@@ -786,14 +829,14 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                               <input
                                 type="text"
-                                placeholder="Business Name"
+                                placeholder={t('businessName')}
                                 value={organizationName}
                                 onChange={(e) => setOrganizationName(e.target.value)}
                                 className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#00C896]/30"
                               />
                               <input
                                 type="text"
-                                placeholder="CAC / Tax ID (e.g. ND65478477664)"
+                                placeholder={t('taxIdPlaceholder')}
                                 value={taxOrRegistrationNumber}
                                 onChange={(e) => setTaxOrRegistrationNumber(e.target.value)}
                                 className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#00C896]/30"
@@ -805,7 +848,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                         {/* Security notice */}
                         <div className="flex items-center space-x-2 text-[11px] text-slate-400">
                           <Lock className="w-3.5 h-3.5 text-slate-400" />
-                          <span>Your bank details are encrypted and securely stored.</span>
+                          <span>{t('encryptedBankNotice')}</span>
                         </div>
 
                         <div className="pt-2 flex items-center space-x-3">
@@ -817,13 +860,13 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                             }}
                             className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-xs transition"
                           >
-                            Skip for now
+                            {t('skipForNow')}
                           </button>
                           <button
                             type="submit"
                             className="flex-1 py-2.5 bg-[#00C896] hover:bg-[#00b084] text-white font-bold rounded-xl text-xs shadow-md shadow-[#00C896]/20 transition cursor-pointer"
                           >
-                            Save bank account
+                            {t('saveBankAccount')}
                           </button>
                         </div>
                       </form>
@@ -836,11 +879,11 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                   <div className="space-y-4">
                     <div>
                       <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                        <span>Your organizer account is ready</span>
+                        <span>{t('step4Title')}</span>
                         <CheckCircle2 className="w-6 h-6 text-[#00C896]" />
                       </h2>
                       <p className="text-xs text-slate-500 mt-1">
-                        You can now start organizing events, selling tickets, and managing payouts on your dashboard.
+                        {t('step4Desc')}
                       </p>
                     </div>
 
@@ -848,27 +891,29 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                     <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-2">
                       <div className="flex items-center space-x-2 text-emerald-800 font-bold text-xs">
                         <Shield className="w-4 h-4 text-[#00C896]" />
-                        <span>Host Verification Completed</span>
+                        <span>{t('hostVerificationCompleted')}</span>
                       </div>
                       <p className="text-[11px] text-emerald-700">
-                        Your brand account <strong className="font-extrabold">{organizationName}</strong> is verified. Anti-fraud checks cleared successfully.
+                        {lang === 'fr' 
+                          ? `Votre compte marque ${organizationName} est vérifié. Contrôles anti-fraude réussis.` 
+                          : `Your brand account ${organizationName} is verified. Anti-fraud checks cleared successfully.`}
                       </p>
                     </div>
 
                     {/* Summary Badges */}
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5 text-xs text-slate-600">
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Organizer Name:</span>
+                        <span className="text-slate-400">{t('organizationName')}:</span>
                         <span className="font-bold text-slate-800">{organizationName}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Category / Type:</span>
+                        <span className="text-slate-400">{t('organizerType')}:</span>
                         <span className="font-bold text-slate-800">{organizerType}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400">Payout Status:</span>
+                        <span className="text-slate-400">{t('payoutStatus')}:</span>
                         <span className="font-bold text-[#00C896]">
-                          {isPayoutConfigured ? `Bank Account Linked (${bankName})` : 'Pending (Configure in Settings)'}
+                          {isPayoutConfigured ? `${t('bankAccountLinked')} (${bankName})` : t('pendingConfig')}
                         </span>
                       </div>
                     </div>
@@ -878,7 +923,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                       onClick={handleCompleteRegistration}
                       className="w-full py-3.5 bg-[#00C896] hover:bg-[#00b084] text-white font-extrabold rounded-xl text-xs shadow-lg shadow-[#00C896]/25 transition flex items-center justify-center space-x-2 cursor-pointer"
                     >
-                      <span>Go to Dashboard</span>
+                      <span>{t('goToDashboard')}</span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
