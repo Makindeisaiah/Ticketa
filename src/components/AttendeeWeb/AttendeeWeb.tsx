@@ -13,9 +13,11 @@ import {
 } from 'lucide-react';
 import { exportTicketAsPdf, exportTicketToAppleWallet, printThermalWristband } from '../../utils/ticketExporter';
 import { AuthModal } from '../AuthModal';
-import { User, UserPlus, LogIn, LogOut } from 'lucide-react';
+import { User, UserPlus, LogIn, LogOut, Languages } from 'lucide-react';
+import { useLanguage } from '../../utils/translations';
 
 export const AttendeeWeb: React.FC = () => {
+  const { lang, changeLanguage, t } = useLanguage();
   const { 
     events, 
     purchaseTickets, 
@@ -342,7 +344,7 @@ export const AttendeeWeb: React.FC = () => {
                     currentView === 'browse' ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                   }`}
                 >
-                  Browse Events
+                  {t('browseEvents')}
                 </button>
                 <button
                   onClick={() => handleNav('how-it-works')}
@@ -350,13 +352,40 @@ export const AttendeeWeb: React.FC = () => {
                     currentView === 'how-it-works' ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
                   }`}
                 >
-                  How it works
+                  {t('howItWorks')}
                 </button>
               </nav>
             </div>
 
             {/* Header Right Actions */}
             <div className="flex items-center space-x-3">
+              
+              {/* Language Switcher Pill (English / French) */}
+              <div className="flex items-center bg-slate-800/80 p-0.5 rounded-xl border border-slate-700/80 text-xs shrink-0">
+                <button
+                  type="button"
+                  onClick={() => changeLanguage('en')}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition flex items-center space-x-1 ${
+                    lang === 'en' ? 'bg-emerald-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                  title="Switch to English"
+                >
+                  <span>🇬🇧</span>
+                  <span className="text-[11px]">EN</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => changeLanguage('fr')}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition flex items-center space-x-1 ${
+                    lang === 'fr' ? 'bg-emerald-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                  title="Traduire en Français"
+                >
+                  <span>🇫🇷</span>
+                  <span className="text-[11px]">FR</span>
+                </button>
+              </div>
+
               {currentUser ? (
                 <button
                   onClick={() => { setAuthModalMode('signup'); setShowAuthModal(true); }}
@@ -374,14 +403,14 @@ export const AttendeeWeb: React.FC = () => {
                     className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black transition shadow-md shadow-emerald-500/20 flex items-center space-x-1.5 cursor-pointer"
                   >
                     <UserPlus className="w-3.5 h-3.5" />
-                    <span>Sign Up</span>
+                    <span>{t('signUp')}</span>
                   </button>
                   <button
                     onClick={() => { setAuthModalMode('login'); setShowAuthModal(true); }}
                     className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition border border-slate-700 cursor-pointer hidden sm:flex items-center space-x-1.5"
                   >
                     <LogIn className="w-3.5 h-3.5" />
-                    <span>Sign In</span>
+                    <span>{t('signIn')}</span>
                   </button>
                 </div>
               )}
@@ -391,7 +420,7 @@ export const AttendeeWeb: React.FC = () => {
                 className="px-4 py-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 rounded-xl text-xs font-black transition shadow-lg shadow-emerald-500/20 flex items-center space-x-2 cursor-pointer"
               >
                 <Ticket className="w-4 h-4" />
-                <span className="hidden sm:inline">My Wallet</span>
+                <span className="hidden sm:inline">{t('myWallet')}</span>
               </button>
             </div>
 
@@ -416,18 +445,15 @@ export const AttendeeWeb: React.FC = () => {
                   
                   <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm">
                     <Sparkles className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-                    <span>Official Ticketa Attendee Ticketing Hub</span>
+                    <span>{t('officialTicketingHub')}</span>
                   </div>
 
                   <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
-                    Find Events & Buy <br className="hidden sm:inline" />
-                    <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
-                      Tickets Easily
-                    </span>
+                    {t('findEventsTitle')}
                   </h1>
 
                   <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto font-medium">
-                    Concert, tech events, comedy shows and more all in one place. Authentic passes with instant live QR gate admission.
+                    {t('heroSubtitle')}
                   </p>
 
                   {/* Integrated Search & Filter Floating Card */}
@@ -438,7 +464,7 @@ export const AttendeeWeb: React.FC = () => {
                       <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                       <input
                         type="text"
-                        placeholder="Search event, artist or venue..."
+                        placeholder={t('searchPlaceholderHero')}
                         value={searchQuery}
                         onChange={e => {
                           setSearchQuery(e.target.value);
@@ -492,7 +518,7 @@ export const AttendeeWeb: React.FC = () => {
                         className="w-full py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black rounded-xl text-xs transition shadow-lg shadow-emerald-500/20 flex items-center justify-center space-x-1.5 cursor-pointer"
                       >
                         <Search className="w-4 h-4" />
-                        <span>Search</span>
+                        <span>{t('searchBtn')}</span>
                       </button>
                     </div>
 
@@ -513,14 +539,14 @@ export const AttendeeWeb: React.FC = () => {
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <div className="flex justify-between items-end mb-6">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Categories</span>
-                  <h2 className="text-2xl font-black text-white mt-1">Popular Event Categories</h2>
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">{t('exploreCategories')}</span>
+                  <h2 className="text-2xl font-black text-white mt-1">{t('exploreCategories')}</h2>
                 </div>
                 <button
                   onClick={() => setCurrentView('browse')}
                   className="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center space-x-1"
                 >
-                  <span>Explore All</span>
+                  <span>{t('viewAll')}</span>
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
