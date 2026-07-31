@@ -11,6 +11,7 @@ import {
   MapPin,
   Clock
 } from 'lucide-react';
+import { useLanguage } from '../../utils/translations';
 
 interface OverviewTabProps {
   events: EventItem[];
@@ -35,6 +36,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   onSeedLiveSales,
   onCreateEventClick
 }) => {
+  const { lang, t } = useLanguage();
   const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
   // Currency Formatter Helper
@@ -56,24 +58,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   const checkedInCount = allTickets.filter(t => t.status === 'CHECKED_IN').length;
   const checkedInDisplay = checkedInCount;
 
-  // Dynamic Chart Data points based on orders
-  const chartData = orders.length > 0 ? [
-    { label: 'Start', value: Math.round(calculatedRevenue * 0.1) },
-    { label: 'Phase 1', value: Math.round(calculatedRevenue * 0.3) },
-    { label: 'Phase 2', value: Math.round(calculatedRevenue * 0.6) },
-    { label: 'Current', value: calculatedRevenue }
-  ] : [
-    { label: 'Mon', value: 0 },
-    { label: 'Tue', value: 0 },
-    { label: 'Wed', value: 0 },
-    { label: 'Thu', value: 0 },
-    { label: 'Fri', value: 0 },
-    { label: 'Sat', value: 0 },
-    { label: 'Sun', value: 0 },
-  ];
-
-  const maxChartVal = calculatedRevenue > 0 ? Math.ceil(calculatedRevenue * 1.2) : 100000;
-
   return (
     <div className="space-y-6">
       
@@ -81,10 +65,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Welcome, {organizerName}
+            {t('welcome')}, {organizerName}
           </h1>
           <p className="text-xs font-semibold text-slate-500 mt-0.5">
-            Here are your current event stats and performance overview.
+            {t('welcomeSub')}
           </p>
         </div>
 
@@ -94,13 +78,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             className="px-3.5 py-2 bg-emerald-50 text-[#00C896] hover:bg-emerald-100 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-emerald-200/60"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Simulate Order</span>
+            <span>{t('simulateOrder')}</span>
           </button>
           <button
             onClick={onCreateEventClick}
             className="px-4 py-2 bg-[#00C896] hover:bg-[#00b386] text-white rounded-xl text-xs font-bold transition shadow-md shadow-[#00C896]/20"
           >
-            + Create Event
+            + {t('createEvent')}
           </button>
         </div>
       </div>
@@ -115,7 +99,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Total Revenue
+              {t('totalRevenue')}
             </span>
             <div className="text-lg font-black text-slate-900 mt-0.5 font-mono">
               {formatNaira(totalRevenueDisplay)}
@@ -130,7 +114,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Total Ticket Sold
+              {t('totalTicketSold')}
             </span>
             <div className="text-lg font-black text-slate-900 mt-0.5 font-mono">
               {totalTicketSoldDisplay.toLocaleString()} / {totalTicketCapacity.toLocaleString()}
@@ -145,7 +129,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Upcoming Events
+              {t('upcomingEvents')}
             </span>
             <div className="text-2xl font-black text-slate-900 mt-0.5">
               {upcomingEventsCount}
@@ -160,7 +144,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Total Check-Ins
+              {t('totalCheckIns')}
             </span>
             <div className="text-lg font-black text-slate-900 mt-0.5 font-mono">
               {checkedInDisplay.toLocaleString()} / {totalTicketCapacity.toLocaleString()}
@@ -174,8 +158,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h3 className="text-base font-extrabold text-slate-900">Revenue Performance</h3>
-            <p className="text-xs text-slate-500">Track total earnings timeline across all events</p>
+            <h3 className="text-base font-extrabold text-slate-900">{t('revenuePerformance')}</h3>
+            <p className="text-xs text-slate-500">{t('trackEarnings')}</p>
           </div>
 
           {/* Timeframe selector tabs */}
@@ -190,7 +174,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                {tf}
+                {t(tf as any)}
               </button>
             ))}
           </div>
@@ -291,14 +275,16 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
         <div className="flex justify-between items-center">
           <div>
-            <h3 className="text-base font-extrabold text-slate-900">Upcoming Events</h3>
-            <p className="text-xs text-slate-500">Quick actions for your live scheduled shows</p>
+            <h3 className="text-base font-extrabold text-slate-900">{t('upcomingEvents')}</h3>
+            <p className="text-xs text-slate-500">
+              {lang === 'fr' ? 'Actions rapides pour vos événements' : 'Quick actions for your live scheduled shows'}
+            </p>
           </div>
           <button 
             onClick={onNavigateToEvents}
             className="text-xs font-bold text-[#00C896] hover:underline flex items-center gap-1"
           >
-            <span>More</span>
+            <span>{lang === 'fr' ? 'Voir plus' : 'More'}</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -340,13 +326,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                   onClick={() => onSelectEvent(evt.id)}
                   className="px-3.5 py-1.5 bg-[#00C896] hover:bg-[#00b386] text-white rounded-xl text-xs font-bold transition shadow-sm"
                 >
-                  Manage event
+                  {lang === 'fr' ? 'Gérer' : 'Manage event'}
                 </button>
                 <button
                   onClick={onNavigateToSales}
                   className="px-3.5 py-1.5 bg-emerald-50 text-[#00C896] hover:bg-emerald-100 rounded-xl text-xs font-bold transition border border-emerald-200/60"
                 >
-                  View sales
+                  {lang === 'fr' ? 'Voir ventes' : 'View sales'}
                 </button>
               </div>
             </div>

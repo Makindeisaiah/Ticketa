@@ -12,6 +12,7 @@ import {
   ChevronRight,
   RefreshCw
 } from 'lucide-react';
+import { useLanguage } from '../../utils/translations';
 
 export type OrganizerTabType = 
   | 'dashboard' 
@@ -42,15 +43,17 @@ export const OrganizerSidebar: React.FC<OrganizerSidebarProps> = ({
   organizerName = 'Event Organizer',
   organizerEmail = 'organizer@ticketa.com'
 }) => {
+  const { t } = useLanguage();
+
   const menuItems: { id: OrganizerTabType; label: string; icon: React.ReactNode }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
-    { id: 'events', label: 'Events', icon: <Calendar className="w-5 h-5" /> },
-    { id: 'analytics', label: 'Analytics', icon: <BarChart3 className="w-5 h-5" /> },
-    { id: 'ticket-sales', label: 'Ticket Sales', icon: <Ticket className="w-5 h-5" /> },
-    { id: 'users', label: 'Users & Customers', icon: <Users className="w-5 h-5" /> },
-    { id: 'check-ins', label: 'Check-Ins', icon: <CheckSquare className="w-5 h-5" /> },
-    { id: 'refunds', label: 'Refund Requests', icon: <RefreshCw className="w-5 h-5" /> },
-    { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
+    { id: 'dashboard', label: t('dashboard'), icon: <LayoutDashboard className="w-5 h-5" /> },
+    { id: 'events', label: t('events'), icon: <Calendar className="w-5 h-5" /> },
+    { id: 'analytics', label: t('analytics'), icon: <BarChart3 className="w-5 h-5" /> },
+    { id: 'ticket-sales', label: t('ticketSales'), icon: <Ticket className="w-5 h-5" /> },
+    { id: 'users', label: t('usersCustomers'), icon: <Users className="w-5 h-5" /> },
+    { id: 'check-ins', label: t('checkIns'), icon: <CheckSquare className="w-5 h-5" /> },
+    { id: 'refunds', label: t('refundRequests'), icon: <RefreshCw className="w-5 h-5" /> },
+    { id: 'settings', label: t('settings'), icon: <Settings className="w-5 h-5" /> },
   ];
 
   return (
@@ -71,7 +74,7 @@ export const OrganizerSidebar: React.FC<OrganizerSidebarProps> = ({
                 TICKETA
               </span>
               <span className="text-[10px] font-bold text-[#00C896] uppercase tracking-wider block -mt-1">
-                Organizer Portal
+                {t('organizerPortal')}
               </span>
             </div>
           </div>
@@ -124,7 +127,7 @@ export const OrganizerSidebar: React.FC<OrganizerSidebarProps> = ({
               className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 rounded-xl text-xs font-bold transition border border-slate-200 hover:border-rose-200 cursor-pointer"
             >
               <LogOut className="w-4 h-4 text-rose-500" />
-              <span>Log Out</span>
+              <span>{t('logOut')}</span>
             </button>
           )}
         </div>

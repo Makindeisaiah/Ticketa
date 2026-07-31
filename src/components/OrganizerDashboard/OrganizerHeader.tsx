@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Search, Bell, Menu, X, ArrowLeft, ChevronDown, Plus, LogOut, User, Mail, Printer, Languages } from 'lucide-react';
-import { Language, TRANSLATIONS } from '../../utils/translations';
+import { Search, Bell, Menu, ArrowLeft, ChevronDown, Plus, LogOut, Mail, Printer } from 'lucide-react';
+import { useLanguage } from '../../utils/translations';
 
 interface OrganizerHeaderProps {
   searchQuery: string;
@@ -31,6 +31,7 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
   organizerName = 'Event Organizer',
   organizerEmail = 'organizer@ticketa.com'
 }) => {
+  const { lang, changeLanguage, t } = useLanguage();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [notifications] = useState([
@@ -61,7 +62,7 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
                 className="hover:text-[#00C896] flex items-center gap-1 text-slate-500 font-bold"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Back</span>
+                <span>{t('back')}</span>
               </button>
               <span className="text-slate-300">/</span>
               {breadcrumb.map((crumb, idx) => (
@@ -81,7 +82,7 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-3 py-1.5 bg-slate-100/80 focus:bg-white border border-slate-200 focus:border-[#00C896] rounded-xl text-xs text-slate-800 placeholder-slate-400 outline-none transition"
@@ -90,37 +91,33 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
           )}
         </div>
 
-        {/* Right Side: Quick Actions & Profile */}
+        {/* Right Side: Language Switcher, Quick Actions & Profile */}
         <div className="flex items-center space-x-3">
           
-          {/* Language Toggle Pill */}
+          {/* Language Switcher Pill */}
           <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 text-xs shrink-0">
             <button
               type="button"
-              onClick={() => {
-                const event = new CustomEvent('ticketa-lang-change', { detail: 'en' });
-                window.dispatchEvent(event);
-              }}
-              className="px-2 py-1 rounded-lg font-bold text-slate-700 hover:text-slate-900 transition flex items-center space-x-1"
-              title="English"
+              onClick={() => changeLanguage('en')}
+              className={`px-2.5 py-1 rounded-lg font-bold transition flex items-center space-x-1 ${
+                lang === 'en' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+              }`}
             >
               <span>🇬🇧</span>
-              <span className="hidden sm:inline">EN</span>
+              <span>EN</span>
             </button>
             <button
               type="button"
-              onClick={() => {
-                const event = new CustomEvent('ticketa-lang-change', { detail: 'fr' });
-                window.dispatchEvent(event);
-              }}
-              className="px-2 py-1 rounded-lg font-bold text-slate-700 hover:text-slate-900 transition flex items-center space-x-1"
-              title="Français (Côte d'Ivoire)"
+              onClick={() => changeLanguage('fr')}
+              className={`px-2.5 py-1 rounded-lg font-bold transition flex items-center space-x-1 ${
+                lang === 'fr' ? 'bg-[#00C896] text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'
+              }`}
             >
               <span>🇫🇷</span>
-              <span className="hidden sm:inline">FR</span>
+              <span>FR</span>
             </button>
           </div>
-          
+
           {/* Email / SMS Dispatch Logs Trigger */}
           {onOpenNotifs && (
             <button
@@ -129,7 +126,7 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
               title="View Email & SMS Pass Dispatch Logs"
             >
               <Mail className="w-3.5 h-3.5 text-blue-600" />
-              <span className="hidden sm:inline">Dispatch Logs</span>
+              <span className="hidden sm:inline">{t('dispatchLogs')}</span>
             </button>
           )}
 
@@ -141,7 +138,7 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
               title="Thermal Wristband & Badge Printer Controls"
             >
               <Printer className="w-3.5 h-3.5 text-amber-600" />
-              <span className="hidden sm:inline">Wristband Printer</span>
+              <span className="hidden sm:inline">{t('wristbandPrinter')}</span>
             </button>
           )}
 
@@ -152,7 +149,7 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
               className="hidden sm:flex items-center space-x-1.5 px-3.5 py-1.5 bg-[#00C896] hover:bg-[#00b386] text-white rounded-xl text-xs font-bold shadow-md shadow-[#00C896]/20 transition"
             >
               <Plus className="w-4 h-4" />
-              <span>Create New Event</span>
+              <span>{t('createNewEvent')}</span>
             </button>
           )}
 
@@ -169,7 +166,7 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
             {showNotifications && (
               <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-4 space-y-3">
                 <div className="flex justify-between items-center border-b border-slate-100 pb-2">
-                  <h4 className="text-xs font-bold text-slate-900">Platform Notifications</h4>
+                  <h4 className="text-xs font-bold text-slate-900">Notifications</h4>
                   <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">5 New</span>
                 </div>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -218,7 +215,7 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
                     className="w-full flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition cursor-pointer"
                   >
                     <LogOut className="w-4 h-4 text-rose-500" />
-                    <span>Log Out</span>
+                    <span>{t('logOut')}</span>
                   </button>
                 )}
               </div>
