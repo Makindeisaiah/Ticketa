@@ -669,7 +669,7 @@ export const AttendeeWeb: React.FC = () => {
                       <div className="p-5 flex-1 flex flex-col justify-between">
                         <div>
                           <div className="flex items-center space-x-1.5 text-[11px] font-bold text-slate-400 mb-1">
-                            <span>by {evt.organizerName}</span>
+                            <span>{t('byOrganizer')} {evt.organizerName}</span>
                             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                           </div>
 
@@ -727,12 +727,12 @@ export const AttendeeWeb: React.FC = () => {
             
             <div>
               <div className="flex items-center space-x-2 text-xs text-slate-400 mb-2">
-                <button onClick={() => setCurrentView('home')} className="hover:text-white">Home</button>
+                <button onClick={() => setCurrentView('home')} className="hover:text-white">{t('home')}</button>
                 <span>/</span>
-                <span className="text-emerald-400 font-bold">Browse Events</span>
+                <span className="text-emerald-400 font-bold">{t('browseEvents')}</span>
               </div>
-              <h1 className="text-3xl font-black text-white">Browse All Events</h1>
-              <p className="text-xs text-slate-400 mt-1">Discover live concerts, comedy shows, tech summits and festivals across regions.</p>
+              <h1 className="text-3xl font-black text-white">{t('browseAllEvents')}</h1>
+              <p className="text-xs text-slate-400 mt-1">{t('browseSubtitle')}</p>
             </div>
 
             {/* Filter controls bar */}
@@ -743,7 +743,7 @@ export const AttendeeWeb: React.FC = () => {
                   <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Search by event title, venue, tag or artist..."
+                    placeholder={t('searchPlaceholderBrowse')}
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
@@ -757,7 +757,9 @@ export const AttendeeWeb: React.FC = () => {
                     className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
                   >
                     {locations.map(loc => (
-                      <option key={loc} value={loc}>{loc}</option>
+                      <option key={loc} value={loc}>
+                        {loc === 'All Locations' ? t('allLocations') : loc}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -768,9 +770,9 @@ export const AttendeeWeb: React.FC = () => {
                     onChange={e => setPriceSort(e.target.value as any)}
                     className="w-full px-3 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
                   >
-                    <option value="trending">Sort by: Trending</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
+                    <option value="trending">{t('sortByTrending')}</option>
+                    <option value="price-low">{t('priceLowToHigh')}</option>
+                    <option value="price-high">{t('priceHighToLow')}</option>
                   </select>
                 </div>
               </div>
@@ -854,9 +856,9 @@ export const AttendeeWeb: React.FC = () => {
             
             {/* Breadcrumb */}
             <div className="flex items-center space-x-2 text-xs text-slate-400">
-              <button onClick={() => setCurrentView('home')} className="hover:text-white">Home</button>
+              <button onClick={() => setCurrentView('home')} className="hover:text-white">{t('home')}</button>
               <span>/</span>
-              <button onClick={() => setCurrentView('browse')} className="hover:text-white">Browse Events</button>
+              <button onClick={() => setCurrentView('browse')} className="hover:text-white">{t('browseEvents')}</button>
               <span>/</span>
               <span className="text-emerald-400 font-bold truncate max-w-xs">{activeEvent.title}</span>
             </div>
@@ -870,14 +872,14 @@ export const AttendeeWeb: React.FC = () => {
                 <div>
                   <div className="flex items-center space-x-2 mb-2">
                     <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold">
-                      {activeEvent.category}
+                      {getCategoryLabel(activeEvent.category)}
                     </span>
                     <span className="bg-slate-900/80 backdrop-blur-md text-slate-300 border border-slate-800 px-3 py-1 rounded-full text-xs font-semibold">
-                      Verified Event
+                      {t('verifiedEvent')}
                     </span>
                   </div>
                   <h1 className="text-2xl sm:text-4xl font-black text-white">{activeEvent.title}</h1>
-                  <p className="text-xs sm:text-sm text-slate-300 mt-1">Hosted by <span className="text-emerald-400 font-bold">{activeEvent.organizerName}</span></p>
+                  <p className="text-xs sm:text-sm text-slate-300 mt-1">{t('hostedBy')} <span className="text-emerald-400 font-bold">{activeEvent.organizerName}</span></p>
                 </div>
               </div>
             </div>
@@ -895,7 +897,7 @@ export const AttendeeWeb: React.FC = () => {
                       <Calendar className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-slate-400">Date & Time</h4>
+                      <h4 className="text-xs font-bold text-slate-400">{t('dateTime')}</h4>
                       <p className="text-sm font-bold text-white mt-0.5">{activeEvent.date}</p>
                       <p className="text-xs text-emerald-400">{activeEvent.time}</p>
                     </div>
@@ -906,7 +908,7 @@ export const AttendeeWeb: React.FC = () => {
                       <MapPin className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-slate-400">Location & Venue</h4>
+                      <h4 className="text-xs font-bold text-slate-400">{t('locationVenue')}</h4>
                       <p className="text-sm font-bold text-white mt-0.5">{activeEvent.venueName}</p>
                       <p className="text-xs text-slate-400 line-clamp-1">{activeEvent.location}</p>
                     </div>
@@ -915,14 +917,14 @@ export const AttendeeWeb: React.FC = () => {
 
                 {/* About Event */}
                 <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-3">
-                  <h3 className="text-lg font-bold text-white border-b border-slate-800 pb-3">About The Event</h3>
+                  <h3 className="text-lg font-bold text-white border-b border-slate-800 pb-3">{t('aboutTheEvent')}</h3>
                   <p className="text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-line">
                     {activeEvent.description}
                   </p>
                   
                   {activeEvent.expectations && activeEvent.expectations.length > 0 && (
                     <div className="pt-4">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">What to expect</h4>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-2">{t('whatToExpect')}</h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {activeEvent.expectations.map((exp, idx) => (
                           <div key={idx} className="flex items-center space-x-2 text-xs text-slate-300">
@@ -937,7 +939,7 @@ export const AttendeeWeb: React.FC = () => {
 
                 {/* Event Rules & Important Info */}
                 <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-3">
-                  <h3 className="text-lg font-bold text-white border-b border-slate-800 pb-3">Important Information & Rules</h3>
+                  <h3 className="text-lg font-bold text-white border-b border-slate-800 pb-3">{t('importantInfoRules')}</h3>
                   <div className="space-y-2 text-xs text-slate-300">
                     {activeEvent.importantInfo ? (
                       activeEvent.importantInfo.map((info, idx) => (
@@ -950,15 +952,15 @@ export const AttendeeWeb: React.FC = () => {
                       <>
                         <div className="flex items-center space-x-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                          <span>Gates open 2 hours prior to scheduled start time.</span>
+                          <span>{t('defaultRule1')}</span>
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                          <span>Present digital QR pass on mobile or printed PDF at entrance.</span>
+                          <span>{t('defaultRule2')}</span>
                         </div>
                         <div className="flex items-center space-x-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                          <span>Security screening and bag checks strictly enforced.</span>
+                          <span>{t('defaultRule3')}</span>
                         </div>
                       </>
                     )}
@@ -976,12 +978,12 @@ export const AttendeeWeb: React.FC = () => {
                         <h4 className="text-sm font-bold text-white">{activeEvent.organizerName}</h4>
                         <ShieldCheck className="w-4 h-4 text-emerald-400" />
                       </div>
-                      <p className="text-xs text-slate-400">Verified Ticketa Partner Organizer</p>
+                      <p className="text-xs text-slate-400">{t('verifiedPartnerOrg')}</p>
                     </div>
                   </div>
 
                   <button className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 rounded-xl border border-slate-700">
-                    Contact Organizer
+                    {t('contactOrganizer')}
                   </button>
                 </div>
 
@@ -992,12 +994,12 @@ export const AttendeeWeb: React.FC = () => {
                 
                 <div className="border-b border-slate-800 pb-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Select Tickets</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">{t('selectTickets')}</span>
                     <span className="text-[11px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                      ● Instant Gate Delivery
+                      {t('instantGateDelivery')}
                     </span>
                   </div>
-                  <h3 className="text-xl font-black text-white mt-1">Ticket Tiers</h3>
+                  <h3 className="text-xl font-black text-white mt-1">{t('ticketTiers')}</h3>
                 </div>
 
                 {/* Tiers List */}
@@ -1024,7 +1026,7 @@ export const AttendeeWeb: React.FC = () => {
                               <h4 className="text-sm font-bold text-white">{tier.name}</h4>
                               {isSoldOut && (
                                 <span className="text-[10px] font-black text-rose-400 bg-rose-500/10 border border-rose-500/30 px-2 py-0.5 rounded uppercase tracking-wider">
-                                  SOLD OUT
+                                  {t('soldOut')}
                                 </span>
                               )}
                             </div>
@@ -1032,7 +1034,7 @@ export const AttendeeWeb: React.FC = () => {
                           </div>
                           <div className="text-right">
                             <span className={`text-base font-black ${isSoldOut ? 'text-slate-500 line-through' : 'text-emerald-400'}`}>
-                              {tier.price === 0 ? 'FREE' : `₦${tier.price.toLocaleString()}`}
+                              {tier.price === 0 ? t('freeUnit') : `₦${tier.price.toLocaleString()}`}
                             </span>
                           </div>
                         </div>
@@ -1041,11 +1043,11 @@ export const AttendeeWeb: React.FC = () => {
                         <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
                           <span className="text-[11px]">
                             {isSoldOut ? (
-                              <span className="font-extrabold text-rose-400">● Sold Out</span>
+                              <span className="font-extrabold text-rose-400">● {t('soldOut')}</span>
                             ) : available < 50 ? (
-                              <span className="text-amber-400 font-bold">Only {available} left</span>
+                              <span className="text-amber-400 font-bold">{t('onlyLeft', { count: available })}</span>
                             ) : (
-                              <span className="text-slate-400">Available</span>
+                              <span className="text-slate-400">{t('available')}</span>
                             )}
                           </span>
 
@@ -1075,11 +1077,11 @@ export const AttendeeWeb: React.FC = () => {
                 {/* Total Summary */}
                 <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
                   <div className="flex justify-between text-xs text-slate-400">
-                    <span>Selected Pass Count</span>
-                    <span className="font-bold text-white">{totalSelectedTicketsCount} Pass(es)</span>
+                    <span>{t('selectedPassCount')}</span>
+                    <span className="font-bold text-white">{totalSelectedTicketsCount} {t('passesUnit')}</span>
                   </div>
                   <div className="flex justify-between text-sm font-extrabold text-white pt-2 border-t border-slate-800">
-                    <span>Subtotal</span>
+                    <span>{t('subtotal')}</span>
                     <span className="text-emerald-400">₦{subtotalPrice.toLocaleString()}</span>
                   </div>
                 </div>
@@ -1090,12 +1092,12 @@ export const AttendeeWeb: React.FC = () => {
                   onClick={() => setCurrentView('checkout')}
                   className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 disabled:opacity-40 text-slate-950 font-black rounded-xl text-sm transition shadow-xl shadow-emerald-500/20 flex items-center justify-center space-x-2"
                 >
-                  <span>Continue to Checkout</span>
+                  <span>{t('continueToCheckout')}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
                 <p className="text-[11px] text-slate-400 text-center">
-                  🔒 Encrypted Payment via Gateways • Guaranteed Authentic Pass
+                  {t('encryptedPaymentGuarantee')}
                 </p>
 
               </div>
@@ -1114,12 +1116,12 @@ export const AttendeeWeb: React.FC = () => {
               className="text-xs font-bold text-slate-400 hover:text-white flex items-center space-x-1.5"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Back to Event Details</span>
+              <span>{t('backToEventDetails')}</span>
             </button>
 
             <div>
-              <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Step 2 of 2</span>
-              <h1 className="text-3xl font-black text-white mt-1">Complete Your Ticket Order</h1>
+              <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">{t('step2Of2')}</span>
+              <h1 className="text-3xl font-black text-white mt-1">{t('completeYourTicketOrder')}</h1>
               <p className="text-xs text-slate-400">{activeEvent.title} • {activeEvent.date}</p>
             </div>
 
@@ -1172,11 +1174,11 @@ export const AttendeeWeb: React.FC = () => {
 
                 {/* Promo Code Card */}
                 <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
-                  <label className="block text-xs font-bold text-slate-300">Apply Promo Code</label>
+                  <label className="block text-xs font-bold text-slate-300">{t('applyPromoCode')}</label>
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="e.g. TICKETA20"
+                      placeholder={t('promoPlaceholder')}
                       value={promoCode}
                       onChange={e => setPromoCode(e.target.value)}
                       className="flex-1 px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white uppercase font-bold"
@@ -1186,7 +1188,7 @@ export const AttendeeWeb: React.FC = () => {
                       onClick={handleApplyPromo}
                       className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white rounded-xl border border-slate-700"
                     >
-                      Apply
+                      {t('applyBtn')}
                     </button>
                   </div>
                   {promoSuccess && <p className="text-xs text-emerald-400 font-bold">✓ {promoSuccess}</p>}
@@ -1197,11 +1199,11 @@ export const AttendeeWeb: React.FC = () => {
                 <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-extrabold text-white uppercase tracking-wider text-emerald-400">
-                      2. Select Payment Gateway
+                      {t('selectPaymentGateway')}
                     </h3>
                     <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full flex items-center gap-1">
                       <Sparkles className="w-3 h-3 text-amber-400" />
-                      Flutterwave Integrated
+                      {t('flutterwaveIntegrated')}
                     </span>
                   </div>
 
@@ -1247,13 +1249,13 @@ export const AttendeeWeb: React.FC = () => {
                         </div>
                         <div>
                           <h4 className="text-xs font-bold text-white flex items-center gap-2">
-                            Flutterwave Secured Payment Gateway
+                            {t('flutterwaveSecured')}
                             <span className="text-[10px] bg-amber-500/20 text-amber-300 font-semibold px-2 py-0.5 rounded-full border border-amber-500/30">
-                              Official SDK
+                              {t('officialSdk')}
                             </span>
                           </h4>
                           <p className="text-[11px] text-slate-300 mt-0.5">
-                            Clicking pay will launch the secure Flutterwave checkout popup allowing payment via Bank Cards, Bank Transfers, USSD, Mobile Money, or NQR.
+                            {t('flutterwaveNotice')}
                           </p>
                         </div>
                       </div>
@@ -1261,9 +1263,9 @@ export const AttendeeWeb: React.FC = () => {
                       <div className="text-[11px] text-slate-300 bg-slate-950/80 p-2.5 rounded-lg border border-slate-800/80 flex items-center justify-between">
                         <span className="flex items-center gap-1.5 text-slate-400">
                           <Lock className="w-3.5 h-3.5 text-amber-400" />
-                          <span>PCI-DSS Level 1 Bank Encryption</span>
+                          <span>{t('pciEncryption')}</span>
                         </span>
-                        <span className="text-amber-400 font-mono font-bold">Instant Pass Generation</span>
+                        <span className="text-amber-400 font-mono font-bold">{t('instantPassGen')}</span>
                       </div>
                     </div>
                   )}
@@ -1272,7 +1274,7 @@ export const AttendeeWeb: React.FC = () => {
                   {paymentMethod === 'Credit Card' && (
                     <div className="space-y-3 pt-2">
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-400 mb-1">Name on Card</label>
+                        <label className="block text-[11px] font-bold text-slate-400 mb-1">{t('nameOnCard')}</label>
                         <input
                           type="text"
                           value={cardHolder}
@@ -1281,7 +1283,7 @@ export const AttendeeWeb: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-400 mb-1">Card Number</label>
+                        <label className="block text-[11px] font-bold text-slate-400 mb-1">{t('cardNumber')}</label>
                         <input
                           type="text"
                           value={cardNumber}
@@ -1291,7 +1293,7 @@ export const AttendeeWeb: React.FC = () => {
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-[11px] font-bold text-slate-400 mb-1">Expiry Date</label>
+                          <label className="block text-[11px] font-bold text-slate-400 mb-1">{t('expiryDate')}</label>
                           <input
                             type="text"
                             value={cardExpiry}
@@ -1300,7 +1302,7 @@ export const AttendeeWeb: React.FC = () => {
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] font-bold text-slate-400 mb-1">CVV Security</label>
+                          <label className="block text-[11px] font-bold text-slate-400 mb-1">{t('cvvSecurity')}</label>
                           <input
                             type="password"
                             value={cardCvv}
@@ -1315,7 +1317,7 @@ export const AttendeeWeb: React.FC = () => {
                   {/* Bank Transfer Details */}
                   {paymentMethod === 'Bank Transfer' && (
                     <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
-                      <p className="text-xs text-slate-300">Transfer total amount to the dedicated virtual account below:</p>
+                      <p className="text-xs text-slate-300">{t('bankTransferNotice')}</p>
                       <div className="flex items-center justify-between bg-slate-900 p-3 rounded-xl border border-slate-800">
                         <div>
                           <span className="text-[10px] text-slate-400 uppercase font-bold">Wema Bank / Ticketa Checkout</span>
@@ -1327,21 +1329,21 @@ export const AttendeeWeb: React.FC = () => {
                           className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white rounded-lg flex items-center space-x-1"
                         >
                           <Copy className="w-3.5 h-3.5 text-emerald-400" />
-                          <span>{copiedBankAcc ? 'Copied!' : 'Copy'}</span>
+                          <span>{copiedBankAcc ? t('copied') : t('copy')}</span>
                         </button>
                       </div>
-                      <p className="text-[10px] text-slate-400">⏱️ Account active for 15:00 minutes. Transfer is auto-verified.</p>
+                      <p className="text-[10px] text-slate-400">{t('accountActiveNotice')}</p>
                     </div>
                   )}
 
                   {/* USSD Details */}
                   {paymentMethod === 'USSD' && (
                     <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-center">
-                      <p className="text-xs text-slate-300">Dial the code below on your mobile device:</p>
+                      <p className="text-xs text-slate-300">{t('ussdNotice')}</p>
                       <div className="text-lg font-mono font-black text-emerald-400 bg-slate-900 py-2.5 rounded-xl border border-slate-800">
                         *737*000*668000#
                       </div>
-                      <p className="text-[10px] text-slate-400">Guaranteed instant debit confirmation.</p>
+                      <p className="text-[10px] text-slate-400">{t('instantDebitNotice')}</p>
                     </div>
                   )}
 
@@ -1351,7 +1353,7 @@ export const AttendeeWeb: React.FC = () => {
 
               {/* Order Summary Right Box */}
               <div className="md:col-span-5 bg-slate-900 p-6 rounded-3xl border border-slate-800 space-y-6 shadow-2xl">
-                <h3 className="text-base font-extrabold text-white border-b border-slate-800 pb-3">Order Summary</h3>
+                <h3 className="text-base font-extrabold text-white border-b border-slate-800 pb-3">{t('orderSummary')}</h3>
 
                 {/* Selected Tiers Breakdown */}
                 <div className="space-y-3">
@@ -1373,24 +1375,24 @@ export const AttendeeWeb: React.FC = () => {
 
                 <div className="border-t border-slate-800 pt-3 space-y-2 text-xs">
                   <div className="flex justify-between text-slate-400">
-                    <span>Subtotal</span>
+                    <span>{t('subtotal')}</span>
                     <span>₦{subtotalPrice.toLocaleString()}</span>
                   </div>
 
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-emerald-400">
-                      <span>Promo Discount ({discountPercent}%)</span>
+                      <span>{t('discount')} ({discountPercent}%)</span>
                       <span>-₦{discountAmount.toLocaleString()}</span>
                     </div>
                   )}
 
                   <div className="flex justify-between text-slate-400">
-                    <span>Gate Service & Tech Fee</span>
+                    <span>{t('gateServiceTechFee')}</span>
                     <span>₦{serviceFee.toLocaleString()}</span>
                   </div>
 
                   <div className="flex justify-between text-base font-black text-white pt-2 border-t border-slate-800">
-                    <span>Total Amount</span>
+                    <span>{t('totalAmount')}</span>
                     <span className="text-emerald-400">₦{finalTotalPrice.toLocaleString()}</span>
                   </div>
                 </div>
@@ -1405,12 +1407,12 @@ export const AttendeeWeb: React.FC = () => {
                   {isProcessingPayment ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
-                      <span>Confirming with Gateway...</span>
+                      <span>{t('confirmingGateway')}</span>
                     </>
                   ) : (
                     <>
                       <Lock className="w-4 h-4 text-slate-950" />
-                      <span>Pay ₦{finalTotalPrice.toLocaleString()} Now</span>
+                      <span>{t('payNowWithPrice', { price: finalTotalPrice.toLocaleString() })}</span>
                     </>
                   )}
                 </button>
@@ -1437,13 +1439,13 @@ export const AttendeeWeb: React.FC = () => {
                 <div>
                   <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5" />
-                    Digital Ticket Wallet
+                    {t('digitalTicketWallet')}
                   </span>
-                  <h1 className="text-2xl sm:text-3xl font-black text-white mt-1">My Orders & Live Passes</h1>
+                  <h1 className="text-2xl sm:text-3xl font-black text-white mt-1">{t('myOrdersLivePasses')}</h1>
                   <p className="text-xs text-slate-400 mt-0.5">
                     {currentUser 
-                      ? `Logged in as ${currentUser.fullName} (${currentUser.email})` 
-                      : 'Your official digital tickets are securely stored here with live QR verification codes.'}
+                      ? `${t('loggedInAs')} ${currentUser.fullName} (${currentUser.email})` 
+                      : t('walletDefaultSub')}
                   </p>
                 </div>
 
@@ -1453,7 +1455,7 @@ export const AttendeeWeb: React.FC = () => {
                     className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center space-x-2 shadow-lg shadow-indigo-600/20 transition cursor-pointer"
                   >
                     <Smartphone className="w-4 h-4 text-indigo-200" />
-                    <span>Open Mobile App Wallet</span>
+                    <span>{t('openMobileAppWallet')}</span>
                   </button>
                 </div>
               </div>
@@ -1462,17 +1464,17 @@ export const AttendeeWeb: React.FC = () => {
               {activeUserOrders.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4">
-                    <p className="text-xs text-slate-400 font-semibold">Total Orders</p>
+                    <p className="text-xs text-slate-400 font-semibold">{t('totalOrders')}</p>
                     <div className="text-2xl font-black text-white mt-1">{activeUserOrders.length}</div>
                   </div>
                   <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4">
-                    <p className="text-xs text-slate-400 font-semibold">Active Ticket Passes</p>
+                    <p className="text-xs text-slate-400 font-semibold">{t('activeTicketPasses')}</p>
                     <div className="text-2xl font-black text-emerald-400 mt-1">
                       {activeUserOrders.reduce((acc, o) => acc + o.tickets.length, 0)}
                     </div>
                   </div>
                   <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4">
-                    <p className="text-xs text-slate-400 font-semibold">Total Value Purchased</p>
+                    <p className="text-xs text-slate-400 font-semibold">{t('totalValuePurchased')}</p>
                     <div className="text-2xl font-black text-teal-300 mt-1">
                       ₦{activeUserOrders.reduce((acc, o) => acc + o.totalAmount, 0).toLocaleString()}
                     </div>
@@ -1483,15 +1485,15 @@ export const AttendeeWeb: React.FC = () => {
               {activeUserOrders.length === 0 ? (
                 <div className="text-center py-20 bg-slate-900 rounded-3xl border border-slate-800 space-y-4">
                   <Ticket className="w-12 h-12 text-slate-600 mx-auto" />
-                  <h3 className="text-lg font-bold text-slate-300">No Tickets Purchased Yet</h3>
+                  <h3 className="text-lg font-bold text-slate-300">{t('noTicketsPurchased')}</h3>
                   <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                    {currentUser ? `Welcome ${currentUser.fullName}! You have a clean pass wallet. Browse events to secure your first ticket.` : 'Explore upcoming concerts, comedy shows, or tech summits to secure your pass.'}
+                    {currentUser ? t('welcomeWalletNotice', { name: currentUser.fullName }) : t('exploreEventsNotice')}
                   </p>
                   <button
                     onClick={() => handleNav('browse')}
                     className="px-5 py-2.5 bg-emerald-500 text-slate-950 font-black rounded-xl text-xs hover:bg-emerald-400 transition cursor-pointer"
                   >
-                    Browse Events
+                    {t('browseEvents')}
                   </button>
                 </div>
               ) : (
@@ -1512,15 +1514,15 @@ export const AttendeeWeb: React.FC = () => {
                           />
                           <div>
                             <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/20">
-                              Order #{order.id}
+                              {t('orderNumber')}{order.id}
                             </span>
                             <h3 className="text-lg sm:text-xl font-black text-white mt-1">{order.eventTitle}</h3>
-                            <p className="text-xs text-slate-400">Purchased on {order.purchaseDate} via {order.paymentMethod}</p>
+                            <p className="text-xs text-slate-400">{t('purchasedOnVia', { date: order.purchaseDate, method: order.paymentMethod })}</p>
                           </div>
                         </div>
 
                         <div className="sm:text-right">
-                          <span className="text-xs text-slate-400">Total Paid</span>
+                          <span className="text-xs text-slate-400">{t('totalPaid')}</span>
                           <div className="text-2xl font-black text-emerald-400">₦{order.totalAmount.toLocaleString()}</div>
                         </div>
                       </div>
@@ -1539,17 +1541,17 @@ export const AttendeeWeb: React.FC = () => {
                                     ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                                     : 'bg-teal-500/20 text-teal-300 border border-teal-500/30'
                                 }`}>
-                                  {tkt.status === 'CHECKED_IN' ? 'Checked In' : 'Valid Pass'}
+                                  {tkt.status === 'CHECKED_IN' ? t('checkedInStatus') : t('validPassStatus')}
                                 </span>
                               </div>
 
-                              <p className="font-bold text-white text-sm">{tkt.tierName} Pass</p>
-                              <p className="text-slate-300">Holder: <span className="text-white font-medium">{tkt.attendeeName}</span></p>
+                              <p className="font-bold text-white text-sm">{tkt.tierName} {t('passSuffix')}</p>
+                              <p className="text-slate-300">{t('holderLabel')} <span className="text-white font-medium">{tkt.attendeeName}</span></p>
                               <p className="text-slate-400 text-[11px]">{tkt.venueName}</p>
                               
                               {tkt.checkedInAt && (
                                 <p className="text-[10px] text-emerald-400 font-mono pt-0.5">
-                                  Scanned: {tkt.checkedInAt}
+                                  {t('scannedLabel')} {tkt.checkedInAt}
                                 </p>
                               )}
 
@@ -1561,7 +1563,7 @@ export const AttendeeWeb: React.FC = () => {
                                   title="Download Printable PDF Ticket"
                                 >
                                   <FileText className="w-3.5 h-3.5 text-emerald-400" />
-                                  <span>PDF Ticket</span>
+                                  <span>{t('pdfTicket')}</span>
                                 </button>
 
                                 <button
@@ -1570,7 +1572,7 @@ export const AttendeeWeb: React.FC = () => {
                                   title="Export to Apple Wallet (.pkpass)"
                                 >
                                   <Smartphone className="w-3.5 h-3.5 text-indigo-400" />
-                                  <span>Apple Wallet</span>
+                                  <span>{t('appleWallet')}</span>
                                 </button>
 
                                 <button
@@ -1579,7 +1581,7 @@ export const AttendeeWeb: React.FC = () => {
                                   title="Resend Pass via Email"
                                 >
                                   <Mail className="w-3.5 h-3.5 text-blue-400" />
-                                  <span>Email Pass</span>
+                                  <span>{t('emailPass')}</span>
                                 </button>
 
                                 <button
@@ -1588,7 +1590,7 @@ export const AttendeeWeb: React.FC = () => {
                                   title="Resend Pass Link via SMS"
                                 >
                                   <Smartphone className="w-3.5 h-3.5 text-indigo-400" />
-                                  <span>SMS Pass</span>
+                                  <span>{t('smsPass')}</span>
                                 </button>
 
                                 <button
@@ -1597,7 +1599,7 @@ export const AttendeeWeb: React.FC = () => {
                                   title="Print Thermal Event Wristband / Badge"
                                 >
                                   <Printer className="w-3.5 h-3.5 text-amber-400" />
-                                  <span>Wristband Print</span>
+                                  <span>{t('wristbandPrint')}</span>
                                 </button>
                               </div>
                             </div>
@@ -1620,17 +1622,17 @@ export const AttendeeWeb: React.FC = () => {
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
             
             <div className="text-center max-w-2xl mx-auto space-y-3">
-              <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Guaranteed Ticketing</span>
-              <h1 className="text-3xl sm:text-4xl font-black text-white">Feel Confident Buying Tickets on Ticketa</h1>
-              <p className="text-xs sm:text-sm text-slate-300">Our platform ensures end-to-end security, instant gate validation, and fraud protection.</p>
+              <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">{t('guaranteedTicketing')}</span>
+              <h1 className="text-3xl sm:text-4xl font-black text-white">{t('feelConfidentHeader')}</h1>
+              <p className="text-xs sm:text-sm text-slate-300">{t('feelConfidentSub')}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
-                { title: 'Secure Payments', desc: 'Encrypted payment gateways with instant transaction receipts.', icon: Lock },
-                { title: 'Verified Organizers', desc: 'All organizers undergo identity and venue verification.', icon: ShieldCheck },
-                { title: 'Live QR Scans', desc: 'Fast, hassle-free gate entrance with RFID & barcode scanners.', icon: QrCode },
-                { title: 'Instant Delivery', desc: 'Passes delivered to email, wallet, and attendee app immediately.', icon: Sparkles },
+                { title: t('securePaymentsTitle'), desc: t('securePaymentsDesc'), icon: Lock },
+                { title: t('verifiedOrganizersTitle'), desc: t('verifiedOrganizersDesc'), icon: ShieldCheck },
+                { title: t('liveQrScansTitle'), desc: t('liveQrScansDesc'), icon: QrCode },
+                { title: t('instantDeliveryTitle'), desc: t('instantDeliveryDesc'), icon: Sparkles },
               ].map((pillar, idx) => {
                 const Icon = pillar.icon;
                 return (
@@ -1661,21 +1663,21 @@ export const AttendeeWeb: React.FC = () => {
 
             <div>
               <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                Payment Confirmed
+                {t('paymentConfirmed')}
               </span>
-              <h2 className="text-2xl font-black text-white mt-2">Tickets Issued!</h2>
-              <p className="text-xs text-slate-400 mt-1">Order #{paymentSuccessOrder.id} has been saved to your digital wallet.</p>
+              <h2 className="text-2xl font-black text-white mt-2">{t('ticketsIssued')}</h2>
+              <p className="text-xs text-slate-400 mt-1">{t('orderSavedToWallet', { id: paymentSuccessOrder.id })}</p>
             </div>
 
             {/* QR Pass Preview */}
             <div className="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-3">
               <QRCodeDisplay value={paymentSuccessOrder.tickets[0].ticketCode} size={140} />
               <div className="text-xs">
-                <span className="text-slate-400">Pass Code: </span>
+                <span className="text-slate-400">{t('passCodeLabel')} </span>
                 <span className="font-mono font-bold text-emerald-400 text-sm">{paymentSuccessOrder.tickets[0].ticketCode}</span>
               </div>
               <p className="text-[11px] text-slate-400">
-                Present this QR code at the entrance gate scanner or in your mobile app.
+                {t('presentQrNotice')}
               </p>
             </div>
 
@@ -1687,13 +1689,13 @@ export const AttendeeWeb: React.FC = () => {
                 }}
                 className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-xs shadow-lg"
               >
-                View in Wallet
+                {t('viewInWallet')}
               </button>
               <button
                 onClick={() => setPaymentSuccessOrder(null)}
                 className="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs"
               >
-                Done
+                {t('done')}
               </button>
             </div>
 
