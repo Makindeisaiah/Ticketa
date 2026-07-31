@@ -161,7 +161,17 @@ interface EventContextType {
   registerUser: (details: { fullName: string; email: string; phone: string; emailVerified?: boolean }) => TicketaUser;
   loginUser: (email: string) => TicketaUser | null;
   logoutUser: () => void;
-  registerOrganizer: (details: { organizationName: string; email: string; phone?: string; category?: string }) => OrganizerUser;
+  registerOrganizer: (details: { 
+    organizationName: string; 
+    fullName?: string;
+    email: string; 
+    phone?: string; 
+    category?: string;
+    organizerType?: string;
+    country?: string;
+    payoutAccount?: OrganizerUser['payoutAccount'];
+    verificationStatus?: 'Pending' | 'Verified' | 'Under Review';
+  }) => OrganizerUser;
   loginOrganizer: (email: string) => OrganizerUser | null;
   logoutOrganizer: () => void;
   createNewEvent: (eventData: Omit<EventItem, 'id'> | EventItem) => void;
@@ -761,7 +771,17 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     triggerNotification('Signed out of Ticketa session.');
   };
 
-  const registerOrganizer = (details: { organizationName: string; email: string; phone?: string; category?: string }): OrganizerUser => {
+  const registerOrganizer = (details: { 
+    organizationName: string; 
+    fullName?: string;
+    email: string; 
+    phone?: string; 
+    category?: string;
+    organizerType?: string;
+    country?: string;
+    payoutAccount?: OrganizerUser['payoutAccount'];
+    verificationStatus?: 'Pending' | 'Verified' | 'Under Review';
+  }): OrganizerUser => {
     const cleanEmail = details.email.trim().toLowerCase();
     const cleanName = details.organizationName.trim();
     const cleanPhone = (details.phone || '').trim();
@@ -772,8 +792,13 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const updatedExisting: OrganizerUser = {
         ...existing,
         organizationName: cleanName || existing.organizationName,
+        fullName: details.fullName || existing.fullName,
         phone: cleanPhone || existing.phone,
-        category: category || existing.category
+        category: category || existing.category,
+        organizerType: details.organizerType || existing.organizerType,
+        country: details.country || existing.country,
+        payoutAccount: details.payoutAccount || existing.payoutAccount,
+        verificationStatus: details.verificationStatus || existing.verificationStatus || 'Verified',
       };
       setOrganizers(prev => prev.map(o => o.id === existing.id ? updatedExisting : o));
       setCurrentOrganizer(updatedExisting);
@@ -795,11 +820,16 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const newOrganizer: OrganizerUser = {
       id: newOrgId,
       organizationName: cleanName,
+      fullName: details.fullName,
       email: cleanEmail,
       phone: cleanPhone || '+234 800 000 0000',
       category: category,
+      organizerType: details.organizerType,
+      country: details.country || 'Nigeria',
       registeredAt: todayStr,
       status: 'Verified',
+      verificationStatus: details.verificationStatus || 'Verified',
+      payoutAccount: details.payoutAccount,
       eventsCount: events.filter(e => e.organizerName.toLowerCase() === cleanName.toLowerCase()).length
     };
 

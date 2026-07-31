@@ -92,14 +92,30 @@ export interface TicketaUser {
   lastPurchaseDate?: string;
 }
 
+export interface OrganizerPayoutAccount {
+  country: string;
+  currency: string;
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
+  holderType: 'Individual' | 'Business / Organization';
+  taxOrRegistrationNumber?: string;
+  isVerified?: boolean;
+}
+
 export interface OrganizerUser {
   id: string;
   organizationName: string;
+  fullName?: string;
   email: string;
   phone: string;
   category?: string;
+  organizerType?: string;
+  country?: string;
   registeredAt: string;
   status: 'Active' | 'Verified';
+  verificationStatus?: 'Pending' | 'Verified' | 'Under Review';
+  payoutAccount?: OrganizerPayoutAccount;
   eventsCount?: number;
 }
 
