@@ -355,28 +355,12 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const eventsCol = collection(db, 'events');
       unsubscribeEvents = onSnapshot(eventsCol, (snapshot) => {
         if (!snapshot.empty) {
-          const legacyIds = [
-            'evt-asake', 'evt-ay-lojik-koko-bar', 'evt-1300saint-savior-tour', 
-            'evt-davido-crystal-palace', 'evt-burna', 'evt-hardy', 'evt-c5', 
-            'evt-travis', 'evt-bovi', 'evt-ayuk', 'evt-ayjam', 'evt-lagoshack', 
-            'evt-devops', 'evt-igbesa', 'evt-davido'
-          ];
-          
-          // Purge legacy mock documents from Firestore if present
-          snapshot.docs.forEach(async (docSnap) => {
-            if (legacyIds.includes(docSnap.id)) {
-              try { await deleteDoc(doc(db, 'events', docSnap.id)); } catch (e) {}
-            }
-          });
-
-          const loadedEvents = snapshot.docs
-            .map(docSnap => docSnap.data() as EventItem)
-            .filter(e => !legacyIds.includes(e.id));
-
+          const loadedEvents = snapshot.docs.map(docSnap => docSnap.data() as EventItem);
           setEvents(loadedEvents);
           localStorage.setItem('tix_events', JSON.stringify(loadedEvents));
         } else {
           setEvents([]);
+          localStorage.setItem('tix_events', JSON.stringify([]));
         }
       }, (err) => {
         console.warn('Firestore events listener error, using local state:', err);
@@ -386,28 +370,12 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const ordersCol = collection(db, 'orders');
       unsubscribeOrders = onSnapshot(ordersCol, (snapshot) => {
         if (!snapshot.empty) {
-          const legacyEventIds = [
-            'evt-asake', 'evt-ay-lojik-koko-bar', 'evt-1300saint-savior-tour', 
-            'evt-davido-crystal-palace', 'evt-burna', 'evt-hardy', 'evt-c5', 
-            'evt-travis', 'evt-bovi', 'evt-ayuk', 'evt-ayjam', 'evt-lagoshack', 
-            'evt-devops', 'evt-igbesa', 'evt-davido'
-          ];
-
-          snapshot.docs.forEach(async (docSnap) => {
-            const ord = docSnap.data() as Order;
-            if (legacyEventIds.includes(ord.eventId) || docSnap.id.startsWith('ORD-10')) {
-              try { await deleteDoc(doc(db, 'orders', docSnap.id)); } catch (e) {}
-            }
-          });
-
-          const loadedOrders = snapshot.docs
-            .map(docSnap => docSnap.data() as Order)
-            .filter(ord => !legacyEventIds.includes(ord.eventId));
-
+          const loadedOrders = snapshot.docs.map(docSnap => docSnap.data() as Order);
           setOrders(loadedOrders);
           localStorage.setItem('tix_orders', JSON.stringify(loadedOrders));
         } else {
           setOrders([]);
+          localStorage.setItem('tix_orders', JSON.stringify([]));
         }
       }, (err) => {
         console.warn('Firestore orders listener error, using local state:', err);
@@ -419,8 +387,10 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (!snapshot.empty) {
           const loadedUsers = snapshot.docs.map(docSnap => docSnap.data() as TicketaUser);
           setUsers(loadedUsers);
+          localStorage.setItem('tix_users', JSON.stringify(loadedUsers));
         } else {
           setUsers([]);
+          localStorage.setItem('tix_users', JSON.stringify([]));
         }
       }, (err) => {
         console.warn('Firestore users listener error, using local state:', err);
@@ -430,28 +400,12 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const ticketsCol = collection(db, 'tickets');
       unsubscribeTickets = onSnapshot(ticketsCol, (snapshot) => {
         if (!snapshot.empty) {
-          const legacyEventIds = [
-            'evt-asake', 'evt-ay-lojik-koko-bar', 'evt-1300saint-savior-tour', 
-            'evt-davido-crystal-palace', 'evt-burna', 'evt-hardy', 'evt-c5', 
-            'evt-travis', 'evt-bovi', 'evt-ayuk', 'evt-ayjam', 'evt-lagoshack', 
-            'evt-devops', 'evt-igbesa', 'evt-davido'
-          ];
-
-          snapshot.docs.forEach(async (docSnap) => {
-            const tk = docSnap.data() as TicketPass;
-            if (legacyEventIds.includes(tk.eventId)) {
-              try { await deleteDoc(doc(db, 'tickets', docSnap.id)); } catch (e) {}
-            }
-          });
-
-          const loadedTickets = snapshot.docs
-            .map(docSnap => docSnap.data() as TicketPass)
-            .filter(t => !legacyEventIds.includes(t.eventId));
-
+          const loadedTickets = snapshot.docs.map(docSnap => docSnap.data() as TicketPass);
           setAllTickets(loadedTickets);
           localStorage.setItem('tix_all_tickets', JSON.stringify(loadedTickets));
         } else {
           setAllTickets([]);
+          localStorage.setItem('tix_all_tickets', JSON.stringify([]));
         }
       }, (err) => {
         console.warn('Firestore tickets listener error:', err);
@@ -464,6 +418,9 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           const loadedQr = snapshot.docs.map(docSnap => docSnap.data() as QrTicket);
           setQrTickets(loadedQr);
           localStorage.setItem('tix_qr_tickets', JSON.stringify(loadedQr));
+        } else {
+          setQrTickets([]);
+          localStorage.setItem('tix_qr_tickets', JSON.stringify([]));
         }
       }, (err) => {
         console.warn('Firestore qr_tickets listener error:', err);
@@ -477,51 +434,8 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           setOrganizers(loadedOrganizers);
           localStorage.setItem('tix_organizers', JSON.stringify(loadedOrganizers));
         } else {
-          // Seed default organizers into Firestore so the 'organizers' collection is created immediately
-          const defaultOrganizers: OrganizerUser[] = [
-            {
-              id: 'org-1001',
-              organizationName: 'Flytime Fest Productions',
-              email: 'organizer@flytime.com',
-              phone: '+234 803 111 2233',
-              category: 'Concerts & Festivals',
-              registeredAt: '2026-01-15',
-              status: 'Verified',
-              eventsCount: 3
-            },
-            {
-              id: 'org-1002',
-              organizationName: 'TechNation Africa',
-              email: 'events@technation.africa',
-              phone: '+234 802 444 5566',
-              category: 'Tech Summits',
-              registeredAt: '2026-02-01',
-              status: 'Verified',
-              eventsCount: 2
-            },
-            {
-              id: 'org-1003',
-              organizationName: 'LiveNation West Africa',
-              email: 'contact@livenation.ng',
-              phone: '+234 805 777 8899',
-              category: 'Concerts & Festivals',
-              registeredAt: '2026-03-10',
-              status: 'Verified',
-              eventsCount: 4
-            }
-          ];
-
-          setOrganizers(defaultOrganizers);
-          localStorage.setItem('tix_organizers', JSON.stringify(defaultOrganizers));
-
-          defaultOrganizers.forEach(async (org) => {
-            try {
-              await setDoc(doc(db, 'organizers', org.id), org);
-              console.log(`Seeded default organizer ${org.organizationName} into Firestore path organizers/${org.id}`);
-            } catch (err) {
-              console.error('Error seeding organizer to Firestore:', err);
-            }
-          });
+          setOrganizers([]);
+          localStorage.setItem('tix_organizers', JSON.stringify([]));
         }
       }, (err) => {
         console.warn('Firestore organizers listener error, using local state:', err);
