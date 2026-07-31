@@ -147,6 +147,18 @@ export const AttendeeWeb: React.FC = () => {
     return events.filter(e => isCategoryMatch(e.category, catName)).length;
   };
 
+  const getCategoryLabel = (catName: string) => {
+    switch (catName.toLowerCase().trim()) {
+      case 'all': return t('catAll');
+      case 'concerts': return t('catConcerts');
+      case 'comedy': return t('catComedy');
+      case 'tech': return t('catTech');
+      case 'festival': return t('catFestival');
+      case 'exhibition': return t('catExhibition');
+      default: return catName;
+    }
+  };
+
   // Filtered Events logic
   const filteredEvents = events.filter(e => {
     const matchesCategory = isCategoryMatch(e.category, selectedCategory);
@@ -486,7 +498,7 @@ export const AttendeeWeb: React.FC = () => {
                         className="w-full pl-9 pr-8 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white appearance-none focus:outline-none focus:border-emerald-500 font-medium"
                       >
                         {locations.map(loc => (
-                          <option key={loc} value={loc}>{loc}</option>
+                          <option key={loc} value={loc}>{loc === 'All Locations' ? t('allLocations') : loc}</option>
                         ))}
                       </select>
                       <ChevronDown className="absolute right-3 top-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -503,10 +515,10 @@ export const AttendeeWeb: React.FC = () => {
                         }}
                         className="w-full pl-9 pr-6 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white appearance-none focus:outline-none focus:border-emerald-500 font-medium"
                       >
-                        <option value="Any Date">Any Date</option>
-                        <option value="Today">Today</option>
-                        <option value="This Weekend">This Weekend</option>
-                        <option value="This Month">This Month</option>
+                        <option value="Any Date">{t('anyDate')}</option>
+                        <option value="Today">{t('todayDate')}</option>
+                        <option value="This Weekend">{t('thisWeekend')}</option>
+                        <option value="This Month">{t('thisMonth')}</option>
                       </select>
                       <ChevronDown className="absolute right-2.5 top-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
                     </div>
@@ -569,8 +581,8 @@ export const AttendeeWeb: React.FC = () => {
                       <img src={cat.img} alt={cat.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
                       <div className="absolute bottom-3 left-3 right-3">
-                        <h3 className="text-sm font-extrabold text-white group-hover:text-emerald-400 transition-colors">{cat.name}</h3>
-                        <p className="text-[10px] text-slate-300 font-medium">{eventCount} {eventCount === 1 ? 'Event' : 'Events'}</p>
+                        <h3 className="text-sm font-extrabold text-white group-hover:text-emerald-400 transition-colors">{getCategoryLabel(cat.name)}</h3>
+                        <p className="text-[10px] text-slate-300 font-medium">{eventCount} {eventCount === 1 ? t('eventSingle') : t('eventsPlural')}</p>
                       </div>
                     </div>
                   );
@@ -582,8 +594,8 @@ export const AttendeeWeb: React.FC = () => {
             <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 border-t border-slate-900">
               <div className="flex justify-between items-end mb-8">
                 <div>
-                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Featured</span>
-                  <h2 className="text-2xl font-black text-white mt-1">Trending Live Events</h2>
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">{t('featured')}</span>
+                  <h2 className="text-2xl font-black text-white mt-1">{t('trendingLiveEvents')}</h2>
                 </div>
                 
                 {/* Category Pills */}
@@ -598,7 +610,7 @@ export const AttendeeWeb: React.FC = () => {
                           : 'text-slate-400 hover:text-white'
                       }`}
                     >
-                      {cat}
+                      {getCategoryLabel(cat)}
                     </button>
                   ))}
                 </div>
@@ -628,11 +640,11 @@ export const AttendeeWeb: React.FC = () => {
                         {/* Category Badge */}
                         <div className="absolute top-3 left-3 flex items-center gap-1.5">
                           <div className="bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-black uppercase text-emerald-400 border border-slate-800">
-                            {evt.category}
+                            {getCategoryLabel(evt.category)}
                           </div>
                           {isEventSoldOut && (
                             <div className="bg-rose-600 text-white font-black px-2.5 py-1 rounded-lg text-[10px] uppercase tracking-wider shadow-md">
-                              SOLD OUT
+                              {t('soldOut')}
                             </div>
                           )}
                         </div>
@@ -649,7 +661,7 @@ export const AttendeeWeb: React.FC = () => {
 
                         {/* Price Tag Pill */}
                         <div className={`absolute bottom-3 right-3 px-2.5 py-1 rounded-lg text-xs font-black shadow-md ${isEventSoldOut ? 'bg-slate-800 text-rose-400 border border-rose-500/30' : 'bg-emerald-500 text-slate-950'}`}>
-                          {isEventSoldOut ? 'SOLD OUT' : lowestPrice === 0 ? 'FREE' : `From ₦${lowestPrice.toLocaleString()}`}
+                          {isEventSoldOut ? t('soldOut') : lowestPrice === 0 ? t('freeUnit') : `${t('from')} ₦${lowestPrice.toLocaleString()}`}
                         </div>
                       </div>
 
@@ -683,7 +695,7 @@ export const AttendeeWeb: React.FC = () => {
                         {/* Card Action */}
                         <div className="mt-5 pt-4 border-t border-slate-800/80 flex items-center justify-between">
                           <div className="text-[11px] text-slate-400">
-                            <span className="text-emerald-400 font-bold">● Live Gate</span> Check-in
+                            <span className="text-emerald-400 font-bold">● {t('liveGateCheckIn')}</span>
                           </div>
 
                           <button
@@ -694,7 +706,7 @@ export const AttendeeWeb: React.FC = () => {
                                 : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/10'
                             }`}
                           >
-                            <span>{isEventSoldOut ? 'Sold Out' : 'Buy Tickets'}</span>
+                            <span>{isEventSoldOut ? t('soldOut') : t('buyTickets')}</span>
                             <ChevronRight className="w-4 h-4" />
                           </button>
                         </div>
@@ -775,7 +787,7 @@ export const AttendeeWeb: React.FC = () => {
                         : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
                     }`}
                   >
-                    {cat}
+                    {getCategoryLabel(cat)}
                   </button>
                 ))}
               </div>
@@ -794,16 +806,16 @@ export const AttendeeWeb: React.FC = () => {
                       <img src={evt.image} alt={evt.title} className="w-full h-full object-cover" />
                       <div className="absolute top-3 left-3 flex items-center gap-1.5">
                         <div className="bg-slate-950/80 backdrop-blur-md px-2 py-0.5 rounded text-[10px] font-bold text-emerald-400 border border-slate-800">
-                          {evt.category}
+                          {getCategoryLabel(evt.category)}
                         </div>
                         {isEventSoldOut && (
                           <div className="bg-rose-600 text-white font-black px-2 py-0.5 rounded text-[10px] uppercase tracking-wider shadow-md">
-                            SOLD OUT
+                            {t('soldOut')}
                           </div>
                         )}
                       </div>
                       <div className={`absolute bottom-3 right-3 px-2 py-1 rounded text-xs font-black ${isEventSoldOut ? 'bg-slate-800 text-rose-400 border border-rose-500/30' : 'bg-emerald-500 text-slate-950'}`}>
-                        {isEventSoldOut ? 'SOLD OUT' : lowestPrice === 0 ? 'FREE' : `From ₦${lowestPrice.toLocaleString()}`}
+                        {isEventSoldOut ? t('soldOut') : lowestPrice === 0 ? t('freeUnit') : `${t('from')} ₦${lowestPrice.toLocaleString()}`}
                       </div>
                     </div>
 
@@ -825,7 +837,7 @@ export const AttendeeWeb: React.FC = () => {
                             : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
                         }`}
                       >
-                        {isEventSoldOut ? 'Sold Out' : 'View & Buy Tickets'}
+                        {isEventSoldOut ? t('soldOut') : t('buyTickets')}
                       </button>
                     </div>
                   </div>
@@ -1697,13 +1709,13 @@ export const AttendeeWeb: React.FC = () => {
               T
             </div>
             <span className="font-bold text-white">TICKETA</span>
-            <span>— Complete Multi-Platform Event Ecosystem</span>
+            <span>{t('footerTagline')}</span>
           </div>
 
           <div className="flex space-x-6 text-slate-400">
-            <button onClick={() => handleNav('browse')} className="hover:text-white cursor-pointer">Browse Events</button>
-            <button onClick={() => handleNav('how-it-works')} className="hover:text-white cursor-pointer">How it works</button>
-            <button onClick={() => handleNav('orders')} className="hover:text-white cursor-pointer">My Wallet</button>
+            <button onClick={() => handleNav('browse')} className="hover:text-white cursor-pointer">{t('browseEvents')}</button>
+            <button onClick={() => handleNav('how-it-works')} className="hover:text-white cursor-pointer">{t('howItWorks')}</button>
+            <button onClick={() => handleNav('orders')} className="hover:text-white cursor-pointer">{t('myWallet')}</button>
           </div>
         </div>
       </footer>
