@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useEventContext } from '../../context/EventContext';
+import { useLanguage } from '../../utils/translations';
 import { 
   Building2, 
   Users, 
@@ -47,6 +48,7 @@ interface SettingsTabProps {
 }
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
+  const { t } = useLanguage();
   const { orders } = useEventContext();
   const calculatedTotalEarnings = orders.reduce((acc, o) => acc + o.totalAmount, 0);
 
@@ -103,9 +105,9 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
       {activeSubpage === 'grid' && (
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Settings</h1>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">{t('settingsHeader')}</h1>
             <p className="text-xs font-semibold text-slate-500 mt-0.5">
-              Monitor event entry, team access, payments, and global organizer settings
+              {t('settingsSub')}
             </p>
           </div>
 
@@ -117,16 +119,16 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                 <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#00C896] flex items-center justify-center font-bold mb-3 border border-teal-100">
                   <Building2 className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-extrabold text-slate-900">Organization Profile</h3>
+                <h3 className="text-base font-extrabold text-slate-900">{t('orgProfileTitle')}</h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  Manage your organization details and public organizer information.
+                  {t('orgProfileSub')}
                 </p>
               </div>
               <button
                 onClick={() => setActiveSubpage('organization-profile')}
-                className="w-full py-2 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs transition shadow-sm mt-4"
+                className="w-full py-2 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs transition shadow-sm mt-4 cursor-pointer"
               >
-                Update Profile
+                {t('updateProfile')}
               </button>
             </div>
 
@@ -136,16 +138,16 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                 <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#00C896] flex items-center justify-center font-bold mb-3 border border-teal-100">
                   <Users className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-extrabold text-slate-900">Team & Permissions</h3>
+                <h3 className="text-base font-extrabold text-slate-900">{t('teamPermissionsTitle')}</h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  Invite team member and control access across your event.
+                  {t('teamPermissionsSub')}
                 </p>
               </div>
               <button
                 onClick={() => setActiveSubpage('team-permissions')}
-                className="w-full py-2 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs transition shadow-sm mt-4"
+                className="w-full py-2 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs transition shadow-sm mt-4 cursor-pointer"
               >
-                Manage Team
+                {t('manageTeam')}
               </button>
             </div>
 
@@ -155,16 +157,16 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                 <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#00C896] flex items-center justify-center font-bold mb-3 border border-teal-100">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-extrabold text-slate-900">Account & Security</h3>
+                <h3 className="text-base font-extrabold text-slate-900">{t('accountSecurityTitle')}</h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  Secure your account and manage login preferences.
+                  {t('accountSecuritySub')}
                 </p>
               </div>
               <button
                 onClick={() => setActiveSubpage('account-security')}
-                className="w-full py-2 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs transition shadow-sm mt-4"
+                className="w-full py-2 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs transition shadow-sm mt-4 cursor-pointer"
               >
-                Security Settings
+                {t('securitySettingsBtn')}
               </button>
             </div>
 
@@ -174,16 +176,16 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                 <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#00C896] flex items-center justify-center font-bold mb-3 border border-teal-100">
                   <CreditCard className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-extrabold text-slate-900">Payments & Payouts</h3>
+                <h3 className="text-base font-extrabold text-slate-900">{t('paymentsPayoutsTitle')}</h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  Setup how you receive earnings from ticket sales.
+                  {t('paymentsPayoutsSub')}
                 </p>
               </div>
               <button
                 onClick={() => setActiveSubpage('payments-payouts')}
-                className="w-full py-2 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs transition shadow-sm mt-4"
+                className="w-full py-2 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs transition shadow-sm mt-4 cursor-pointer"
               >
-                Configure Payments
+                {t('configurePaymentsBtn')}
               </button>
             </div>
 
@@ -193,16 +195,16 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                 <div className="w-10 h-10 rounded-xl bg-teal-50 text-[#00C896] flex items-center justify-center font-bold mb-3 border border-teal-100">
                   <Receipt className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-extrabold text-slate-900">Billing & Subscription</h3>
+                <h3 className="text-base font-extrabold text-slate-900">{t('billingSubscriptionTitle')}</h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  Manage your subscription plan and billing information.
+                  {t('billingSubscriptionSub')}
                 </p>
               </div>
               <button
                 onClick={() => setActiveSubpage('billing-subscription')}
-                className="w-full py-2 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs transition shadow-sm mt-4"
+                className="w-full py-2 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs transition shadow-sm mt-4 cursor-pointer"
               >
-                Manage Subscription
+                {t('manageSubscriptionBtn')}
               </button>
             </div>
 

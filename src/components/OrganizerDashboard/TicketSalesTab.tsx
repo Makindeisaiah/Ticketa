@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { EventItem, Order, TicketPass } from '../../types';
+import { useLanguage } from '../../utils/translations';
 import { 
   DollarSign, 
   Ticket, 
@@ -23,6 +24,7 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
   orders,
   allTickets
 }) => {
+  const { t } = useLanguage();
   const [selectedEvent, setSelectedEvent] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('daily');
@@ -74,9 +76,9 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Ticket Sales</h1>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">{t('ticketSalesHeader')}</h1>
           <p className="text-xs font-semibold text-slate-500 mt-0.5">
-            Track and manage your ticket sales, order breakdown, and net earnings
+            {t('ticketSalesSub')}
           </p>
         </div>
 
@@ -86,7 +88,7 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
             onChange={e => setSelectedEvent(e.target.value)}
             className="px-4 py-2 bg-[#00C896] text-white font-extrabold text-xs rounded-xl border-none outline-none cursor-pointer pr-8 appearance-none shadow-md shadow-[#00C896]/20"
           >
-            <option value="all">All Events</option>
+            <option value="all">{t('allEventsDropdown')}</option>
             {events.map(e => (
               <option key={e.id} value={e.id}>{e.title}</option>
             ))}
@@ -104,7 +106,7 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Total Tickets Sold
+              {t('totalTicketSold')}
             </span>
             <div className="text-xl font-black text-slate-900 mt-0.5 font-mono">
               {targetTickets.length.toLocaleString()} / {targetCapacity.toLocaleString()}
@@ -118,7 +120,7 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Total Revenue
+              {t('totalRevenue')}
             </span>
             <div className="text-lg font-black text-slate-900 mt-0.5 font-mono">
               {formatNaira(totalRevenue)}
@@ -132,7 +134,7 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Platform Fees
+              {t('platformFees')}
             </span>
             <div className="text-lg font-black text-slate-900 mt-0.5 font-mono">
               {formatNaira(platformFees)}
@@ -146,7 +148,7 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Net Revenue
+              {t('netRevenue')}
             </span>
             <div className="text-lg font-black text-[#00C896] mt-0.5 font-mono">
               {formatNaira(netRevenue)}
@@ -159,19 +161,19 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
       {/* Revenue Performance Chart */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <h3 className="text-base font-extrabold text-slate-900">Revenue Performance</h3>
+          <h3 className="text-base font-extrabold text-slate-900">{t('revenuePerformance')}</h3>
           <div className="flex p-1 bg-slate-100 rounded-xl text-xs font-bold border border-slate-200/60">
             {(['daily', 'weekly', 'monthly'] as const).map(tf => (
               <button
                 key={tf}
                 onClick={() => setTimeframe(tf)}
-                className={`px-3 py-1 rounded-lg capitalize transition ${
+                className={`px-3 py-1 rounded-lg capitalize transition cursor-pointer ${
                   timeframe === tf
                     ? 'bg-amber-400 text-slate-900 font-extrabold shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                {tf}
+                {t(tf)}
               </button>
             ))}
           </div>
@@ -207,17 +209,17 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
 
       {/* Ticket Type Performance Table */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-        <h3 className="text-base font-extrabold text-slate-900">Ticket Type Performance</h3>
+        <h3 className="text-base font-extrabold text-slate-900">{t('ticketTypeCheckIns')}</h3>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-semibold">
             <thead className="bg-slate-50 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200">
               <tr>
-                <th className="py-3 px-4">Ticket Type</th>
+                <th className="py-3 px-4">{t('ticketTypeCol')}</th>
                 <th className="py-3 px-4">Price</th>
-                <th className="py-3 px-4">Tickets Sold</th>
-                <th className="py-3 px-4">Tickets Left</th>
-                <th className="py-3 px-4 text-right">Revenue</th>
+                <th className="py-3 px-4">{t('soldCol')}</th>
+                <th className="py-3 px-4">{t('remainingCol')}</th>
+                <th className="py-3 px-4 text-right">{t('revenue')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -255,7 +257,7 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
                   return (
                     <tr>
                       <td colSpan={5} className="py-8 text-center text-slate-400 font-semibold text-xs">
-                        No ticket performance data available.
+                        {t('noTicketTiersFound')}
                       </td>
                     </tr>
                   );
@@ -280,8 +282,8 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
-            <h3 className="text-base font-extrabold text-slate-900">Orders & Buyers</h3>
-            <p className="text-xs text-slate-500">Manage and oversee all ticket orders and transactions</p>
+            <h3 className="text-base font-extrabold text-slate-900">{t('ordersCol')}</h3>
+            <p className="text-xs text-slate-500">{t('ticketSalesSub')}</p>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -289,7 +291,7 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Search order ID, buyer..."
+                placeholder={t('searchAttendeePlaceholder')}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-xs text-slate-900 outline-none"
@@ -298,10 +300,10 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
 
             <button
               onClick={handleExportCSV}
-              className="px-3.5 py-1.5 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 shrink-0 shadow-sm"
+              className="px-3.5 py-1.5 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 shrink-0 shadow-sm cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Export CSV</span>
+              <span>{t('exportCsv')}</span>
             </button>
           </div>
         </div>
@@ -311,21 +313,21 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
           <table className="w-full text-left text-xs font-semibold">
             <thead className="bg-slate-50 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200">
               <tr>
-                <th className="py-3 px-4">Order ID</th>
-                <th className="py-3 px-4">Buyer</th>
-                <th className="py-3 px-4">Ticket Type</th>
+                <th className="py-3 px-4">{t('refundIdCol')}</th>
+                <th className="py-3 px-4">{t('userCustomerCol')}</th>
+                <th className="py-3 px-4">{t('ticketTypeCol')}</th>
                 <th className="py-3 px-4">Qty</th>
-                <th className="py-3 px-4">Amount Paid</th>
-                <th className="py-3 px-4">Payment Method</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Purchase Date</th>
+                <th className="py-3 px-4">{t('amountCol')}</th>
+                <th className="py-3 px-4">{t('paymentMethod')}</th>
+                <th className="py-3 px-4">{t('statusCol')}</th>
+                <th className="py-3 px-4">{t('dateRegisteredCol')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredOrders.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-8 text-center text-slate-400 font-semibold text-xs">
-                    No ticket sales or buyer transactions recorded yet.
+                    {t('noOrdersYet')}
                   </td>
                 </tr>
               ) : (

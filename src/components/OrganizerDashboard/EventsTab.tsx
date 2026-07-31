@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { EventItem, Order, TicketPass } from '../../types';
+import { useLanguage } from '../../utils/translations';
 import { 
   Plus, 
   Search, 
@@ -42,6 +43,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({
   onEditEvent,
   onDeleteEvent
 }) => {
+  const { t } = useLanguage();
   const [searchTerm, setSearchTerm] = useState('');
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 
@@ -63,21 +65,21 @@ export const EventsTab: React.FC<EventsTabProps> = ({
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-emerald-50 text-[#00C896] border border-emerald-200">
           <Zap className="w-3 h-3 fill-[#00C896]" />
-          Selling Fast
+          {t('sellingFast')}
         </span>
       );
     } else if (index % 3 === 1) {
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-amber-50 text-amber-600 border border-amber-200">
           <TrendingUp className="w-3 h-3" />
-          Average Sales
+          {t('averageSales')}
         </span>
       );
     } else {
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-extrabold bg-rose-50 text-rose-600 border border-rose-200">
           <Flame className="w-3 h-3" />
-          Low Sales
+          {t('lowSales')}
         </span>
       );
     }
@@ -89,18 +91,18 @@ export const EventsTab: React.FC<EventsTabProps> = ({
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Events</h1>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">{t('eventsHeader')}</h1>
           <p className="text-xs font-semibold text-slate-500 mt-0.5">
-            Here are your event seats, ticket tiers, and sales stats
+            {t('eventSeatsSub')}
           </p>
         </div>
 
         <button
           onClick={onCreateEventClick}
-          className="px-4 py-2 bg-[#00C896] hover:bg-[#00b386] text-white rounded-xl text-xs font-extrabold shadow-md shadow-[#00C896]/20 transition flex items-center gap-1.5"
+          className="px-4 py-2 bg-[#00C896] hover:bg-[#00b386] text-white rounded-xl text-xs font-extrabold shadow-md shadow-[#00C896]/20 transition flex items-center gap-1.5 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
-          <span>Create New Event</span>
+          <span>{t('createNewEvent')}</span>
         </button>
       </div>
 
@@ -113,7 +115,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Total Event
+              {t('totalEvent')}
             </span>
             <div className="text-2xl font-black text-slate-900 mt-0.5">{events.length}</div>
           </div>
@@ -125,7 +127,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Active Events
+              {t('activeEvents')}
             </span>
             <div className="text-2xl font-black text-slate-900 mt-0.5">{events.length}</div>
           </div>
@@ -137,7 +139,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Total Ticket Sold
+              {t('totalTicketSold')}
             </span>
             <div className="text-2xl font-black text-slate-900 mt-0.5 font-mono">{allTickets.length.toLocaleString()}</div>
           </div>
@@ -149,7 +151,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Net Revenue
+              {t('netRevenue')}
             </span>
             <div className="text-base font-black text-slate-900 mt-0.5 font-mono">
               {formatNaira(totalRevenue)}
@@ -165,7 +167,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search events..."
+            placeholder={t('searchEventsSimple')}
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] focus:bg-white rounded-xl text-xs text-slate-900 placeholder-slate-400 outline-none transition"
@@ -200,7 +202,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({
                 <div className="min-w-0 space-y-1">
                   <div className="flex items-center space-x-2">
                     <span className="px-2 py-0.5 rounded-md text-[10px] font-bold text-teal-700 bg-teal-50 border border-teal-200">
-                      Upcoming
+                      {t('upcoming')}
                     </span>
                     <h3 className="text-base font-black text-slate-900 truncate">
                       {evt.title}
@@ -236,17 +238,17 @@ export const EventsTab: React.FC<EventsTabProps> = ({
                   {getSalesVelocityBadge(idx)}
                   <div className="mt-2 text-xs font-bold text-slate-800 space-y-0.5">
                     <div className="font-mono text-slate-900 font-extrabold">
-                      {totalTierCap.toLocaleString()} <span className="text-[10px] text-slate-500 font-sans">Tickets</span>
+                      {totalTierCap.toLocaleString()} <span className="text-[10px] text-slate-500 font-sans">{t('ticketsLabel')}</span>
                     </div>
                     <div className="text-[11px] text-slate-500">
-                      {totalTierSold.toLocaleString()} Check-ins
+                      {totalTierSold.toLocaleString()} {t('checkInsLabel')}
                     </div>
                   </div>
                 </div>
 
                 <div className="text-right">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                    Revenue
+                    {t('revenue')}
                   </span>
                   <span className="text-sm font-black text-[#00C896] font-mono">
                     {formatNaira(displayRev)}
@@ -258,16 +260,16 @@ export const EventsTab: React.FC<EventsTabProps> = ({
               <div className="flex items-center space-x-2 shrink-0 self-end lg:self-center">
                 <button
                   onClick={() => onViewRevenue(evt.id)}
-                  className="px-4 py-2 bg-[#00C896] hover:bg-[#00b386] text-white rounded-xl text-xs font-bold transition shadow-sm"
+                  className="px-4 py-2 bg-[#00C896] hover:bg-[#00b386] text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"
                 >
-                  Revenue
+                  {t('revenue')}
                 </button>
 
                 {/* 3 dots action menu */}
                 <div className="relative">
                   <button
                     onClick={() => setOpenDropdownId(openDropdownId === evt.id ? null : evt.id)}
-                    className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 transition"
+                    className="p-2 border border-slate-200 rounded-xl hover:bg-slate-50 text-slate-600 transition cursor-pointer"
                   >
                     <MoreHorizontal className="w-4 h-4" />
                   </button>
@@ -280,30 +282,30 @@ export const EventsTab: React.FC<EventsTabProps> = ({
                             onSelectEvent(evt.id);
                             setOpenDropdownId(null);
                           }}
-                          className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2.5 transition"
+                          className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2.5 transition cursor-pointer"
                         >
                           <Eye className="w-3.5 h-3.5 text-[#00C896]" />
-                          <span>Manage Event</span>
+                          <span>{t('manageEvent')}</span>
                         </button>
                         <button
                           onClick={() => {
                             onEditEvent(evt);
                             setOpenDropdownId(null);
                           }}
-                          className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2.5 transition"
+                          className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2.5 transition cursor-pointer"
                         >
                           <Edit className="w-3.5 h-3.5 text-blue-500" />
-                          <span>Edit Event</span>
+                          <span>{t('editEvent')}</span>
                         </button>
                         <button
                           onClick={() => {
                             onViewRevenue(evt.id);
                             setOpenDropdownId(null);
                           }}
-                          className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2.5 transition"
+                          className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2.5 transition cursor-pointer"
                         >
                           <ArrowUpRight className="w-3.5 h-3.5 text-emerald-500" />
-                          <span>Withdraw Earnings</span>
+                          <span>{t('withdrawEarnings')}</span>
                         </button>
                       </div>
                       <div className="py-1">
@@ -312,10 +314,10 @@ export const EventsTab: React.FC<EventsTabProps> = ({
                             if (onDeleteEvent) onDeleteEvent(evt);
                             setOpenDropdownId(null);
                           }}
-                          className="w-full text-left px-4 py-2 hover:bg-rose-50 text-rose-600 flex items-center gap-2.5 transition"
+                          className="w-full text-left px-4 py-2 hover:bg-rose-50 text-rose-600 flex items-center gap-2.5 transition cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                          <span>Delete Event</span>
+                          <span>{t('deleteEvent')}</span>
                         </button>
                       </div>
                     </div>
@@ -331,26 +333,26 @@ export const EventsTab: React.FC<EventsTabProps> = ({
       {/* Pagination Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-4">
         <span className="text-xs text-slate-500 font-semibold">
-          Showing 1 to {filteredEvents.length} of 12 events
+          {t('showingEventsCount').replace('{count}', String(filteredEvents.length)).replace('{total}', '12')}
         </span>
 
         <div className="flex items-center space-x-1.5 text-xs font-bold">
-          <button className="p-2 rounded-xl border border-slate-200 text-slate-400 hover:text-slate-800 disabled:opacity-50">
+          <button className="p-2 rounded-xl border border-slate-200 text-slate-400 hover:text-slate-800 disabled:opacity-50 cursor-pointer">
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button className="w-8 h-8 rounded-xl bg-[#00C896] text-white flex items-center justify-center font-bold">
             1
           </button>
-          <button className="w-8 h-8 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 flex items-center justify-center">
+          <button className="w-8 h-8 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 flex items-center justify-center cursor-pointer">
             2
           </button>
-          <button className="w-8 h-8 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 flex items-center justify-center">
+          <button className="w-8 h-8 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 flex items-center justify-center cursor-pointer">
             3
           </button>
-          <button className="w-8 h-8 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 flex items-center justify-center">
+          <button className="w-8 h-8 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 flex items-center justify-center cursor-pointer">
             4
           </button>
-          <button className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100">
+          <button className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 cursor-pointer">
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>

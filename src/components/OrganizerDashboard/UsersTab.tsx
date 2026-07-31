@@ -21,8 +21,10 @@ import {
 } from 'lucide-react';
 import { useEventContext } from '../../context/EventContext';
 import { TicketaUser, OrganizerUser, Order } from '../../types';
+import { useLanguage } from '../../utils/translations';
 
 export const UsersTab: React.FC = () => {
+  const { t } = useLanguage();
   const { users, organizers, orders, registerUser, registerOrganizer } = useEventContext();
   
   const [activeRoleTab, setActiveRoleTab] = useState<'attendees' | 'organizers'>('attendees');
@@ -166,25 +168,25 @@ export const UsersTab: React.FC = () => {
       <div className="flex items-center space-x-2 bg-slate-200/80 p-1 rounded-2xl w-fit border border-slate-300/60">
         <button
           onClick={() => { setActiveRoleTab('attendees'); setSearchQuery(''); }}
-          className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
+          className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
             activeRoleTab === 'attendees'
               ? 'bg-slate-900 text-white shadow-md'
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           <Users className="w-4 h-4 text-[#00C896]" />
-          <span>Attendee Users ({users.length})</span>
+          <span>{t('attendeeUsers')} ({users.length})</span>
         </button>
         <button
           onClick={() => { setActiveRoleTab('organizers'); setSearchQuery(''); }}
-          className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
+          className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
             activeRoleTab === 'organizers'
               ? 'bg-slate-900 text-white shadow-md'
               : 'text-slate-600 hover:text-slate-900'
           }`}
         >
           <Building2 className="w-4 h-4 text-[#00C896]" />
-          <span>Organizer Users ({organizers.length})</span>
+          <span>{t('organizerUsers')} ({organizers.length})</span>
         </button>
       </div>
 
@@ -195,44 +197,44 @@ export const UsersTab: React.FC = () => {
             {activeRoleTab === 'attendees' ? (
               <>
                 <Users className="w-6 h-6 text-[#00C896]" />
-                Attendee Users & Customers
+                {t('attendeeUsersHeading')}
               </>
             ) : (
               <>
                 <Building2 className="w-6 h-6 text-[#00C896]" />
-                Event Organizers & Hosts
+                {t('organizerUsersHeading')}
               </>
             )}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             {activeRoleTab === 'attendees' 
-              ? 'Manage ticket buyers, view purchase histories, and track active platform attendees (Stored in `users` collection).'
-              : 'Manage host organizations, event planners, and verified organizers (Stored in `organizers` collection).'}
+              ? t('attendeeUsersSub')
+              : t('organizerUsersSub')}
           </p>
         </div>
         <div className="flex items-center space-x-3">
           <button
             onClick={handleExportCSV}
-            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-colors"
+            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-colors cursor-pointer"
           >
             <Download className="w-4 h-4 text-slate-500" />
-            <span>Export CSV</span>
+            <span>{t('exportCsv')}</span>
           </button>
           {activeRoleTab === 'attendees' ? (
             <button
               onClick={() => setIsAddUserOpen(true)}
-              className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-[#00C896] hover:bg-[#00B084] text-white text-xs font-bold shadow-md shadow-[#00C896]/20 transition-all"
+              className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-[#00C896] hover:bg-[#00B084] text-white text-xs font-bold shadow-md shadow-[#00C896]/20 transition-all cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
-              <span>+ Add Attendee User</span>
+              <span>+ {t('addAttendeeBtn')}</span>
             </button>
           ) : (
             <button
               onClick={() => setIsAddOrgOpen(true)}
-              className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-[#00C896] hover:bg-[#00B084] text-white text-xs font-bold shadow-md shadow-[#00C896]/20 transition-all"
+              className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-[#00C896] hover:bg-[#00B084] text-white text-xs font-bold shadow-md shadow-[#00C896]/20 transition-all cursor-pointer"
             >
               <Building2 className="w-4 h-4" />
-              <span>+ Register Organizer</span>
+              <span>+ {t('registerOrganizerBtn')}</span>
             </button>
           )}
         </div>
@@ -243,7 +245,7 @@ export const UsersTab: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Users</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('totalUsersCol')}</span>
               <div className="p-2.5 bg-emerald-50 text-[#00C896] rounded-xl">
                 <Users className="w-5 h-5" />
               </div>
@@ -254,7 +256,7 @@ export const UsersTab: React.FC = () => {
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Buyers</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('activeBuyers')}</span>
               <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
                 <ShoppingBag className="w-5 h-5" />
               </div>
@@ -267,7 +269,7 @@ export const UsersTab: React.FC = () => {
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Customer Revenue</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('customerRevenue')}</span>
               <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl">
                 <CreditCard className="w-5 h-5" />
               </div>
@@ -278,7 +280,7 @@ export const UsersTab: React.FC = () => {
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Verified Accounts</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('verifiedAccounts')}</span>
               <div className="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
@@ -291,7 +293,7 @@ export const UsersTab: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Organizers</span>
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('totalOrganizers')}</span>
               <div className="p-2.5 bg-emerald-50 text-[#00C896] rounded-xl">
                 <Building2 className="w-5 h-5" />
               </div>
@@ -330,7 +332,7 @@ export const UsersTab: React.FC = () => {
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder={activeRoleTab === 'attendees' ? "Search by attendee name, email, or phone..." : "Search by organization name, email, phone or category..."}
+            placeholder={activeRoleTab === 'attendees' ? t('searchAttendeePlaceholder') : t('searchOrgPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896]"
@@ -341,33 +343,33 @@ export const UsersTab: React.FC = () => {
           <div className="flex items-center space-x-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
             <button
               onClick={() => setFilterType('all')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 filterType === 'all'
                   ? 'bg-slate-900 text-white'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              All Users ({users.length})
+              {t('allUsersFilter')} ({users.length})
             </button>
             <button
               onClick={() => setFilterType('buyers')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 filterType === 'buyers'
                   ? 'bg-slate-900 text-white'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              Ticket Buyers ({activeBuyersCount})
+              {t('ticketBuyersFilter')} ({activeBuyersCount})
             </button>
             <button
               onClick={() => setFilterType('verified')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 filterType === 'verified'
                   ? 'bg-slate-900 text-white'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              Verified ({verifiedCount})
+              {t('verifiedFilter')} ({verifiedCount})
             </button>
           </div>
         )}
@@ -380,13 +382,13 @@ export const UsersTab: React.FC = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-3.5 px-6">User / Customer</th>
-                  <th className="py-3.5 px-6">Contact Information</th>
-                  <th className="py-3.5 px-6">Date Registered</th>
-                  <th className="py-3.5 px-6 text-center">Orders</th>
-                  <th className="py-3.5 px-6 text-right">Total Spent</th>
-                  <th className="py-3.5 px-6 text-center">Status</th>
-                  <th className="py-3.5 px-6 text-right">Action</th>
+                  <th className="py-3.5 px-6">{t('userCustomerCol')}</th>
+                  <th className="py-3.5 px-6">{t('contactInfoCol')}</th>
+                  <th className="py-3.5 px-6">{t('dateRegisteredCol')}</th>
+                  <th className="py-3.5 px-6 text-center">{t('ordersCol')}</th>
+                  <th className="py-3.5 px-6 text-right">{t('totalSpentCol')}</th>
+                  <th className="py-3.5 px-6 text-center">{t('statusCol')}</th>
+                  <th className="py-3.5 px-6 text-right">{t('actionCol')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs">
@@ -394,8 +396,7 @@ export const UsersTab: React.FC = () => {
                   <tr>
                     <td colSpan={7} className="py-12 text-center text-slate-400">
                       <Users className="w-10 h-10 mx-auto text-slate-300 mb-2" />
-                      <p className="font-bold text-slate-700">No attendee users found</p>
-                      <p className="text-xs text-slate-400 mt-1">Try tweaking your search or filter keywords.</p>
+                      <p className="font-bold text-slate-700">{t('noUsersFound')}</p>
                     </td>
                   </tr>
                 ) : (
@@ -469,9 +470,9 @@ export const UsersTab: React.FC = () => {
                         <td className="py-4 px-6 text-right">
                           <button
                             onClick={() => setSelectedUserForHistory(user)}
-                            className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 font-bold text-[11px] inline-flex items-center space-x-1 transition-colors"
+                            className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 font-bold text-[11px] inline-flex items-center space-x-1 transition-colors cursor-pointer"
                           >
-                            <span>Purchase History ({userOrders.length})</span>
+                            <span>{t('purchaseHistoryBtn')} ({userOrders.length})</span>
                             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
                           </button>
                         </td>
@@ -490,11 +491,11 @@ export const UsersTab: React.FC = () => {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="py-3.5 px-6">Organization / Host Name</th>
-                  <th className="py-3.5 px-6">Official Contact</th>
-                  <th className="py-3.5 px-6">Primary Category</th>
-                  <th className="py-3.5 px-6">Date Registered</th>
-                  <th className="py-3.5 px-6 text-center">Status</th>
+                  <th className="py-3.5 px-6">{t('orgHostNameCol')}</th>
+                  <th className="py-3.5 px-6">{t('officialContactCol')}</th>
+                  <th className="py-3.5 px-6">{t('primaryCategoryCol')}</th>
+                  <th className="py-3.5 px-6">{t('dateRegisteredCol')}</th>
+                  <th className="py-3.5 px-6 text-center">{t('statusCol')}</th>
                   <th className="py-3.5 px-6 text-right">Table Source</th>
                 </tr>
               </thead>
@@ -503,8 +504,7 @@ export const UsersTab: React.FC = () => {
                   <tr>
                     <td colSpan={6} className="py-12 text-center text-slate-400">
                       <Building2 className="w-10 h-10 mx-auto text-slate-300 mb-2" />
-                      <p className="font-bold text-slate-700">No organizer hosts found</p>
-                      <p className="text-xs text-slate-400 mt-1">Register a host account or adjust your search.</p>
+                      <p className="font-bold text-slate-700">{t('noOrganizersFound')}</p>
                     </td>
                   </tr>
                 ) : (
@@ -585,7 +585,7 @@ export const UsersTab: React.FC = () => {
               </div>
               <button
                 onClick={() => setSelectedUserForHistory(null)}
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -664,7 +664,7 @@ export const UsersTab: React.FC = () => {
             <div className="p-4 bg-slate-50 border-t border-slate-200 text-right">
               <button
                 onClick={() => setSelectedUserForHistory(null)}
-                className="px-5 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors"
+                className="px-5 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 Close History
               </button>
@@ -680,11 +680,11 @@ export const UsersTab: React.FC = () => {
             <div className="p-5 border-b border-slate-100 flex items-center justify-between">
               <h3 className="font-black text-slate-900 text-base flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-[#00C896]" />
-                Register New Ticketa User
+                {t('addAttendeeModalTitle')}
               </h3>
               <button
                 onClick={() => setIsAddUserOpen(false)}
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -692,7 +692,7 @@ export const UsersTab: React.FC = () => {
 
             <form onSubmit={handleAddUserSubmit} className="p-5 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{t('fullNameLabel')} *</label>
                 <input
                   type="text"
                   required
@@ -704,7 +704,7 @@ export const UsersTab: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Email Address *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{t('emailAddressLabel')} *</label>
                 <input
                   type="email"
                   required
@@ -716,7 +716,7 @@ export const UsersTab: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{t('phoneNumberLabel')}</label>
                 <input
                   type="tel"
                   placeholder="e.g. +234 812 345 6789"
@@ -730,15 +730,15 @@ export const UsersTab: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAddUserOpen(false)}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition-colors"
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-[#00C896] hover:bg-[#00B084] text-white font-bold text-xs shadow-md shadow-[#00C896]/20 transition-all"
+                  className="px-5 py-2.5 rounded-xl bg-[#00C896] hover:bg-[#00B084] text-white font-bold text-xs shadow-md shadow-[#00C896]/20 transition-all cursor-pointer"
                 >
-                  Create User Account
+                  {t('createUserBtn')}
                 </button>
               </div>
             </form>
@@ -753,11 +753,11 @@ export const UsersTab: React.FC = () => {
             <div className="p-5 border-b border-slate-100 flex items-center justify-between">
               <h3 className="font-black text-slate-900 text-base flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-[#00C896]" />
-                Register New Organizer Host
+                {t('addOrganizerModalTitle')}
               </h3>
               <button
                 onClick={() => setIsAddOrgOpen(false)}
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -765,7 +765,7 @@ export const UsersTab: React.FC = () => {
 
             <form onSubmit={handleAddOrgSubmit} className="p-5 space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Organization / Brand Name *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{t('orgBrandNameLabel')} *</label>
                 <input
                   type="text"
                   required
@@ -777,7 +777,7 @@ export const UsersTab: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Official Email Address *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{t('officialEmailLabel')} *</label>
                 <input
                   type="email"
                   required
@@ -789,7 +789,7 @@ export const UsersTab: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{t('phoneNumberLabel')}</label>
                 <input
                   type="tel"
                   placeholder="e.g. +234 802 123 4567"
@@ -800,7 +800,7 @@ export const UsersTab: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Country *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{t('countryLabel')} *</label>
                 <select
                   value={newOrgCountry}
                   onChange={(e) => setNewOrgCountry(e.target.value)}
@@ -813,7 +813,7 @@ export const UsersTab: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Primary Category</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{t('primaryCategoryCol')}</label>
                 <select
                   value={newOrgCategory}
                   onChange={(e) => setNewOrgCategory(e.target.value)}
@@ -831,15 +831,15 @@ export const UsersTab: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAddOrgOpen(false)}
-                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition-colors"
+                  className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-xs hover:bg-slate-50 transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-[#00C896] hover:bg-[#00B084] text-white font-bold text-xs shadow-md shadow-[#00C896]/20 transition-all"
+                  className="px-5 py-2.5 rounded-xl bg-[#00C896] hover:bg-[#00B084] text-white font-bold text-xs shadow-md shadow-[#00C896]/20 transition-all cursor-pointer"
                 >
-                  Register Host
+                  {t('registerHostBtn')}
                 </button>
               </div>
             </form>

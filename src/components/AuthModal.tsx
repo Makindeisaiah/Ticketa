@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useEventContext } from '../context/EventContext';
+import { useLanguage } from '../utils/translations';
 import { X, UserPlus, LogIn, CheckCircle2, User, Mail, Phone, Lock, Sparkles, ShieldCheck, KeyRound, RefreshCw, Check } from 'lucide-react';
 
 interface AuthModalProps {
@@ -9,6 +10,7 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode = 'signup' }) => {
+  const { t } = useLanguage();
   const { registerUser, loginUser, currentUser, logoutUser, orders } = useEventContext();
   const [mode, setMode] = useState<'signup' | 'verify-email' | 'login'>(defaultMode);
 
@@ -144,22 +146,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
             {currentUser 
-              ? `Account Profile` 
+              ? t('accountProfile') 
               : mode === 'verify-email'
-                ? 'Verify Email Address'
+                ? t('verifyEmailAddress')
                 : mode === 'signup' 
-                  ? 'Create Ticketa Account' 
-                  : 'Sign In to Ticketa'
+                  ? t('createTicketaAccount') 
+                  : t('signInToTicketa')
             }
           </h2>
           <p className="text-xs text-slate-400">
             {currentUser
-              ? 'Manage your pass wallet, contact info and order history'
+              ? t('manageWalletAndOrders')
               : mode === 'verify-email'
-                ? `Enter the 6-digit verification code sent to ${email}`
+                ? `${t('enter6DigitSentTo')} ${email}`
                 : mode === 'signup'
-                  ? 'Register a fresh account with a clean ticket pass profile'
-                  : 'Access your ticket wallet and order passes'
+                  ? t('registerFreshAccount')
+                  : t('accessTicketWallet')
             }
           </p>
         </div>
@@ -174,7 +176,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
               }`}
             >
               <UserPlus className="w-3.5 h-3.5" />
-              <span>Sign Up</span>
+              <span>{t('signUp')}</span>
             </button>
             <button
               onClick={() => { setMode('login'); setErrorMsg(''); }}
@@ -183,7 +185,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
               }`}
             >
               <LogIn className="w-3.5 h-3.5" />
-              <span>Sign In</span>
+              <span>{t('signIn')}</span>
             </button>
           </div>
         )}
@@ -215,11 +217,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
 
               <div className="grid grid-cols-2 gap-2 text-center pt-2 border-t border-slate-800/80 text-xs">
                 <div className="bg-slate-900 p-2 rounded-xl">
-                  <span className="text-[10px] text-slate-500 uppercase font-bold block">Orders</span>
+                  <span className="text-[10px] text-slate-500 uppercase font-bold block">{t('ordersCol')}</span>
                   <span className="font-bold text-emerald-400">{totalOrdersCount}</span>
                 </div>
                 <div className="bg-slate-900 p-2 rounded-xl">
-                  <span className="text-[10px] text-slate-500 uppercase font-bold block">Total Spent</span>
+                  <span className="text-[10px] text-slate-500 uppercase font-bold block">{t('totalSpentCol')}</span>
                   <span className="font-bold text-teal-300">₦{totalSpentAmount.toLocaleString()}</span>
                 </div>
               </div>
@@ -230,9 +232,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
                 logoutUser();
                 onClose();
               }}
-              className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs rounded-xl transition"
+              className="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs rounded-xl transition cursor-pointer"
             >
-              Sign Out of Account
+              {t('signOutAccount')}
             </button>
           </div>
         ) : mode === 'verify-email' ? (
@@ -245,14 +247,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
                 📩 Email Verification Sent to <span className="text-emerald-300 font-bold">{email}</span>
               </div>
               <div className="flex items-center justify-center gap-2">
-                <span className="text-xs text-slate-400">Verification Code:</span>
+                <span className="text-xs text-slate-400">Code:</span>
                 <span className="text-lg font-mono font-black tracking-widest text-emerald-400 bg-slate-950 px-3 py-1 rounded-lg border border-emerald-500/30">
                   {generatedOtp}
                 </span>
                 <button
                   type="button"
                   onClick={() => setInputOtp(generatedOtp)}
-                  className="text-[10px] font-bold bg-emerald-500 text-slate-950 px-2 py-1 rounded hover:bg-emerald-400 transition"
+                  className="text-[10px] font-bold bg-emerald-500 text-slate-950 px-2 py-1 rounded hover:bg-emerald-400 transition cursor-pointer"
                 >
                   Auto-Fill Code
                 </button>
@@ -260,7 +262,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">Enter 6-Digit Code</label>
+              <label className="block text-xs font-bold text-slate-300 mb-1">{t('enter6DigitCode')}</label>
               <div className="relative">
                 <KeyRound className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
                 <input
@@ -279,26 +281,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
               className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center space-x-2 cursor-pointer"
             >
               <Check className="w-4 h-4" />
-              <span>Verify Email & Activate Account</span>
+              <span>{t('verifyEmailActivate')}</span>
             </button>
 
             <div className="flex items-center justify-between text-xs pt-1">
               <button
                 type="button"
                 onClick={() => setMode('signup')}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-white cursor-pointer"
               >
-                ← Back to Details
+                ← {t('backToDetails')}
               </button>
 
               <button
                 type="button"
                 onClick={handleResendCode}
                 disabled={resendCooldown > 0}
-                className="text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-1 disabled:opacity-50"
+                className="text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-1 disabled:opacity-50 cursor-pointer"
               >
                 <RefreshCw className="w-3 h-3" />
-                <span>{resendCooldown > 0 ? `Resend code (${resendCooldown}s)` : 'Resend Code'}</span>
+                <span>{resendCooldown > 0 ? `${t('resendCodeTimer')} (${resendCooldown}s)` : t('resendCode')}</span>
               </button>
             </div>
 
@@ -307,7 +309,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
           /* Sign Up Form */
           <form onSubmit={initiateSignUp} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">Full Name</label>
+              <label className="block text-xs font-bold text-slate-300 mb-1">{t('fullName')}</label>
               <div className="relative">
                 <User className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
                 <input
@@ -321,7 +323,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">Email Address</label>
+              <label className="block text-xs font-bold text-slate-300 mb-1">{t('emailAddress')}</label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
                 <input
@@ -335,7 +337,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">Phone Number (for SMS Passes)</label>
+              <label className="block text-xs font-bold text-slate-300 mb-1">{t('phoneForSmsPasses')}</label>
               <div className="relative">
                 <Phone className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
                 <input
@@ -353,14 +355,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
               className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center space-x-2 cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
-              <span>Continue to Email Verification</span>
+              <span>{t('continueEmailVerification')}</span>
             </button>
           </form>
         ) : (
           /* Sign In Form */
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">Registered Email Address</label>
+              <label className="block text-xs font-bold text-slate-300 mb-1">{t('registeredEmailAddress')}</label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
                 <input
@@ -378,7 +380,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
               className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center space-x-2 cursor-pointer"
             >
               <LogIn className="w-4 h-4" />
-              <span>Sign In to Account</span>
+              <span>{t('signInToAccount')}</span>
             </button>
           </form>
         )}

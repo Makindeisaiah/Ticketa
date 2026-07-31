@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { EventItem, Order, TicketPass } from '../../types';
+import { useLanguage } from '../../utils/translations';
 import { 
   DollarSign, 
   Ticket, 
@@ -24,6 +25,7 @@ interface AnalyticsTabProps {
 }
 
 export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders = [], allTickets = [] }) => {
+  const { t } = useLanguage();
   const [selectedEvent, setSelectedEvent] = useState('all');
   const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
@@ -65,9 +67,9 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders 
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Analytics Overview</h1>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">{t('analyticsOverview')}</h1>
           <p className="text-xs font-semibold text-slate-500 mt-0.5">
-            Track your event performance, sales, and buyer traffic sources
+            {t('analyticsSub')}
           </p>
         </div>
 
@@ -78,7 +80,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders 
             onChange={e => setSelectedEvent(e.target.value)}
             className="px-4 py-2 bg-[#00C896] text-white font-extrabold text-xs rounded-xl border-none outline-none cursor-pointer pr-8 appearance-none shadow-md shadow-[#00C896]/20"
           >
-            <option value="all">All Events</option>
+            <option value="all">{t('allEventsDropdown')}</option>
             {safeEvents.map(e => e && e.id ? (
               <option key={e.id} value={e.id}>{e.title || 'Untitled Event'}</option>
             ) : null)}
@@ -96,7 +98,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders 
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Total Revenue
+              {t('totalRevenue')}
             </span>
             <div className="text-xl font-black text-slate-900 mt-0.5 font-mono">
               {formatNaira(totalRevenue)}
@@ -110,7 +112,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders 
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Tickets Sold / Remaining
+              {t('ticketsSoldRemaining')}
             </span>
             <div className="text-xl font-black text-slate-900 mt-0.5 font-mono">
               {targetTickets.length.toLocaleString()} / {ticketsRemaining.toLocaleString()}
@@ -124,7 +126,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders 
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Conversion Rate
+              {t('conversionRate')}
             </span>
             <div className="text-2xl font-black text-slate-900 mt-0.5">
               {conversionRate}
@@ -138,7 +140,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders 
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-              Refund Issued
+              {t('refundIssued')}
             </span>
             <div className="text-xl font-black text-slate-900 mt-0.5 font-mono">
               ₦ 0
@@ -154,19 +156,19 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders 
         {/* Left Chart (2 cols) */}
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <h3 className="text-base font-extrabold text-slate-900">Revenue Performance</h3>
+            <h3 className="text-base font-extrabold text-slate-900">{t('revenuePerformance')}</h3>
             <div className="flex p-1 bg-slate-100 rounded-xl text-xs font-bold border border-slate-200/60">
               {(['daily', 'weekly', 'monthly'] as const).map(tf => (
                 <button
                   key={tf}
                   onClick={() => setTimeframe(tf)}
-                  className={`px-3 py-1 rounded-lg capitalize transition ${
+                  className={`px-3 py-1 rounded-lg capitalize transition cursor-pointer ${
                     timeframe === tf
                       ? 'bg-amber-400 text-slate-900 font-extrabold shadow-sm'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  {tf}
+                  {t(tf)}
                 </button>
               ))}
             </div>
@@ -251,14 +253,14 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders 
 
         {/* Right Traffic Source Card */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-          <h3 className="text-base font-extrabold text-slate-900">Traffic Source</h3>
+          <h3 className="text-base font-extrabold text-slate-900">{t('trafficSource')}</h3>
           
           <div className="space-y-3.5 pt-1">
             {[
-              { name: 'Direct Link', pct: targetOrders.length > 0 ? '30%' : '0%', icon: <Globe className="w-4 h-4 text-slate-500" /> },
-              { name: 'Social Media', pct: targetOrders.length > 0 ? '28%' : '0%', icon: <Share2 className="w-4 h-4 text-blue-500" /> },
-              { name: 'QR Code', pct: targetOrders.length > 0 ? '28%' : '0%', icon: <QrCode className="w-4 h-4 text-emerald-500" /> },
-              { name: 'Search', pct: targetOrders.length > 0 ? '28%' : '0%', icon: <Search className="w-4 h-4 text-amber-500" /> },
+              { name: t('directLink'), pct: targetOrders.length > 0 ? '30%' : '0%', icon: <Globe className="w-4 h-4 text-slate-500" /> },
+              { name: t('socialMedia'), pct: targetOrders.length > 0 ? '28%' : '0%', icon: <Share2 className="w-4 h-4 text-blue-500" /> },
+              { name: t('qrCode'), pct: targetOrders.length > 0 ? '28%' : '0%', icon: <QrCode className="w-4 h-4 text-emerald-500" /> },
+              { name: t('searchTraffic'), pct: targetOrders.length > 0 ? '28%' : '0%', icon: <Search className="w-4 h-4 text-amber-500" /> },
             ].map((ts, idx) => (
               <div key={idx} className="flex justify-between items-center text-xs font-bold text-slate-800 p-2.5 bg-slate-50 rounded-xl border border-slate-100">
                 <div className="flex items-center space-x-2.5">
@@ -278,22 +280,21 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders 
         
         {/* Ticket Performance by Type Table (2 cols) */}
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-          <h3 className="text-base font-extrabold text-slate-900">Ticket Performance by Type</h3>
+          <h3 className="text-base font-extrabold text-slate-900">{t('ticketTypeCheckIns')}</h3>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-semibold">
               <thead className="bg-slate-50 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200">
                 <tr>
-                  <th className="py-3 px-4">Ticket Type</th>
-                  <th className="py-3 px-4">Sold</th>
+                  <th className="py-3 px-4">{t('ticketTypeCol')}</th>
+                  <th className="py-3 px-4">{t('soldCol')}</th>
                   <th className="py-3 px-4 w-48">Progress</th>
-                  <th className="py-3 px-4">Remaining</th>
-                  <th className="py-3 px-4 text-right">Revenue</th>
+                  <th className="py-3 px-4">{t('remainingCol')}</th>
+                  <th className="py-3 px-4 text-right">{t('revenue')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {(() => {
-                  // Compute dynamic tier breakdown from events
                   const activeEvts = selectedEvent === 'all' 
                     ? safeEvents 
                     : safeEvents.filter(e => e && e.id === selectedEvent);
@@ -328,7 +329,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders 
                     return (
                       <tr>
                         <td colSpan={5} className="py-6 text-center text-slate-400">
-                          No ticket tier data available.
+                          {t('noTicketTiersFound')}
                         </td>
                       </tr>
                     );
@@ -363,7 +364,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders 
           
           {/* Orders & Buyers Social Channels */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
-            <h3 className="text-base font-extrabold text-slate-900">Orders & Buyers</h3>
+            <h3 className="text-base font-extrabold text-slate-900">{t('ordersCol')}</h3>
             
             <div className="space-y-2.5">
               <div className="flex justify-between items-center text-xs font-bold text-slate-800 p-2 bg-slate-50 rounded-xl">
@@ -389,7 +390,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders 
 
           {/* Payment Method Used Donut Chart */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-            <h3 className="text-base font-extrabold text-slate-900">Payment Method Used</h3>
+            <h3 className="text-base font-extrabold text-slate-900">{t('paymentMethod')}</h3>
             
             <div className="flex items-center justify-between gap-4">
               {/* Donut SVG */}

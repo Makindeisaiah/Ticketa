@@ -1119,40 +1119,40 @@ export const AttendeeWeb: React.FC = () => {
                 {/* Buyer Information Card */}
                 <div className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-4">
                   <h3 className="text-sm font-extrabold text-white uppercase tracking-wider text-emerald-400">
-                    1. Pass Holder Information
+                    1. {t('contactInformation')}
                   </h3>
 
                   <div className="space-y-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-300 mb-1">Full Name</label>
+                      <label className="block text-xs font-bold text-slate-300 mb-1">{t('fullName')}</label>
                       <input
                         type="text"
                         required
                         value={fullName}
                         onChange={e => setFullName(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500 font-medium"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-300 mb-1">Email Address (Ticket Pass Delivery)</label>
+                      <label className="block text-xs font-bold text-slate-300 mb-1">{t('emailAddress')}</label>
                       <input
                         type="email"
                         required
                         value={email}
                         onChange={e => setEmail(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500 font-medium"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-300 mb-1">Phone Number (SMS Entrance Alert)</label>
+                      <label className="block text-xs font-bold text-slate-300 mb-1">{t('phoneForSmsPasses')}</label>
                       <input
                         type="tel"
                         required
                         value={phone}
                         onChange={e => setPhone(e.target.value)}
-                        className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500 font-medium"
                       />
                     </div>
                   </div>
