@@ -90,19 +90,19 @@ export const OrganizerSidebar: React.FC<OrganizerSidebarProps> = ({
                     setActiveTab(item.id);
                     if (setIsMobileOpen) setIsMobileOpen(false);
                   }}
-                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-bold transition-all duration-200 ${
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-bold text-left transition-all duration-200 cursor-pointer ${
                     isActive
                       ? 'bg-[#00C896] text-white shadow-md shadow-[#00C896]/20'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
                   }`}
                 >
-                  <div className="flex items-center space-x-3">
-                    <span className={isActive ? 'text-white' : 'text-slate-500'}>
+                  <div className="flex items-center space-x-3 min-w-0 flex-1 text-left">
+                    <span className={`shrink-0 flex items-center justify-center ${isActive ? 'text-white' : 'text-slate-500'}`}>
                       {item.icon}
                     </span>
-                    <span>{item.label}</span>
+                    <span className="text-left leading-tight truncate">{item.label}</span>
                   </div>
-                  {isActive && <ChevronRight className="w-4 h-4 text-white/80" />}
+                  {isActive && <ChevronRight className="w-4 h-4 text-white/80 shrink-0 ml-2" />}
                 </button>
               );
             })}

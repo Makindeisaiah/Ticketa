@@ -503,7 +503,7 @@ export const TRANSLATIONS = {
     ticketSales: 'Ventes de Billets',
     usersCustomers: 'Utilisateurs & Clients',
     checkIns: 'Contrôles d\'accès',
-    refundRequests: 'Demandes de Remboursement',
+    refundRequests: 'Remboursements',
     settings: 'Paramètres',
     logOut: 'Déconnexion',
     searchPlaceholder: 'Rechercher des événements, commandes, billets...',
