@@ -89,6 +89,10 @@ export const TRANSLATIONS = {
     scanTickets: 'Scan Tickets',
     manualCheckIn: 'Manual Check-In',
     noOrdersYet: 'No orders recorded yet. Use "Simulate Order" above to generate demo sales!',
+    viewMore: 'More',
+    manageEvent: 'Manage event',
+    viewSales: 'View sales',
+    quickActionsForShows: 'Quick actions for your live scheduled shows',
 
     // Login & Onboarding
     signIn: 'Sign In',
@@ -113,7 +117,8 @@ export const TRANSLATIONS = {
     passwordsDoNotMatch: 'Passwords do not match. Please check and try again.',
     enterOrgName: 'Please enter your Organization / Brand Name.',
     selectBankError: 'Please select a bank.',
-    enterValidAccountNum: 'Please enter a valid account number.',
+    enterValidAccountNum: 'Please enter a valid 10-digit account number.',
+    enterBothEmailPass: 'Please enter both your email and password.',
 
     // Onboarding Steps
     step1Title: 'Create Your Organizer Account',
@@ -145,7 +150,7 @@ export const TRANSLATIONS = {
     setupPayoutAccount: 'Set up your payout account',
     setupPayoutDesc: "This is where we'll send your ticket sales revenue",
     countryAndCurrency: 'Country & Currency',
-    bankAccountDetails: 'Bank Account Details',
+    bankAccountDetails: 'Bank Account Details & Mobile Money',
     selectBank: 'Select Bank',
     accountNumber: 'Account Number',
     accountName: 'Account Name',
@@ -155,17 +160,21 @@ export const TRANSLATIONS = {
     individual: 'Individual',
     businessOrg: 'Business / Organization',
     businessName: 'Business Name',
-    taxIdPlaceholder: 'CAC / Tax ID / RCCM (e.g. ND65478477664)',
+    taxIdPlaceholder: 'CAC / Tax ID (e.g. ND65478477664)',
     encryptedBankNotice: 'Your bank details are encrypted and securely stored.',
     saveBankAccount: 'Save bank account',
 
     step4Title: 'Your organizer account is ready',
     step4Desc: 'You can now start organizing events, selling tickets, and managing payouts on your dashboard.',
     hostVerificationCompleted: 'Host Verification Completed',
+    hostVerifiedDesc: 'Your brand account is verified. Anti-fraud checks cleared successfully.',
+    organizerNameLabel: 'Organizer Name:',
+    categoryTypeLabel: 'Category / Type:',
     payoutStatus: 'Payout Status',
     bankAccountLinked: 'Bank Account Linked',
     pendingConfig: 'Pending (Configure in Settings)',
     goToDashboard: 'Go to Dashboard',
+    antiFraudFooter: 'Ticketa Legitimacy & Anti-Fraud Host Verification System',
 
     // Events Tab
     eventsManagement: 'Events Management',
@@ -181,6 +190,15 @@ export const TRANSLATIONS = {
     deleteEvent: 'Delete Event',
     viewRevenue: 'View Revenue',
     noEventsFound: 'No events found.',
+    sellingFast: 'Selling Fast',
+    averageSales: 'Average Sales',
+    lowSales: 'Low Sales',
+    eventSeatsSub: 'Here are your event seats, ticket tiers, and sales stats',
+
+    // Analytics Tab
+    analyticsOverview: 'Analytics Overview',
+    analyticsSub: 'Track your event performance, sales, and buyer traffic sources',
+    allEventsDropdown: 'All Events',
 
     // Settings Tab
     generalSettings: 'General Settings',
@@ -232,6 +250,10 @@ export const TRANSLATIONS = {
     scanTickets: 'Scanner des Billets',
     manualCheckIn: 'Validation Manuelle',
     noOrdersYet: 'Aucune commande enregistrée. Utilisez "Simuler une Commande" ci-dessus pour tester !',
+    viewMore: 'Voir plus',
+    manageEvent: 'Gérer l\'événement',
+    viewSales: 'Voir les ventes',
+    quickActionsForShows: 'Actions rapides pour vos spectacles programmés',
 
     // Login & Onboarding
     signIn: 'Se Connecter',
@@ -253,14 +275,15 @@ export const TRANSLATIONS = {
     enterFullName: 'Veuillez saisir votre nom complet.',
     enterValidEmail: 'Veuillez saisir une adresse e-mail valide.',
     passwordMinLength: 'Le mot de passe doit contenir au moins 6 caractères.',
-    passwordsDoNotMatch: 'Les mots de passe ne correspondent pas.',
+    passwordsDoNotMatch: 'Les mots de passe ne correspondent pas. Veuillez vérifier et réessayer.',
     enterOrgName: 'Veuillez saisir le nom de votre organisation.',
-    selectBankError: 'Veuillez sélectionner une banque ou Mobile Money.',
-    enterValidAccountNum: 'Veuillez saisir un numéro de compte valide.',
+    selectBankError: 'Veuillez sélectionner une banque.',
+    enterValidAccountNum: 'Veuillez saisir un numéro de compte à 10 chiffres valide.',
+    enterBothEmailPass: 'Veuillez saisir votre e-mail et votre mot de passe.',
 
     // Onboarding Steps
     step1Title: 'Créer votre compte Organisateur',
-    step1Desc: 'Configurez votre compte organisateur pour commencer à vendre des billets.',
+    step1Desc: 'Configurez votre compte organisateur pour commencer à vendre des billets et gérer vos événements.',
     fullName: 'Nom Complet',
     continue: 'Continuer',
     back: 'Retour',
@@ -281,7 +304,7 @@ export const TRANSLATIONS = {
     step3Desc: 'Ajoutez vos coordonnées pour recevoir vos revenus de billetterie en toute sécurité.',
     payoutOptionNow: 'Configurer le versement maintenant',
     payoutOptionNowDesc: 'Connectez votre compte bancaire ou Mobile Money pour recevoir vos gains.',
-    addBankAccount: 'Ajouter un compte / Wallet',
+    addBankAccount: 'Ajouter un compte bancaire / Wallet',
     skipForNow: 'Passer pour l\'instant',
     skipForNowDesc: 'Vous pourrez configurer votre compte de paiement plus tard.',
 
@@ -289,7 +312,7 @@ export const TRANSLATIONS = {
     setupPayoutDesc: 'C\'est ici que nous vous enverrons les recettes de vos ventes de billets',
     countryAndCurrency: 'Pays & Devise',
     bankAccountDetails: 'Coordonnées bancaires & Mobile Money',
-    selectBank: 'Sélectionner la Banque / Mobile Money',
+    selectBank: 'Sélectionner la Banque',
     accountNumber: 'Numéro de compte',
     accountName: 'Nom du titulaire du compte',
     verifying: 'Vérification...',
@@ -298,17 +321,21 @@ export const TRANSLATIONS = {
     individual: 'Individuel',
     businessOrg: 'Entreprise / Organisation',
     businessName: 'Nom de l\'entreprise',
-    taxIdPlaceholder: 'Numéro RCCM / Fiscal (ex. CI-ABJ-2026-B)',
+    taxIdPlaceholder: 'Numéro RCCM / Fiscal (ex. ND65478477664)',
     encryptedBankNotice: 'Vos coordonnées bancaires sont cryptées et sécurisées.',
     saveBankAccount: 'Enregistrer le compte',
 
     step4Title: 'Votre compte organisateur est prêt !',
     step4Desc: 'Vous pouvez maintenant créer des événements, vendre des billets et gérer vos versements.',
     hostVerificationCompleted: 'Vérification de l\'organisateur terminée',
+    hostVerifiedDesc: 'Votre compte d\'organisation est vérifié. Contrôles anti-fraude réussis.',
+    organizerNameLabel: 'Nom de l\'organisateur :',
+    categoryTypeLabel: 'Catégorie / Type :',
     payoutStatus: 'Statut du versement',
     bankAccountLinked: 'Compte bancaire lié',
     pendingConfig: 'En attente (à configurer dans les paramètres)',
     goToDashboard: 'Accéder au Tableau de Bord',
+    antiFraudFooter: 'Système de légitimité et de vérification anti-fraude Ticketa',
 
     // Events Tab
     eventsManagement: 'Gestion des Événements',
@@ -321,9 +348,18 @@ export const TRANSLATIONS = {
     ticketsSold: 'Billets Vendus',
     actions: 'Actions',
     editEvent: 'Modifier l\'Événement',
-    deleteEvent: 'Supprimer l\'Événement',
+    deleteEvent: 'Delete Event',
     viewRevenue: 'Voir le Revenu',
     noEventsFound: 'Aucun événement trouvé.',
+    sellingFast: 'Vente Rapide',
+    averageSales: 'Ventes Moyennes',
+    lowSales: 'Faibles Ventes',
+    eventSeatsSub: 'Voici vos places d\'événements, catégories de billets et statistiques',
+
+    // Analytics Tab
+    analyticsOverview: 'Aperçu des Analytiques',
+    analyticsSub: 'Suivez les performances de vos événements, ventes et sources de trafic',
+    allEventsDropdown: 'Tous les Événements',
 
     // Settings Tab
     generalSettings: 'Paramètres Généraux',
