@@ -34,7 +34,7 @@ export const RevenueWithdrawModal: React.FC<RevenueWithdrawModalProps> = ({
   const platformFees = Math.round(grossSales * 0.025);
   const netWithdrawable = Math.max(0, grossSales - platformFees);
 
-  const formatNaira = (amount: number) => '₦ ' + amount.toLocaleString('en-US');
+  const formatCfa = (amount: number) => amount.toLocaleString('fr-FR') + ' FCFA';
 
   const handleWithdraw = () => {
     if (netWithdrawable <= 0) return;
@@ -75,7 +75,7 @@ export const RevenueWithdrawModal: React.FC<RevenueWithdrawModalProps> = ({
               </div>
               <h3 className="text-lg font-black text-slate-900">Withdrawal Request Initiated</h3>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                {formatNaira(netWithdrawable)} has been scheduled for transfer to your GTBank account (****5399).
+                {formatCfa(netWithdrawable)} has been scheduled for transfer to your Ecobank Côte d'Ivoire account (****5399).
               </p>
             </div>
           ) : (
@@ -84,17 +84,17 @@ export const RevenueWithdrawModal: React.FC<RevenueWithdrawModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
                   <span className="text-[10px] text-slate-400 font-bold uppercase">Gross Ticket Sales</span>
-                  <div className="text-sm font-black text-slate-900 font-mono">{formatNaira(grossSales)}</div>
+                  <div className="text-sm font-black text-slate-900 font-mono">{formatCfa(grossSales)}</div>
                 </div>
 
                 <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
                   <span className="text-[10px] text-slate-400 font-bold uppercase">Platform Fee (2.5%)</span>
-                  <div className="text-sm font-black text-amber-600 font-mono">-{formatNaira(platformFees)}</div>
+                  <div className="text-sm font-black text-amber-600 font-mono">-{formatCfa(platformFees)}</div>
                 </div>
 
                 <div className="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-1">
                   <span className="text-[10px] text-emerald-800 font-bold uppercase">Net Available</span>
-                  <div className="text-sm font-black text-[#00C896] font-mono">{formatNaira(netWithdrawable)}</div>
+                  <div className="text-sm font-black text-[#00C896] font-mono">{formatCfa(netWithdrawable)}</div>
                 </div>
               </div>
 
@@ -107,7 +107,7 @@ export const RevenueWithdrawModal: React.FC<RevenueWithdrawModalProps> = ({
                       <Building2 className="w-5 h-5 text-[#00C896]" />
                     </div>
                     <div>
-                      <div className="font-extrabold text-slate-900">Guaranty Trust Bank (GTBank)</div>
+                      <div className="font-extrabold text-slate-900">Ecobank Côte d'Ivoire</div>
                       <div className="text-[10px] text-slate-500 font-mono">012****5399 • Event Organizer</div>
                     </div>
                   </div>
@@ -122,7 +122,7 @@ export const RevenueWithdrawModal: React.FC<RevenueWithdrawModalProps> = ({
                   className="w-full py-3.5 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-xl shadow-[#00C896]/20 transition"
                 >
                   <ArrowUpRight className="w-4 h-4" />
-                  <span>Withdraw {formatNaira(netWithdrawable)} to GTBank</span>
+                  <span>Withdraw {formatCfa(netWithdrawable)} to Ecobank</span>
                 </button>
               </div>
 
@@ -134,10 +134,10 @@ export const RevenueWithdrawModal: React.FC<RevenueWithdrawModalProps> = ({
                     <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex justify-between items-center">
                       <div>
                         <div className="font-bold text-slate-900">REF-8923746</div>
-                        <div className="text-[10px] text-slate-400">Dec 01, 2025 • GTBank ****5399</div>
+                        <div className="text-[10px] text-slate-400">Dec 01, 2025 • Ecobank ****5399</div>
                       </div>
                       <div className="text-right">
-                        <div className="font-black font-mono text-slate-900">{formatNaira(netWithdrawable)}</div>
+                        <div className="font-black font-mono text-slate-900">{formatCfa(netWithdrawable)}</div>
                         <span className="text-[9px] text-[#00C896] font-bold">Completed</span>
                       </div>
                     </div>

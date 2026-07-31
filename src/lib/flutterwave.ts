@@ -106,7 +106,7 @@ export const triggerFlutterwavePayment = async (params: TriggerFlutterwaveParams
     public_key: pubKey,
     tx_ref: txRef,
     amount: params.amount,
-    currency: params.currency || 'NGN',
+    currency: params.currency || 'XOF',
     payment_options: params.paymentOptions || 'card, banktransfer, ussd, mobilemoney, account, qr',
     customer: {
       email: params.email,

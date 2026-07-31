@@ -222,7 +222,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
                 </div>
                 <div className="bg-slate-900 p-2 rounded-xl">
                   <span className="text-[10px] text-slate-500 uppercase font-bold block">{t('totalSpentCol')}</span>
-                  <span className="font-bold text-teal-300">₦{totalSpentAmount.toLocaleString()}</span>
+                  <span className="font-bold text-teal-300">{totalSpentAmount.toLocaleString()} FCFA</span>
                 </div>
               </div>
             </div>
@@ -244,10 +244,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
             {/* Live Verification Code Banner */}
             <div className="bg-emerald-500/10 border border-emerald-500/30 p-3.5 rounded-2xl space-y-2 text-center">
               <div className="text-[11px] text-slate-400 font-medium">
-                📩 Email Verification Sent to <span className="text-emerald-300 font-bold">{email}</span>
+                📩 {t('emailVerificationSentTo')} <span className="text-emerald-300 font-bold">{email}</span>
               </div>
               <div className="flex items-center justify-center gap-2">
-                <span className="text-xs text-slate-400">Code:</span>
+                <span className="text-xs text-slate-400">{t('codeLabel')}</span>
                 <span className="text-lg font-mono font-black tracking-widest text-emerald-400 bg-slate-950 px-3 py-1 rounded-lg border border-emerald-500/30">
                   {generatedOtp}
                 </span>
@@ -256,7 +256,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
                   onClick={() => setInputOtp(generatedOtp)}
                   className="text-[10px] font-bold bg-emerald-500 text-slate-950 px-2 py-1 rounded hover:bg-emerald-400 transition cursor-pointer"
                 >
-                  Auto-Fill Code
+                  {t('autoFillCode')}
                 </button>
               </div>
             </div>
@@ -314,7 +314,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
                 <User className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
                 <input
                   type="text"
-                  placeholder="e.g. Chukwuma Isaiah"
+                  placeholder="e.g. Koffi Kouassi"
                   value={fullName}
                   onChange={e => setFullName(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-medium"
@@ -342,7 +342,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
                 <Phone className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
                 <input
                   type="tel"
-                  placeholder="+234 812 345 6789"
+                  placeholder="+225 07 01 02 03 04"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-medium"
@@ -388,7 +388,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
         {/* Security Footer Note */}
         <div className="text-[10px] text-slate-500 text-center flex items-center justify-center gap-1.5 pt-2 border-t border-slate-800/80">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Real-time Sync with Firebase Firestore & Twilio SMS Service</span>
+          <span>{t('realtimeSyncNotice')}</span>
         </div>
 
       </div>

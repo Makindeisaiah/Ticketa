@@ -48,7 +48,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 
   const formatNaira = (amount: number) => {
-    return '₦ ' + amount.toLocaleString('en-US');
+    return amount.toLocaleString('fr-FR') + ' FCFA';
   };
 
   const filteredEvents = events.filter(e => 

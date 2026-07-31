@@ -98,30 +98,30 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
   // STEP 2 STATE: Organization details
   const [organizationName, setOrganizationName] = useState('');
   const [organizerType, setOrganizerType] = useState('Event Agency');
-  const [country, setCountry] = useState('Nigeria');
+  const [country, setCountry] = useState("Côte d'Ivoire");
   const [phone, setPhone] = useState('');
 
   // STEP 3 STATE: Payout & KYC verification details
-  const [bankName, setBankName] = useState('Guaranty Trust Bank (GTCO)');
+  const [bankName, setBankName] = useState("Ecobank Côte d'Ivoire");
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
   const [isResolvingAccount, setIsResolvingAccount] = useState(false);
   const [accountResolved, setAccountResolved] = useState(false);
   const [holderType, setHolderType] = useState<'Individual' | 'Business / Organization'>('Business / Organization');
-  const [taxOrRegistrationNumber, setTaxOrRegistrationNumber] = useState('ND65478477664');
+  const [taxOrRegistrationNumber, setTaxOrRegistrationNumber] = useState('CI-ABJ-2025-B-12345');
   const [isPayoutConfigured, setIsPayoutConfigured] = useState(false);
 
   // Handle country selection change
   const handleCountrySelect = (selectedCountry: string) => {
     setCountry(selectedCountry);
-    const config = SUPPORTED_COUNTRIES[selectedCountry] || SUPPORTED_COUNTRIES['Nigeria'];
+    const config = SUPPORTED_COUNTRIES[selectedCountry] || SUPPORTED_COUNTRIES["Côte d'Ivoire"];
     setBankName(config.defaultBank);
     if (selectedCountry === "Côte d'Ivoire") {
       changeLanguage('fr');
     }
   };
 
-  const currentCountryConfig = SUPPORTED_COUNTRIES[country] || SUPPORTED_COUNTRIES['Nigeria'];
+  const currentCountryConfig = SUPPORTED_COUNTRIES[country] || SUPPORTED_COUNTRIES["Côte d'Ivoire"];
 
   // LOGIN STATE
   const [loginEmail, setLoginEmail] = useState('');

@@ -44,7 +44,7 @@ export const UsersTab: React.FC = () => {
   const [newOrgEmail, setNewOrgEmail] = useState('');
   const [newOrgPhone, setNewOrgPhone] = useState('');
   const [newOrgCategory, setNewOrgCategory] = useState('Concerts & Festivals');
-  const [newOrgCountry, setNewOrgCountry] = useState('Nigeria');
+  const [newOrgCountry, setNewOrgCountry] = useState("Côte d'Ivoire");
 
   // Attendee Metrics
   const totalUsersCount = users.length;
@@ -274,7 +274,7 @@ export const UsersTab: React.FC = () => {
                 <CreditCard className="w-5 h-5" />
               </div>
             </div>
-            <p className="text-2xl font-black text-slate-900 mt-3">₦{totalSpentByUsers.toLocaleString()}</p>
+            <p className="text-2xl font-black text-slate-900 mt-3">{totalSpentByUsers.toLocaleString()} FCFA</p>
             <p className="text-[11px] text-slate-500 mt-1">Total spent on tickets</p>
           </div>
 
@@ -604,7 +604,7 @@ export const UsersTab: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase">Total Spent</span>
-                  <p className="text-sm font-black text-[#00C896]">₦{selectedUserForHistory.totalSpent.toLocaleString()}</p>
+                  <p className="text-sm font-black text-[#00C896]">{selectedUserForHistory.totalSpent.toLocaleString()} FCFA</p>
                 </div>
               </div>
 
@@ -628,7 +628,7 @@ export const UsersTab: React.FC = () => {
                           <h5 className="font-bold text-slate-900 text-sm">{order.eventTitle}</h5>
                         </div>
                         <div className="text-right">
-                          <span className="text-xs font-black text-[#00C896]">₦{order.totalAmount.toLocaleString()}</span>
+                          <span className="text-xs font-black text-[#00C896]">{order.totalAmount.toLocaleString()} FCFA</span>
                           <p className="text-[10px] text-slate-400">{order.purchaseDate}</p>
                         </div>
                       </div>
@@ -696,7 +696,7 @@ export const UsersTab: React.FC = () => {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Oluwaseun Davies"
+                  placeholder="e.g. Koffi Kouassi"
                   value={newUserName}
                   onChange={(e) => setNewUserName(e.target.value)}
                   className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896]"
@@ -708,7 +708,7 @@ export const UsersTab: React.FC = () => {
                 <input
                   type="email"
                   required
-                  placeholder="e.g. seun@example.com"
+                  placeholder="e.g. koffi@example.com"
                   value={newUserEmail}
                   onChange={(e) => setNewUserEmail(e.target.value)}
                   className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896]"
@@ -719,7 +719,7 @@ export const UsersTab: React.FC = () => {
                 <label className="block text-xs font-bold text-slate-700 mb-1">{t('phoneNumberLabel')}</label>
                 <input
                   type="tel"
-                  placeholder="e.g. +234 812 345 6789"
+                  placeholder="e.g. +225 07 01 02 03 04"
                   value={newUserPhone}
                   onChange={(e) => setNewUserPhone(e.target.value)}
                   className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896]"

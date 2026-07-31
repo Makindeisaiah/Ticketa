@@ -41,7 +41,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   // Currency Formatter Helper
   const formatNaira = (amount: number) => {
-    return '₦ ' + amount.toLocaleString('en-US');
+    return amount.toLocaleString('fr-FR') + ' FCFA';
   };
 
   // Calculations

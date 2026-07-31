@@ -31,7 +31,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders 
 
   const formatNaira = (amount: number) => {
     const val = Number.isNaN(amount) || amount === undefined || amount === null ? 0 : amount;
-    return '₦ ' + val.toLocaleString('en-US');
+    return val.toLocaleString('fr-FR') + ' FCFA';
   };
 
   const safeEvents = Array.isArray(events) ? events : [];

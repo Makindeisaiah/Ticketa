@@ -59,11 +59,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
   const [orgName, setOrgName] = useState('Event Organizer');
   const [orgType, setOrgType] = useState('Company');
   const [orgDesc, setOrgDesc] = useState('Live event and ticketing management organization.');
-  const [orgCountry, setOrgCountry] = useState('Nigeria');
-  const [orgCity, setOrgCity] = useState('Lagos');
-  const [orgAddress, setOrgAddress] = useState('146 Freedom Way, Victoria Island');
+  const [orgCountry, setOrgCountry] = useState("Côte d'Ivoire");
+  const [orgCity, setOrgCity] = useState('Abidjan');
+  const [orgAddress, setOrgAddress] = useState('Boulevard de la République, Plateau');
   const [supportEmail, setSupportEmail] = useState('contact@ticketa.com');
-  const [phone, setPhone] = useState('+2349048372638');
+  const [phone, setPhone] = useState('+2250701020304');
   const [website, setWebsite] = useState('ticketa.com');
   const [instagram, setInstagram] = useState('flytimefest');
   const [facebook, setFacebook] = useState('flytimefest');
@@ -549,7 +549,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
               <h4 className="font-extrabold text-slate-900">{t('devicesActivity')}</h4>
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex justify-between items-center">
                 <div>
-                  <div className="font-bold text-slate-900">Chrome - Windows (Lagos, Nigeria)</div>
+                  <div className="font-bold text-slate-900">Chrome - Windows (Abidjan, Côte d'Ivoire)</div>
                   <div className="text-[10px] text-slate-400">{t('activeNow')}</div>
                 </div>
                 <span className="px-2 py-0.5 bg-emerald-100 text-[#00C896] font-bold rounded text-[10px]">{t('activeBadge')}</span>
@@ -792,18 +792,18 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                   <h3 className="text-base font-extrabold text-slate-900">{t('payoutDestination')}</h3>
                   <div className="flex items-center justify-between border border-slate-200 p-4 rounded-xl">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-orange-600 rounded flex items-center justify-center text-white text-xs font-bold">GTBank</div>
+                      <div className="w-10 h-10 bg-emerald-700 rounded flex items-center justify-center text-white text-xs font-bold">Ecobank</div>
                       <div>
-                        <div className="font-extrabold text-slate-900 text-sm">GTBank **** 5399</div>
+                        <div className="font-extrabold text-slate-900 text-sm">Ecobank **** 5399</div>
                         <div className="text-xs text-slate-500">Event Organizer</div>
                       </div>
                     </div>
-                    <div className="px-3 py-1 bg-[#00C896] text-white rounded text-xs font-bold">NGN</div>
+                    <div className="px-3 py-1 bg-[#00C896] text-white rounded text-xs font-bold">XOF</div>
                   </div>
                   <div>
                     <span className="block text-[10px] font-bold text-slate-400 mb-1">{t('country')}</span>
                     <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
-                      Nigeria
+                      Côte d'Ivoire
                     </div>
                   </div>
                 </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { EventItem, TicketTier } from '../../types';
+import { useLanguage } from '../../utils/translations';
 import { 
   X, 
   Plus, 
@@ -24,6 +25,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
   onSubmit,
   editingEvent
 }) => {
+  const { t } = useLanguage();
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
 
   // Form State
@@ -161,10 +163,10 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
       category: category || 'Concerts',
       organizerName: organizerName || 'Event Organizer',
       date: date || 'Dec 25, 2026',
-      time: time || '19:00 WAT',
-      location: address || venueName || 'Lagos, Nigeria',
+      time: time || '19:00 GMT',
+      location: address || venueName || "Abidjan, Côte d'Ivoire",
       venueName: venueName || 'Main Arena',
-      address: address || venueName || 'Lagos, Nigeria',
+      address: address || venueName || "Abidjan, Côte d'Ivoire",
       image: finalImage,
       bannerImage: finalImage,
       description: description || 'Experience an unforgettable event live with us.',
@@ -188,10 +190,10 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
         <div className="p-6 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
           <div>
             <span className="text-[10px] font-bold text-[#00C896] uppercase tracking-wider block">
-              Step {step} of 5
+              {t('stepOfFive').replace('{step}', String(step))}
             </span>
             <h2 className="text-xl font-black text-slate-900">
-              {editingEvent ? 'Edit Event Details' : 'Create New Event'}
+              {editingEvent ? t('editEventDetails') : t('createNewEvent')}
             </h2>
           </div>
           <button
@@ -205,11 +207,11 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
         {/* Step Stepper Indicator */}
         <div className="grid grid-cols-5 border-b border-slate-100 text-[11px] font-bold text-center bg-white">
           {[
-            '1. Details',
-            '2. Tickets',
-            '3. Fees & Refund',
-            '4. Advanced',
-            '5. Publish'
+            t('step1Details'),
+            t('step2Tickets'),
+            t('step3FeesRefund'),
+            t('step4Advanced'),
+            t('step5Publish')
           ].map((st, i) => (
             <div
               key={i}
@@ -233,39 +235,39 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
           {step === 1 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-slate-700 font-bold mb-1">Event Title *</label>
+                <label className="block text-slate-700 font-bold mb-1">{t('eventTitleLabel')}</label>
                 <input
                   type="text"
                   value={title}
                   onChange={e => setTitle(e.target.value)}
-                  placeholder="e.g. Lagos Afrobeats Festival 2026"
+                  placeholder={t('eventTitlePlaceholder')}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold text-sm outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1">Category</label>
+                  <label className="block text-slate-700 font-bold mb-1">{t('categoryLabel')}</label>
                   <select
                     value={category}
                     onChange={e => setCategory(e.target.value)}
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none"
                   >
-                    <option value="Concerts">Concerts</option>
-                    <option value="Festivals">Festivals</option>
-                    <option value="Nightlife">Nightlife</option>
-                    <option value="Comedy">Comedy</option>
-                    <option value="Sports">Sports</option>
+                    <option value="Concerts">{t('categoryConcerts')}</option>
+                    <option value="Festivals">{t('categoryFestivals')}</option>
+                    <option value="Nightlife">{t('categoryNightlife')}</option>
+                    <option value="Comedy">{t('categoryComedy')}</option>
+                    <option value="Sports">{t('categorySports')}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1">Organizer Name</label>
+                  <label className="block text-slate-700 font-bold mb-1">{t('organizerNameLabel')}</label>
                   <input
                     type="text"
                     value={organizerName}
                     onChange={e => setOrganizerName(e.target.value)}
-                    placeholder="e.g. Ticketa Events Ltd"
+                    placeholder={t('organizerNamePlaceholder')}
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none"
                   />
                 </div>
@@ -273,23 +275,23 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1">Event Date</label>
+                  <label className="block text-slate-700 font-bold mb-1">{t('eventDateLabel')}</label>
                   <input
                     type="text"
                     value={date}
                     onChange={e => setDate(e.target.value)}
-                    placeholder="e.g. Fri, Dec 25, 2026"
+                    placeholder={t('eventDatePlaceholder')}
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1">Time</label>
+                  <label className="block text-slate-700 font-bold mb-1">{t('timeLabel')}</label>
                   <input
                     type="text"
                     value={time}
                     onChange={e => setTime(e.target.value)}
-                    placeholder="e.g. 19:00 WAT"
+                    placeholder={t('timePlaceholder')}
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none"
                   />
                 </div>
@@ -297,23 +299,23 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1">Venue Name</label>
+                  <label className="block text-slate-700 font-bold mb-1">{t('venueNameLabel')}</label>
                   <input
                     type="text"
                     value={venueName}
                     onChange={e => setVenueName(e.target.value)}
-                    placeholder="e.g. Eko Hotel Arena"
+                    placeholder={t('venueNamePlaceholder')}
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1">Full Address</label>
+                  <label className="block text-slate-700 font-bold mb-1">{t('fullAddressLabel')}</label>
                   <input
                     type="text"
                     value={address}
                     onChange={e => setAddress(e.target.value)}
-                    placeholder="e.g. Victoria Island, Lagos"
+                    placeholder={t('fullAddressPlaceholder')}
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none"
                   />
                 </div>
@@ -322,8 +324,8 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
               {/* Cover Image Upload from Device */}
               <div>
                 <label className="block text-slate-700 font-bold mb-1 flex items-center justify-between">
-                  <span>Cover Image</span>
-                  <span className="text-[10px] text-slate-400 font-normal">Upload photo from device</span>
+                  <span>{t('coverImageLabel')}</span>
+                  <span className="text-[10px] text-slate-400 font-normal">{t('uploadPhotoFromDevice')}</span>
                 </label>
 
                 <input
@@ -348,7 +350,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                         className="px-3.5 py-2 bg-white/95 hover:bg-white text-slate-900 font-extrabold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition"
                       >
                         <Upload className="w-3.5 h-3.5 text-[#00C896]" />
-                        <span>Change Photo</span>
+                        <span>{t('changePhoto')}</span>
                       </button>
                       <button
                         type="button"
@@ -356,7 +358,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                         className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
-                        <span>Remove</span>
+                        <span>{t('removePhoto')}</span>
                       </button>
                     </div>
                   </div>
@@ -372,10 +374,10 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                     </div>
                     <div>
                       <p className="font-extrabold text-slate-800 text-xs">
-                        {isUploading ? 'Processing image...' : 'Click to select image file from device'}
+                        {isUploading ? t('processingImage') : t('clickToSelectImage')}
                       </p>
                       <p className="text-[10px] text-slate-400 font-medium">
-                        Supports PNG, JPG, WEBP, GIF (Drag & drop available)
+                        {t('supportedImageFormats')}
                       </p>
                     </div>
                   </div>
@@ -383,12 +385,12 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-slate-700 font-bold mb-1">Description</label>
+                <label className="block text-slate-700 font-bold mb-1">{t('descriptionLabel')}</label>
                 <textarea
                   rows={3}
                   value={description}
                   onChange={e => setDescription(e.target.value)}
-                  placeholder="Provide details about your event, line-up, performance schedule..."
+                  placeholder={t('descriptionPlaceholder')}
                   className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-normal outline-none"
                 />
               </div>
@@ -399,13 +401,13 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
           {step === 2 && (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-sm font-extrabold text-slate-900">Configure Ticket Tiers</h3>
+                <h3 className="text-sm font-extrabold text-slate-900">{t('configureTicketTiers')}</h3>
                 <button
                   onClick={handleAddTier}
                   className="px-3 py-1.5 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs flex items-center gap-1 shadow-sm"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>Add Tier</span>
+                  <span>{t('addTier')}</span>
                 </button>
               </div>
 
@@ -413,7 +415,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                 {ticketTiers.map((tier, idx) => (
                   <div key={tier.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="font-extrabold text-slate-900">Tier #{idx + 1}</span>
+                      <span className="font-extrabold text-slate-900">{t('tierNumber').replace('{number}', String(idx + 1))}</span>
                       {ticketTiers.length > 1 && (
                         <button
                           onClick={() => handleRemoveTier(tier.id)}
@@ -426,7 +428,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
-                        <label className="block text-[10px] text-slate-500 font-bold mb-0.5">Tier Name</label>
+                        <label className="block text-[10px] text-slate-500 font-bold mb-0.5">{t('tierNameLabel')}</label>
                         <input
                           type="text"
                           value={tier.name}
@@ -436,7 +438,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-[10px] text-slate-500 font-bold mb-0.5">Price (₦)</label>
+                        <label className="block text-[10px] text-slate-500 font-bold mb-0.5">{t('priceLabelCfa')}</label>
                         <input
                           type="number"
                           value={tier.price}
@@ -446,7 +448,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-[10px] text-slate-500 font-bold mb-0.5">Quantity</label>
+                        <label className="block text-[10px] text-slate-500 font-bold mb-0.5">{t('quantityLabel')}</label>
                         <input
                           type="number"
                           value={tier.availableQuantity}
@@ -464,23 +466,23 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
           {/* STEP 3: FEES & REFUND */}
           {step === 3 && (
             <div className="space-y-4">
-              <h3 className="text-sm font-extrabold text-slate-900">Payment & Refund Policy</h3>
+              <h3 className="text-sm font-extrabold text-slate-900">{t('paymentRefundPolicy')}</h3>
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
                 <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
                   <input type="radio" name="feePolicy" defaultChecked />
-                  <span>Pass Platform Service Fee to Attendee (Recommended)</span>
+                  <span>{t('passPlatformFee')}</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
                   <input type="radio" name="feePolicy" />
-                  <span>Absorb Service Fees in Ticket Price</span>
+                  <span>{t('absorbPlatformFee')}</span>
                 </label>
               </div>
 
               <div>
-                <label className="block text-slate-700 font-bold mb-1">Refund Terms</label>
+                <label className="block text-slate-700 font-bold mb-1">{t('refundTermsLabel')}</label>
                 <textarea
                   rows={3}
-                  defaultValue="Tickets are non-refundable except in the case of official event cancellation."
+                  defaultValue={t('refundTermsDefault')}
                   className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-normal outline-none"
                 />
               </div>
@@ -490,14 +492,14 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
           {/* STEP 4: ADVANCED */}
           {step === 4 && (
             <div className="space-y-4">
-              <h3 className="text-sm font-extrabold text-slate-900">Advanced Event Settings</h3>
+              <h3 className="text-sm font-extrabold text-slate-900">{t('advancedSettingsHeader')}</h3>
               <div className="space-y-3">
                 <label className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 font-bold text-slate-800">
-                  <span>Public Listing on Ticket Platform</span>
+                  <span>{t('publicListingOption')}</span>
                   <input type="checkbox" defaultChecked />
                 </label>
                 <label className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 font-bold text-slate-800">
-                  <span>Require Age Verification (18+)</span>
+                  <span>{t('ageVerificationOption')}</span>
                   <input type="checkbox" defaultChecked />
                 </label>
               </div>
@@ -510,9 +512,9 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
               <div className="w-16 h-16 rounded-full bg-emerald-100 text-[#00C896] flex items-center justify-center mx-auto">
                 <Sparkles className="w-8 h-8" />
               </div>
-              <h3 className="text-lg font-black text-slate-900">Ready to Publish Event?</h3>
+              <h3 className="text-lg font-black text-slate-900">{t('readyToPublish')}</h3>
               <p className="text-xs text-slate-500 max-w-md mx-auto">
-                Your event <span className="font-extrabold text-slate-900">"{title}"</span> is configured with {ticketTiers.length} ticket tiers and ready for live sales.
+                {t('eventReadyNotice').replace('{title}', title || 'Untitled').replace('{count}', String(ticketTiers.length))}
               </p>
             </div>
           )}
@@ -527,7 +529,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
               className="px-4 py-2 border border-slate-200 bg-white hover:bg-slate-100 text-slate-800 font-extrabold rounded-xl text-xs flex items-center gap-1"
             >
               <ChevronLeft className="w-4 h-4" />
-              <span>Previous</span>
+              <span>{t('previousStep')}</span>
             </button>
           ) : <div></div>}
 
@@ -536,7 +538,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
               onClick={() => setStep((step + 1) as any)}
               className="px-5 py-2 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs flex items-center gap-1 shadow-md"
             >
-              <span>Next</span>
+              <span>{t('nextStep')}</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           ) : (
@@ -544,7 +546,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
               onClick={handleFinalSubmit}
               className="px-6 py-2.5 bg-[#00C896] hover:bg-[#00b386] text-white font-black rounded-xl text-xs shadow-xl shadow-[#00C896]/30"
             >
-              Publish Event Now
+              {t('publishEventNow')}
             </button>
           )}
         </div>

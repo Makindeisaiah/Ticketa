@@ -30,7 +30,7 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
   const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
   const formatNaira = (amount: number) => {
-    return '₦ ' + amount.toLocaleString('en-US');
+    return amount.toLocaleString('fr-FR') + ' FCFA';
   };
 
   // Mock export handler
