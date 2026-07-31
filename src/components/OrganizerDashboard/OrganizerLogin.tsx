@@ -7,6 +7,70 @@ import {
 import { useEventContext } from '../../context/EventContext';
 import { OrganizerPayoutAccount } from '../../types';
 
+export interface CountryConfig {
+  name: string;
+  flag: string;
+  dialCode: string;
+  currency: string;
+  currencySymbol: string;
+  defaultBank: string;
+  banks: string[];
+}
+
+export const SUPPORTED_COUNTRIES: Record<string, CountryConfig> = {
+  Nigeria: {
+    name: 'Nigeria',
+    flag: '🇳🇬',
+    dialCode: '+234',
+    currency: 'NGN',
+    currencySymbol: '₦',
+    defaultBank: 'Guaranty Trust Bank (GTCO)',
+    banks: [
+      'Guaranty Trust Bank (GTCO)',
+      'Access Bank',
+      'Zenith Bank',
+      'First Bank of Nigeria',
+      'Kuda Microfinance Bank',
+      'United Bank for Africa (UBA)',
+      'Stanbic IBTC Bank',
+      'OPay / PalmPay'
+    ]
+  },
+  Ghana: {
+    name: 'Ghana',
+    flag: '🇬🇭',
+    dialCode: '+233',
+    currency: 'GHS',
+    currencySymbol: '₵',
+    defaultBank: 'Ecobank Ghana',
+    banks: [
+      'Ecobank Ghana',
+      'GCB Bank',
+      'Stanbic Bank Ghana',
+      'Fidelity Bank Ghana',
+      'CalBank Ghana',
+      'Absa Bank Ghana',
+      'MTN Mobile Money (MoMo)'
+    ]
+  },
+  "Côte d'Ivoire": {
+    name: "Côte d'Ivoire",
+    flag: '🇨🇮',
+    dialCode: '+225',
+    currency: 'XOF',
+    currencySymbol: 'CFA',
+    defaultBank: "Ecobank Côte d'Ivoire",
+    banks: [
+      "Ecobank Côte d'Ivoire",
+      'NSIA Banque',
+      "Société Générale Côte d'Ivoire (SGCI)",
+      'BICICI',
+      'Coris Bank International',
+      'Wave / Orange Money Payout'
+    ]
+  }
+};
+
 interface OrganizerLoginProps {
   onLoginSuccess: (organizerData: { name: string; email: string }) => void;
 }
@@ -36,7 +100,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
   const [phone, setPhone] = useState('');
 
   // STEP 3 STATE: Payout & KYC verification details
-  const [bankName, setBankName] = useState('Guaranty Trust Bank');
+  const [bankName, setBankName] = useState('Guaranty Trust Bank (GTCO)');
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
   const [isResolvingAccount, setIsResolvingAccount] = useState(false);
@@ -44,6 +108,15 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
   const [holderType, setHolderType] = useState<'Individual' | 'Business / Organization'>('Business / Organization');
   const [taxOrRegistrationNumber, setTaxOrRegistrationNumber] = useState('ND65478477664');
   const [isPayoutConfigured, setIsPayoutConfigured] = useState(false);
+
+  // Handle country selection change
+  const handleCountrySelect = (selectedCountry: string) => {
+    setCountry(selectedCountry);
+    const config = SUPPORTED_COUNTRIES[selectedCountry] || SUPPORTED_COUNTRIES['Nigeria'];
+    setBankName(config.defaultBank);
+  };
+
+  const currentCountryConfig = SUPPORTED_COUNTRIES[country] || SUPPORTED_COUNTRIES['Nigeria'];
 
   // LOGIN STATE
   const [loginEmail, setLoginEmail] = useState('');
@@ -130,7 +203,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
     if (isPayoutConfigured) {
       payoutAccountObj = {
         country: country || 'Nigeria',
-        currency: 'NGN',
+        currency: currentCountryConfig.currency,
         bankName: bankName,
         accountNumber: accountNumber,
         accountName: accountName || fullName || 'Verified Host',
@@ -144,7 +217,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
       organizationName: organizationName.trim(),
       fullName: fullName.trim(),
       email: email.trim(),
-      phone: phone.trim() || '+234 800 000 0000',
+      phone: phone.trim() || `${currentCountryConfig.dialCode} 800 000 000`,
       category: 'Concerts & Festivals',
       organizerType: organizerType,
       country: country,
@@ -458,24 +531,23 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                         <Globe className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                         <select
                           value={country}
-                          onChange={(e) => setCountry(e.target.value)}
+                          onChange={(e) => handleCountrySelect(e.target.value)}
                           className="w-full pl-10 pr-8 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896] appearance-none transition"
                         >
-                          <option value="Nigeria">🇳🇬 Nigeria</option>
-                          <option value="Ghana">🇬🇭 Ghana</option>
-                          <option value="Kenya">🇰🇪 Kenya</option>
-                          <option value="United Kingdom">🇬🇧 United Kingdom</option>
-                          <option value="United States">🇺🇸 United States</option>
-                          <option value="South Africa">🇿🇦 South Africa</option>
+                          {Object.values(SUPPORTED_COUNTRIES).map(c => (
+                            <option key={c.name} value={c.name}>
+                              {c.flag} {c.name}
+                            </option>
+                          ))}
                         </select>
                         <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                       </div>
 
-                      {/* Phone Number with country flag */}
+                      {/* Phone Number with country flag & dial code */}
                       <div className="flex items-center space-x-2">
                         <div className="flex items-center space-x-1.5 px-3 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 shrink-0">
-                          <span>🇳🇬</span>
-                          <span>+234</span>
+                          <span>{currentCountryConfig.flag}</span>
+                          <span>{currentCountryConfig.dialCode}</span>
                         </div>
                         <input
                           type="tel"
@@ -604,12 +676,14 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                           </span>
                           <div className="grid grid-cols-2 gap-2">
                             <div className="flex items-center space-x-2 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">
-                              <span>🇳🇬</span>
-                              <span>Nigeria</span>
+                              <span>{currentCountryConfig.flag}</span>
+                              <span>{currentCountryConfig.name}</span>
                             </div>
                             <div className="flex items-center space-x-2 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700">
-                              <div className="w-4 h-4 rounded-full bg-[#00C896] text-white text-[9px] font-bold flex items-center justify-center">₦</div>
-                              <span>NGN</span>
+                              <div className="w-4 h-4 rounded-full bg-[#00C896] text-white text-[9px] font-bold flex items-center justify-center">
+                                {currentCountryConfig.currencySymbol}
+                              </div>
+                              <span>{currentCountryConfig.currency}</span>
                             </div>
                           </div>
                         </div>
@@ -628,13 +702,9 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                                 onChange={(e) => setBankName(e.target.value)}
                                 className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896]"
                               >
-                                <option value="Guaranty Trust Bank">Guaranty Trust Bank (GTCO)</option>
-                                <option value="Access Bank">Access Bank</option>
-                                <option value="Zenith Bank">Zenith Bank</option>
-                                <option value="First Bank of Nigeria">First Bank of Nigeria</option>
-                                <option value="Kuda Microfinance Bank">Kuda Microfinance Bank</option>
-                                <option value="United Bank for Africa">United Bank for Africa (UBA)</option>
-                                <option value="Stanbic IBTC Bank">Stanbic IBTC Bank</option>
+                                {currentCountryConfig.banks.map(b => (
+                                  <option key={b} value={b}>{b}</option>
+                                ))}
                               </select>
                             </div>
 
