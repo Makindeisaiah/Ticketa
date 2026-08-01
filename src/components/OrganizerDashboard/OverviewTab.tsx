@@ -12,6 +12,8 @@ import {
   Clock
 } from 'lucide-react';
 import { useLanguage } from '../../utils/translations';
+import { useEventContext } from '../../context/EventContext';
+import { formatOrganizerCurrency } from '../../utils/currency';
 
 interface OverviewTabProps {
   events: EventItem[];
@@ -39,9 +41,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   const { lang, t } = useLanguage();
   const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
+  const { currentOrganizer } = useEventContext();
+
   // Currency Formatter Helper
   const formatNaira = (amount: number) => {
-    return amount.toLocaleString('fr-FR') + ' FCFA';
+    return formatOrganizerCurrency(amount, currentOrganizer);
   };
 
   // Calculations

@@ -325,7 +325,15 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, [offlineQueue]);
 
-  // Persist offline queue and notification logs
+  // Persist offline queue, notification logs, and current organizer
+  useEffect(() => {
+    if (currentOrganizer) {
+      localStorage.setItem('tix_current_organizer', JSON.stringify(currentOrganizer));
+    } else {
+      localStorage.removeItem('tix_current_organizer');
+    }
+  }, [currentOrganizer]);
+
   useEffect(() => {
     localStorage.setItem('tix_offline_queue', JSON.stringify(offlineQueue));
   }, [offlineQueue]);

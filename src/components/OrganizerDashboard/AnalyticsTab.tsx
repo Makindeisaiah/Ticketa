@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { EventItem, Order, TicketPass } from '../../types';
 import { useLanguage } from '../../utils/translations';
+import { useEventContext } from '../../context/EventContext';
+import { formatOrganizerCurrency } from '../../utils/currency';
 import { 
   DollarSign, 
   Ticket, 
@@ -26,12 +28,13 @@ interface AnalyticsTabProps {
 
 export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders = [], allTickets = [] }) => {
   const { t } = useLanguage();
+  const { currentOrganizer } = useEventContext();
   const [selectedEvent, setSelectedEvent] = useState('all');
   const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
   const formatNaira = (amount: number) => {
     const val = Number.isNaN(amount) || amount === undefined || amount === null ? 0 : amount;
-    return val.toLocaleString('fr-FR') + ' FCFA';
+    return formatOrganizerCurrency(val, currentOrganizer);
   };
 
   const safeEvents = Array.isArray(events) ? events : [];

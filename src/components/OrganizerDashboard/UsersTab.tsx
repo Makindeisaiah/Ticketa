@@ -22,10 +22,11 @@ import {
 import { useEventContext } from '../../context/EventContext';
 import { TicketaUser, OrganizerUser, Order } from '../../types';
 import { useLanguage } from '../../utils/translations';
+import { formatOrganizerCurrency } from '../../utils/currency';
 
 export const UsersTab: React.FC = () => {
   const { t } = useLanguage();
-  const { users, organizers, orders, registerUser, registerOrganizer } = useEventContext();
+  const { users, organizers, orders, registerUser, registerOrganizer, currentOrganizer } = useEventContext();
   
   const [activeRoleTab, setActiveRoleTab] = useState<'attendees' | 'organizers'>('attendees');
   const [searchQuery, setSearchQuery] = useState('');
@@ -274,7 +275,7 @@ export const UsersTab: React.FC = () => {
                 <CreditCard className="w-5 h-5" />
               </div>
             </div>
-            <p className="text-2xl font-black text-slate-900 mt-3">{totalSpentByUsers.toLocaleString()} FCFA</p>
+            <p className="text-2xl font-black text-slate-900 mt-3">{formatOrganizerCurrency(totalSpentByUsers, currentOrganizer)}</p>
             <p className="text-[11px] text-slate-500 mt-1">Total spent on tickets</p>
           </div>
 
@@ -453,7 +454,7 @@ export const UsersTab: React.FC = () => {
                         </td>
 
                         <td className="py-4 px-6 text-right font-bold text-slate-900">
-                          ₦{userOrders.reduce((acc, o) => acc + o.totalAmount, 0).toLocaleString()}
+                          {formatOrganizerCurrency(userOrders.reduce((acc, o) => acc + o.totalAmount, 0), currentOrganizer)}
                         </td>
 
                         <td className="py-4 px-6 text-center">
@@ -604,7 +605,7 @@ export const UsersTab: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-[10px] font-bold text-slate-400 uppercase">Total Spent</span>
-                  <p className="text-sm font-black text-[#00C896]">{selectedUserForHistory.totalSpent.toLocaleString()} FCFA</p>
+                  <p className="text-sm font-black text-[#00C896]">{formatOrganizerCurrency(selectedUserForHistory.totalSpent, currentOrganizer)}</p>
                 </div>
               </div>
 
@@ -628,7 +629,7 @@ export const UsersTab: React.FC = () => {
                           <h5 className="font-bold text-slate-900 text-sm">{order.eventTitle}</h5>
                         </div>
                         <div className="text-right">
-                          <span className="text-xs font-black text-[#00C896]">{order.totalAmount.toLocaleString()} FCFA</span>
+                          <span className="text-xs font-black text-[#00C896]">{formatOrganizerCurrency(order.totalAmount, currentOrganizer)}</span>
                           <p className="text-[10px] text-slate-400">{order.purchaseDate}</p>
                         </div>
                       </div>

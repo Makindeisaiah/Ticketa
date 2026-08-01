@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Search, Download, CheckCircle2, XCircle, Clock, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLanguage } from '../../utils/translations';
+import { useEventContext } from '../../context/EventContext';
+import { formatOrganizerCurrency } from '../../utils/currency';
 
 export const RefundsTab: React.FC = () => {
   const { t } = useLanguage();
+  const { currentOrganizer } = useEventContext();
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const [refunds, setRefunds] = useState<any[]>([]);
@@ -53,7 +56,7 @@ export const RefundsTab: React.FC = () => {
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
             <span className="text-[10px] font-bold uppercase text-[#00C896]/70 block mb-1">{t('totalRefunded')}</span>
-            <span className="text-xl font-black text-[#00C896] font-mono">₦{totalRefundedSum.toLocaleString()}</span>
+            <span className="text-xl font-black text-[#00C896] font-mono">{formatOrganizerCurrency(totalRefundedSum, currentOrganizer)}</span>
           </div>
           <div className="w-10 h-10 rounded-xl bg-[#00C896]/10 flex items-center justify-center text-[#00C896]">
             <XCircle className="w-5 h-5" />

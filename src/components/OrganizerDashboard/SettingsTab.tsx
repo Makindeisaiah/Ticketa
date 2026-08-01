@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useEventContext } from '../../context/EventContext';
 import { useLanguage } from '../../utils/translations';
+import { formatOrganizerCurrency } from '../../utils/currency';
 import { 
   Building2, 
   Users, 
@@ -49,7 +50,7 @@ interface SettingsTabProps {
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
   const { t } = useLanguage();
-  const { orders } = useEventContext();
+  const { orders, currentOrganizer } = useEventContext();
   const calculatedTotalEarnings = orders.reduce((acc, o) => acc + o.totalAmount, 0);
 
   const [activeSubpage, setActiveSubpage] = useState<SettingsSubpage>('grid');
@@ -624,21 +625,21 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                     <div className="w-8 h-8 rounded-full bg-[#00C896]/10 flex items-center justify-center text-[#00C896]"><Ticket className="w-4 h-4" /></div>
                     <span className="text-[10px] font-bold uppercase text-slate-500">{t('availableBalance')}</span>
                   </div>
-                  <div className="text-xl font-black text-slate-900 font-mono">₦{Math.round(calculatedTotalEarnings * 0.975).toLocaleString()}</div>
+                  <div className="text-xl font-black text-slate-900 font-mono">{formatOrganizerCurrency(Math.round(calculatedTotalEarnings * 0.975), currentOrganizer)}</div>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-center">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-8 h-8 rounded-full bg-[#00C896]/10 flex items-center justify-center text-[#00C896]"><CheckCircle2 className="w-4 h-4" /></div>
-                    <span className="text-[10px] font-bold uppercase text-slate-500">{t('pendingBalance')}</span>
+                    <span className="text-[10px] font-bold uppercase text-slate-500">{t('availableBalance')}</span>
                   </div>
-                  <div className="text-xl font-black text-slate-900 font-mono">₦0</div>
+                  <div className="text-xl font-black text-slate-900 font-mono">{formatOrganizerCurrency(0, currentOrganizer)}</div>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-center">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-8 h-8 rounded-full bg-[#00C896]/10 flex items-center justify-center text-[#00C896]"><Receipt className="w-4 h-4" /></div>
                     <span className="text-[10px] font-bold uppercase text-slate-500">{t('totalEarning')}</span>
                   </div>
-                  <div className="text-xl font-black text-slate-900 font-mono">₦{calculatedTotalEarnings.toLocaleString()}</div>
+                  <div className="text-xl font-black text-slate-900 font-mono">{formatOrganizerCurrency(calculatedTotalEarnings, currentOrganizer)}</div>
                 </div>
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-center">
                   <div className="flex items-center gap-2 mb-2">
@@ -776,7 +777,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                     <Receipt className="w-4 h-4" /> {t('totalPaidOut')}
                   </div>
                   <div className="p-6 space-y-4">
-                    <div className="text-3xl font-black text-slate-900 font-mono">₦{Math.round(calculatedTotalEarnings * 0.975).toLocaleString()}</div>
+                    <div className="text-3xl font-black text-slate-900 font-mono">{formatOrganizerCurrency(Math.round(calculatedTotalEarnings * 0.975), currentOrganizer)}</div>
                     <p className="text-xs font-semibold text-slate-500">{t('nextPayoutCalculatedEnd')}</p>
                     <div className="bg-emerald-50 text-emerald-700 p-3 rounded-xl text-xs font-bold flex items-center gap-2">
                       <Lock className="w-4 h-4" /> {t('fundsLockedNotice')}

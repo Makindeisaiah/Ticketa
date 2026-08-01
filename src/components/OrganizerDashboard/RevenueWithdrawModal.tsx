@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { EventItem, Order } from '../../types';
+import { useEventContext } from '../../context/EventContext';
+import { formatOrganizerCurrency } from '../../utils/currency';
 import { 
   X, 
   DollarSign, 
@@ -29,12 +31,14 @@ export const RevenueWithdrawModal: React.FC<RevenueWithdrawModalProps> = ({
 
   const [withdrawSuccess, setWithdrawSuccess] = useState(false);
 
+  const { currentOrganizer } = useEventContext();
+
   const eventOrders = orders.filter(o => o.eventId === event.id);
   const grossSales = eventOrders.reduce((acc, o) => acc + o.totalAmount, 0);
   const platformFees = Math.round(grossSales * 0.025);
   const netWithdrawable = Math.max(0, grossSales - platformFees);
 
-  const formatCfa = (amount: number) => amount.toLocaleString('fr-FR') + ' FCFA';
+  const formatCfa = (amount: number) => formatOrganizerCurrency(amount, currentOrganizer);
 
   const handleWithdraw = () => {
     if (netWithdrawable <= 0) return;

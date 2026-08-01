@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { EventItem, Order, TicketPass } from '../../types';
 import { useLanguage } from '../../utils/translations';
+import { useEventContext } from '../../context/EventContext';
+import { formatOrganizerCurrency } from '../../utils/currency';
 import { 
   DollarSign, 
   Ticket, 
@@ -25,12 +27,13 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
   allTickets
 }) => {
   const { t } = useLanguage();
+  const { currentOrganizer } = useEventContext();
   const [selectedEvent, setSelectedEvent] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
   const formatNaira = (amount: number) => {
-    return amount.toLocaleString('fr-FR') + ' FCFA';
+    return formatOrganizerCurrency(amount, currentOrganizer);
   };
 
   // Mock export handler

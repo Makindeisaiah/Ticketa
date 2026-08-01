@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { EventItem, Order, TicketPass } from '../../types';
+import { useEventContext } from '../../context/EventContext';
+import { formatOrganizerCurrency } from '../../utils/currency';
 import { 
   AlertTriangle, 
   X, 
@@ -30,6 +32,7 @@ export const DeleteEventModal: React.FC<DeleteEventModalProps> = ({
   allTickets,
   onConfirmDelete
 }) => {
+  const { currentOrganizer } = useEventContext();
   const [confirmInput, setConfirmInput] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -126,13 +129,13 @@ export const DeleteEventModal: React.FC<DeleteEventModalProps> = ({
                   <DollarSign className="w-4 h-4 text-emerald-600" />
                   <div>
                     <span className="text-[10px] text-slate-400 block font-normal">Total Refund Value</span>
-                    <span className="text-emerald-700 font-mono">₦ {totalRevenue.toLocaleString()}</span>
+                    <span className="text-emerald-700 font-mono">{formatOrganizerCurrency(totalRevenue, currentOrganizer)}</span>
                   </div>
                 </div>
               </div>
 
               <p className="text-[11px] text-amber-800 font-medium leading-relaxed">
-                Deleting this event will automatically trigger full refunds of <strong>₦{totalRevenue.toLocaleString()}</strong> to all <strong>{buyerCount} buyer(s)</strong>. Cancellation notifications will be dispatched via email and SMS.
+                Deleting this event will automatically trigger full refunds of <strong>{formatOrganizerCurrency(totalRevenue, currentOrganizer)}</strong> to all <strong>{buyerCount} buyer(s)</strong>. Cancellation notifications will be dispatched via email and SMS.
               </p>
             </div>
           ) : (

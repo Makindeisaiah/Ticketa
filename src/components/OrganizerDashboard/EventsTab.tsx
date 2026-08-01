@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { EventItem, Order, TicketPass } from '../../types';
 import { useLanguage } from '../../utils/translations';
+import { useEventContext } from '../../context/EventContext';
+import { formatOrganizerCurrency } from '../../utils/currency';
 import { 
   Plus, 
   Search, 
@@ -44,11 +46,12 @@ export const EventsTab: React.FC<EventsTabProps> = ({
   onDeleteEvent
 }) => {
   const { t } = useLanguage();
+  const { currentOrganizer } = useEventContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 
   const formatNaira = (amount: number) => {
-    return amount.toLocaleString('fr-FR') + ' FCFA';
+    return formatOrganizerCurrency(amount, currentOrganizer);
   };
 
   const filteredEvents = events.filter(e => 
