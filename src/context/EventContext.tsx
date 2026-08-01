@@ -852,21 +852,13 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const loginOrganizer = (email: string): OrganizerUser | null => {
     const cleanEmail = email.trim().toLowerCase();
-    let found = organizers.find(o => o.email.toLowerCase() === cleanEmail);
-    if (!found) {
-      const nameFromEmail = cleanEmail.split('@')[0];
-      const nameFormatted = nameFromEmail ? nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1) : 'Event Organizer';
-      found = registerOrganizer({
-        organizationName: nameFormatted,
-        email: cleanEmail,
-        phone: '+234 800 000 0000',
-        category: 'Concerts & Festivals'
-      });
-    } else {
+    const found = organizers.find(o => o.email.toLowerCase() === cleanEmail);
+    if (found) {
       setCurrentOrganizer(found);
       triggerNotification(`Logged in as Organizer ${found.organizationName}`);
+      return found;
     }
-    return found;
+    return null;
   };
 
   const logoutOrganizer = () => {

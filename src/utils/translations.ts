@@ -125,6 +125,7 @@ export const TRANSLATIONS = {
     selectBankError: 'Please select a bank.',
     enterValidAccountNum: 'Please enter a valid 10-digit account number.',
     enterBothEmailPass: 'Please enter both your email and password.',
+    organizerAccountNotFound: 'No organizer account found with this email. Please check your email or complete registration.',
 
     // Onboarding Steps
     step1Title: 'Create Your Organizer Account',
@@ -788,6 +789,7 @@ export const TRANSLATIONS = {
     selectBankError: 'Veuillez sélectionner une banque.',
     enterValidAccountNum: 'Veuillez saisir un numéro de compte à 10 chiffres valide.',
     enterBothEmailPass: 'Veuillez saisir votre e-mail et votre mot de passe.',
+    organizerAccountNotFound: 'Aucun compte organisateur trouvé avec cet e-mail. Veuillez vérifier votre e-mail ou créer un compte.',
 
     // Onboarding Steps
     step1Title: 'Créer votre compte Organisateur',

@@ -254,11 +254,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
         email: orgUser.email
       });
     } else {
-      // Create fallback session for login demo
-      onLoginSuccess({
-        name: loginEmail.split('@')[0].toUpperCase() + ' Productions',
-        email: loginEmail.trim()
-      });
+      setErrorMsg(t('organizerAccountNotFound'));
     }
   };
 
