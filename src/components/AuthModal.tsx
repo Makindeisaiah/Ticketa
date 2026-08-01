@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useEventContext } from '../context/EventContext';
 import { useLanguage } from '../utils/translations';
+import { formatOrganizerCurrency } from '../utils/currency';
 import { X, UserPlus, LogIn, CheckCircle2, User, Mail, Phone, Lock, Sparkles, ShieldCheck, KeyRound, RefreshCw, Check } from 'lucide-react';
 
 interface AuthModalProps {
@@ -11,7 +12,7 @@ interface AuthModalProps {
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode = 'signup' }) => {
   const { t } = useLanguage();
-  const { registerUser, loginUser, currentUser, logoutUser, orders } = useEventContext();
+  const { registerUser, loginUser, currentUser, logoutUser, orders, currentOrganizer } = useEventContext();
   const [mode, setMode] = useState<'signup' | 'verify-email' | 'login'>(defaultMode);
 
   // Compute live orders and spent stats for currentUser to match My Wallet
@@ -222,7 +223,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
                 </div>
                 <div className="bg-slate-900 p-2 rounded-xl">
                   <span className="text-[10px] text-slate-500 uppercase font-bold block">{t('totalSpentCol')}</span>
-                  <span className="font-bold text-teal-300">{totalSpentAmount.toLocaleString()} FCFA</span>
+                  <span className="font-bold text-teal-300">{formatOrganizerCurrency(totalSpentAmount, currentOrganizer)}</span>
                 </div>
               </div>
             </div>

@@ -17,6 +17,9 @@ export interface EventItem {
   id: string;
   title: string;
   organizerName: string;
+  organizerId?: string;
+  currency?: string;
+  country?: string;
   category: EventCategory;
   date: string;
   time: string;

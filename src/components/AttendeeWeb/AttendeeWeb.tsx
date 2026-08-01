@@ -15,11 +15,14 @@ import { exportTicketAsPdf, exportTicketToAppleWallet, printThermalWristband } f
 import { AuthModal } from '../AuthModal';
 import { User, UserPlus, LogIn, LogOut, Languages } from 'lucide-react';
 import { useLanguage } from '../../utils/translations';
+import { formatEventCurrency } from '../../utils/currency';
 
 export const AttendeeWeb: React.FC = () => {
   const { lang, changeLanguage, t } = useLanguage();
   const { 
     events, 
+    organizers,
+    currentOrganizer,
     purchaseTickets, 
     orders, 
     promos, 
@@ -129,7 +132,16 @@ export const AttendeeWeb: React.FC = () => {
 
   // Categories definition
   const categories = ['All', 'Concerts', 'Comedy', 'Tech', 'Festival', 'Exhibition'];
-  const locations = ['All Locations', 'Lagos, Nigeria', 'Edmonton, AB', 'Durham, NC', 'Washington, DC', 'Johannesburg, SA'];
+  
+  // Dynamic Locations from events or defaults
+  const uniqueEventLocations = Array.from(new Set(events.map(e => e.location || e.venueName))).filter(Boolean);
+  const locations = uniqueEventLocations.length > 0 
+    ? ['All Locations', ...uniqueEventLocations] 
+    : ['All Locations', "Abidjan, Côte d'Ivoire", 'Lagos, Nigeria', 'Accra, Ghana'];
+
+  const fmtPrice = (amount: number, eventObj?: EventItem | null) => {
+    return formatEventCurrency(amount, eventObj || activeEvent, organizers, currentOrganizer);
+  };
 
   const isCategoryMatch = (eventCat: string, selCat: string) => {
     if (!selCat || selCat === 'All') return true;
@@ -661,7 +673,7 @@ export const AttendeeWeb: React.FC = () => {
 
                         {/* Price Tag Pill */}
                         <div className={`absolute bottom-3 right-3 px-2.5 py-1 rounded-lg text-xs font-black shadow-md ${isEventSoldOut ? 'bg-slate-800 text-rose-400 border border-rose-500/30' : 'bg-emerald-500 text-slate-950'}`}>
-                          {isEventSoldOut ? t('soldOut') : lowestPrice === 0 ? t('freeUnit') : `${t('from')} ₦${lowestPrice.toLocaleString()}`}
+                          {isEventSoldOut ? t('soldOut') : lowestPrice === 0 ? t('freeUnit') : `${t('from')} ${fmtPrice(lowestPrice, evt)}`}
                         </div>
                       </div>
 
@@ -817,7 +829,7 @@ export const AttendeeWeb: React.FC = () => {
                         )}
                       </div>
                       <div className={`absolute bottom-3 right-3 px-2 py-1 rounded text-xs font-black ${isEventSoldOut ? 'bg-slate-800 text-rose-400 border border-rose-500/30' : 'bg-emerald-500 text-slate-950'}`}>
-                        {isEventSoldOut ? t('soldOut') : lowestPrice === 0 ? t('freeUnit') : `${t('from')} ₦${lowestPrice.toLocaleString()}`}
+                        {isEventSoldOut ? t('soldOut') : lowestPrice === 0 ? t('freeUnit') : `${t('from')} ${fmtPrice(lowestPrice, evt)}`}
                       </div>
                     </div>
 
@@ -1034,7 +1046,7 @@ export const AttendeeWeb: React.FC = () => {
                           </div>
                           <div className="text-right">
                             <span className={`text-base font-black ${isSoldOut ? 'text-slate-500 line-through' : 'text-emerald-400'}`}>
-                              {tier.price === 0 ? t('freeUnit') : `₦${tier.price.toLocaleString()}`}
+                              {tier.price === 0 ? t('freeUnit') : fmtPrice(tier.price, activeEvent)}
                             </span>
                           </div>
                         </div>
@@ -1082,7 +1094,7 @@ export const AttendeeWeb: React.FC = () => {
                   </div>
                   <div className="flex justify-between text-sm font-extrabold text-white pt-2 border-t border-slate-800">
                     <span>{t('subtotal')}</span>
-                    <span className="text-emerald-400">₦{subtotalPrice.toLocaleString()}</span>
+                    <span className="text-emerald-400">{fmtPrice(subtotalPrice, activeEvent)}</span>
                   </div>
                 </div>
 
@@ -1367,7 +1379,7 @@ export const AttendeeWeb: React.FC = () => {
                           <span className="font-bold text-white">{tier.name}</span>
                           <span className="text-slate-400 ml-1.5">x{qty}</span>
                         </div>
-                        <span className="font-bold text-slate-200">₦{(tier.price * qty).toLocaleString()}</span>
+                        <span className="font-bold text-slate-200">{fmtPrice(tier.price * qty, activeEvent)}</span>
                       </div>
                     );
                   })}
@@ -1376,24 +1388,24 @@ export const AttendeeWeb: React.FC = () => {
                 <div className="border-t border-slate-800 pt-3 space-y-2 text-xs">
                   <div className="flex justify-between text-slate-400">
                     <span>{t('subtotal')}</span>
-                    <span>₦{subtotalPrice.toLocaleString()}</span>
+                    <span>{fmtPrice(subtotalPrice, activeEvent)}</span>
                   </div>
 
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-emerald-400">
                       <span>{t('discount')} ({discountPercent}%)</span>
-                      <span>-₦{discountAmount.toLocaleString()}</span>
+                      <span>-{fmtPrice(discountAmount, activeEvent)}</span>
                     </div>
                   )}
 
                   <div className="flex justify-between text-slate-400">
                     <span>{t('gateServiceTechFee')}</span>
-                    <span>₦{serviceFee.toLocaleString()}</span>
+                    <span>{fmtPrice(serviceFee, activeEvent)}</span>
                   </div>
 
                   <div className="flex justify-between text-base font-black text-white pt-2 border-t border-slate-800">
                     <span>{t('totalAmount')}</span>
-                    <span className="text-emerald-400">₦{finalTotalPrice.toLocaleString()}</span>
+                    <span className="text-emerald-400">{fmtPrice(finalTotalPrice, activeEvent)}</span>
                   </div>
                 </div>
 
@@ -1476,7 +1488,7 @@ export const AttendeeWeb: React.FC = () => {
                   <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4">
                     <p className="text-xs text-slate-400 font-semibold">{t('totalValuePurchased')}</p>
                     <div className="text-2xl font-black text-teal-300 mt-1">
-                      ₦{activeUserOrders.reduce((acc, o) => acc + o.totalAmount, 0).toLocaleString()}
+                      {fmtPrice(activeUserOrders.reduce((acc, o) => acc + o.totalAmount, 0))}
                     </div>
                   </div>
                 </div>
@@ -1523,7 +1535,7 @@ export const AttendeeWeb: React.FC = () => {
 
                         <div className="sm:text-right">
                           <span className="text-xs text-slate-400">{t('totalPaid')}</span>
-                          <div className="text-2xl font-black text-emerald-400">₦{order.totalAmount.toLocaleString()}</div>
+                          <div className="text-2xl font-black text-emerald-400">{fmtPrice(order.totalAmount, eventObj)}</div>
                         </div>
                       </div>
 

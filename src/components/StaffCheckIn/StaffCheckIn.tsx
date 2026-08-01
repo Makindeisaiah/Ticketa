@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useEventContext } from '../../context/EventContext';
+import { formatOrganizerCurrency } from '../../utils/currency';
 import { TicketPass } from '../../types';
 import { Html5Qrcode } from 'html5-qrcode';
 import { CameraScannerFeed } from '../CameraScannerFeed';
@@ -18,6 +19,7 @@ import {
 export const StaffCheckIn: React.FC = () => {
   const { 
     events, 
+    currentOrganizer,
     allTickets, 
     scanAndCheckInTicket, 
     manualCheckInByEmail,
@@ -1386,7 +1388,7 @@ export const StaffCheckIn: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <span>Amount Paid:</span>
-                        <span className="font-bold text-emerald-600">₦{selectedAttendeeTicket.pricePaid.toLocaleString()}</span>
+                        <span className="font-bold text-emerald-600">{formatOrganizerCurrency(selectedAttendeeTicket.pricePaid, currentOrganizer)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Assigned Gate:</span>

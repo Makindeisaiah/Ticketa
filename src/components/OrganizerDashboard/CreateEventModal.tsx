@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { EventItem, TicketTier } from '../../types';
 import { useLanguage } from '../../utils/translations';
+import { useEventContext } from '../../context/EventContext';
+import { getOrganizerCurrencyConfig } from '../../utils/currency';
 import { 
   X, 
   Plus, 
@@ -26,6 +28,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
   editingEvent
 }) => {
   const { t } = useLanguage();
+  const { currentOrganizer } = useEventContext();
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
 
   // Form State
@@ -157,16 +160,22 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
     const defaultPlaceholderImage = 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1000&q=80';
     const finalImage = image || defaultPlaceholderImage;
 
+    const orgCurrConfig = getOrganizerCurrencyConfig(currentOrganizer);
+    const defaultCountry = currentOrganizer?.payoutAccount?.country || currentOrganizer?.country || 'Nigeria';
+
     const eventObj: EventItem = {
       id: editingEvent ? editingEvent.id : `evt-${Date.now()}`,
       title: title || 'Untitled Event',
       category: category || 'Concerts',
-      organizerName: organizerName || 'Event Organizer',
+      organizerName: organizerName || currentOrganizer?.organizationName || 'Event Organizer',
+      organizerId: currentOrganizer?.id,
+      currency: orgCurrConfig.code,
+      country: defaultCountry,
       date: date || 'Dec 25, 2026',
       time: time || '19:00 GMT',
-      location: address || venueName || "Abidjan, Côte d'Ivoire",
+      location: address || venueName || defaultCountry,
       venueName: venueName || 'Main Arena',
-      address: address || venueName || "Abidjan, Côte d'Ivoire",
+      address: address || venueName || defaultCountry,
       image: finalImage,
       bannerImage: finalImage,
       description: description || 'Experience an unforgettable event live with us.',

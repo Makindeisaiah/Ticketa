@@ -12,10 +12,13 @@ import {
 import { exportTicketAsPdf, exportTicketToAppleWallet, printThermalWristband } from '../../utils/ticketExporter';
 import { AuthModal } from '../AuthModal';
 import { UserPlus, LogIn, LogOut } from 'lucide-react';
+import { formatEventCurrency } from '../../utils/currency';
 
 export const AttendeeMobile: React.FC = () => {
   const { 
     events, 
+    organizers,
+    currentOrganizer,
     allTickets, 
     orders,
     savedEventIds, 
@@ -31,6 +34,10 @@ export const AttendeeMobile: React.FC = () => {
     currentUser,
     logoutUser
   } = useEventContext();
+
+  const fmtPrice = (amount: number, eventObj?: EventItem | null) => {
+    return formatEventCurrency(amount, eventObj || viewingEvent, organizers, currentOrganizer);
+  };
 
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<'signup' | 'login'>('signup');
@@ -240,7 +247,7 @@ export const AttendeeMobile: React.FC = () => {
                 <div>
                   <div className="flex items-center text-xs text-slate-400 gap-1">
                     <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Lagos, Nigeria</span>
+                    <span>{events[0]?.location || (currentOrganizer?.country === 'Nigeria' ? 'Lagos, Nigeria' : currentOrganizer?.country === 'Ghana' ? 'Accra, Ghana' : "Abidjan, Côte d'Ivoire")}</span>
                   </div>
                   <h2 className="text-lg font-bold text-white mt-0.5">
                     Hey, {userProfile.firstName} 👋
@@ -374,7 +381,7 @@ export const AttendeeMobile: React.FC = () => {
 
                           <div className="flex justify-between items-center mt-2">
                             <span className="text-[11px] font-black text-emerald-400">
-                              {minPrice === 0 ? 'FREE' : `₦${minPrice.toLocaleString()}`}
+                              {minPrice === 0 ? 'FREE' : fmtPrice(minPrice, evt)}
                             </span>
                             <span className="text-[10px] text-slate-400 font-medium">
                               {evt.organizerName}
@@ -596,7 +603,7 @@ export const AttendeeMobile: React.FC = () => {
                         </div>
                         <div className="flex justify-between items-center mt-2">
                           <span className="text-[11px] font-bold text-emerald-400">
-                            From ₦{Math.min(...evt.ticketTiers.map(t => t.price)).toLocaleString()}
+                            From {fmtPrice(Math.min(...evt.ticketTiers.map(t => t.price)), evt)}
                           </span>
                           <button
                             onClick={(e) => {
@@ -879,7 +886,7 @@ export const AttendeeMobile: React.FC = () => {
               <div>
                 <span className="text-[10px] text-slate-400 block">Starting from</span>
                 <span className="text-base font-black text-emerald-400">
-                  ₦{Math.min(...viewingEvent.ticketTiers.map(t => t.price)).toLocaleString()}
+                  {fmtPrice(Math.min(...viewingEvent.ticketTiers.map(t => t.price)), viewingEvent)}
                 </span>
               </div>
 
@@ -946,7 +953,7 @@ export const AttendeeMobile: React.FC = () => {
                           )}
                         </div>
                         <span className={`font-black text-xs ${isSold ? 'text-slate-500 line-through' : 'text-emerald-400'}`}>
-                          {tier.price === 0 ? 'FREE' : `₦${tier.price.toLocaleString()}`}
+                          {tier.price === 0 ? 'FREE' : fmtPrice(tier.price, buyingEvent)}
                         </span>
                       </div>
                       <p className="text-[10px] text-slate-400 mt-1">{tier.description}</p>
@@ -1022,21 +1029,18 @@ export const AttendeeMobile: React.FC = () => {
               <div className="bg-slate-900 p-3 rounded-2xl border border-slate-800 space-y-1 text-xs">
                 <div className="flex justify-between text-slate-400">
                   <span>Subtotal ({quantity}x)</span>
-                  <span>₦{(selectedTier.price * quantity).toLocaleString()}</span>
+                  <span>{fmtPrice(selectedTier.price * quantity, buyingEvent)}</span>
                 </div>
                 {appliedDiscount > 0 && (
                   <div className="flex justify-between text-emerald-400">
                     <span>Discount ({appliedDiscount}%)</span>
-                    <span>-₦{((selectedTier.price * quantity) * (appliedDiscount / 100)).toLocaleString()}</span>
+                    <span>-{fmtPrice((selectedTier.price * quantity) * (appliedDiscount / 100), buyingEvent)}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-black text-white text-sm pt-2 border-t border-slate-800">
                   <span>Total Amount</span>
                   <span className="text-emerald-400">
-                    ₦{(
-                      (selectedTier.price * quantity) - 
-                      ((selectedTier.price * quantity) * (appliedDiscount / 100))
-                    ).toLocaleString()}
+                    {fmtPrice((selectedTier.price * quantity) - ((selectedTier.price * quantity) * (appliedDiscount / 100)), buyingEvent)}
                   </span>
                 </div>
               </div>
@@ -1074,7 +1078,7 @@ export const AttendeeMobile: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Amount Paid:</span>
-                <span className="font-bold text-emerald-400">₦{checkoutSuccessOrder.totalAmount.toLocaleString()}</span>
+                <span className="font-bold text-emerald-400">{fmtPrice(checkoutSuccessOrder.totalAmount, events.find(e => e.id === checkoutSuccessOrder.eventId))}</span>
               </div>
             </div>
 

@@ -15,9 +15,10 @@ import {
   Users
 } from 'lucide-react';
 import { useEventContext } from '../context/EventContext';
+import { formatOrganizerCurrency } from '../utils/currency';
 
 export const AppsHub: React.FC = () => {
-  const { events, orders, seedLiveSales, resetAllData } = useEventContext();
+  const { events, orders, seedLiveSales, resetAllData, currentOrganizer } = useEventContext();
 
   const totalTicketsSold = events.reduce((acc, e) => acc + e.ticketTiers.reduce((sum, t) => sum + t.soldQuantity, 0), 0);
   const totalRevenue = orders.reduce((acc, o) => acc + o.totalAmount, 0);
@@ -147,7 +148,7 @@ export const AppsHub: React.FC = () => {
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
               Total Revenue
             </p>
-            <p className="text-xl font-black text-emerald-400">₦{totalRevenue.toLocaleString()}</p>
+            <p className="text-xl font-black text-emerald-400">{formatOrganizerCurrency(totalRevenue, currentOrganizer)}</p>
           </div>
         </div>
 
