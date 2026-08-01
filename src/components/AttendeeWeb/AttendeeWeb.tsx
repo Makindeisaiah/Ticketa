@@ -9,7 +9,7 @@ import {
   Sparkles, CheckCircle2, ArrowRight, X, Clock, Users, ChevronRight,
   Filter, Lock, Share2, Bookmark, Download, ExternalLink, QrCode,
   Building2, ChevronDown, Check, AlertCircle, ArrowLeft, Copy, Smartphone,
-  RefreshCw, Layers, FileText, Mail, Printer
+  RefreshCw, Layers, FileText, Mail, Printer, Menu
 } from 'lucide-react';
 import { exportTicketAsPdf, exportTicketToAppleWallet, printThermalWristband } from '../../utils/ticketExporter';
 import { AuthModal } from '../AuthModal';
@@ -44,6 +44,7 @@ export const AttendeeWeb: React.FC = () => {
 
   // Navigation State
   const [currentView, setCurrentView] = useState<'home' | 'browse' | 'details' | 'checkout' | 'orders' | 'how-it-works'>('home');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [searchError, setSearchError] = useState<string>('');
@@ -69,6 +70,7 @@ export const AttendeeWeb: React.FC = () => {
       navigate('/', { replace: true });
     }
     setCurrentView(view);
+    setIsMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -382,7 +384,8 @@ export const AttendeeWeb: React.FC = () => {
             </div>
 
             {/* Header Right Actions */}
-            <div className="flex items-center space-x-3">
+            {/* Desktop right actions */}
+            <div className="hidden md:flex items-center space-x-3">
               
               {/* Language Switcher Pill (English / French) */}
               <div className="flex items-center bg-slate-800/80 p-0.5 rounded-xl border border-slate-700/80 text-xs shrink-0">
@@ -431,7 +434,7 @@ export const AttendeeWeb: React.FC = () => {
                   </button>
                   <button
                     onClick={() => { setAuthModalMode('login'); setShowAuthModal(true); }}
-                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition border border-slate-700 cursor-pointer hidden sm:flex items-center space-x-1.5"
+                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition border border-slate-700 cursor-pointer flex items-center space-x-1.5"
                   >
                     <LogIn className="w-3.5 h-3.5" />
                     <span>{t('signIn')}</span>
@@ -444,12 +447,166 @@ export const AttendeeWeb: React.FC = () => {
                 className="px-4 py-2 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 rounded-xl text-xs font-black transition shadow-lg shadow-emerald-500/20 flex items-center space-x-2 cursor-pointer"
               >
                 <Ticket className="w-4 h-4" />
-                <span className="hidden sm:inline">{t('myWallet')}</span>
+                <span>{t('myWallet')}</span>
+              </button>
+            </div>
+
+            {/* Mobile Hamburger Button */}
+            <div className="flex items-center space-x-2 md:hidden">
+              <button
+                onClick={() => handleNav('orders')}
+                className="p-2 bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 rounded-xl transition shadow-md flex items-center justify-center cursor-pointer"
+                title={t('myWallet')}
+              >
+                <Ticket className="w-4.5 h-4.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 rounded-xl bg-slate-800 text-slate-200 hover:text-white hover:bg-slate-700 border border-slate-700 transition cursor-pointer"
+                aria-label="Toggle navigation menu"
+              >
+                {isMobileMenuOpen ? <X className="w-5 h-5 text-emerald-400" /> : <Menu className="w-5 h-5 text-slate-200" />}
               </button>
             </div>
 
           </div>
         </div>
+
+        {/* Mobile Navigation Drawer Overlay */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-slate-800 bg-slate-900/98 backdrop-blur-xl px-4 pt-4 pb-6 space-y-4 animate-in slide-in-from-top-2 duration-200 shadow-2xl">
+            {/* Primary Nav Links */}
+            <div className="grid grid-cols-1 gap-1.5">
+              <button
+                onClick={() => handleNav('browse')}
+                className={`flex items-center space-x-3 px-3.5 py-3 rounded-xl text-sm font-semibold transition text-left cursor-pointer ${
+                  currentView === 'browse' ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <Search className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+                <span>{t('browseEvents')}</span>
+              </button>
+
+              <button
+                onClick={() => handleNav('how-it-works')}
+                className={`flex items-center space-x-3 px-3.5 py-3 rounded-xl text-sm font-semibold transition text-left cursor-pointer ${
+                  currentView === 'how-it-works' ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <Sparkles className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+                <span>{t('howItWorks')}</span>
+              </button>
+
+              <button
+                onClick={() => handleNav('orders')}
+                className={`flex items-center space-x-3 px-3.5 py-3 rounded-xl text-sm font-semibold transition text-left cursor-pointer ${
+                  currentView === 'orders' ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <Ticket className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+                <span>{t('myWallet')}</span>
+              </button>
+            </div>
+
+            {/* Auth / Profile Section */}
+            <div className="pt-3 border-t border-slate-800/80">
+              {currentUser ? (
+                <div className="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/60 space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-9 h-9 rounded-full bg-emerald-500 text-slate-950 font-black text-sm flex items-center justify-center shrink-0 shadow-md">
+                      {currentUser.fullName[0]}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-white truncate">{currentUser.fullName}</p>
+                      <p className="text-xs text-slate-400 truncate">{currentUser.email}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        setAuthModalMode('signup');
+                        setShowAuthModal(true);
+                      }}
+                      className="flex-1 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1 cursor-pointer"
+                    >
+                      <User className="w-3.5 h-3.5" />
+                      <span>My Account</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        logoutUser();
+                      }}
+                      className="py-2 px-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-1 cursor-pointer"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setAuthModalMode('signup');
+                      setShowAuthModal(true);
+                    }}
+                    className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black transition shadow-md flex items-center justify-center space-x-1.5 cursor-pointer"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    <span>{t('signUp')}</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setAuthModalMode('login');
+                      setShowAuthModal(true);
+                    }}
+                    className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition border border-slate-700 flex items-center justify-center space-x-1.5 cursor-pointer"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>{t('signIn')}</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Language Switcher Section */}
+            <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+              <div className="flex items-center space-x-2 text-xs text-slate-400 font-semibold">
+                <Languages className="w-4 h-4 text-emerald-400" />
+                <span>Language / Langue:</span>
+              </div>
+
+              <div className="flex items-center bg-slate-800 p-1 rounded-xl border border-slate-700">
+                <button
+                  type="button"
+                  onClick={() => changeLanguage('en')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 cursor-pointer ${
+                    lang === 'en' ? 'bg-emerald-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <span>🇬🇧</span>
+                  <span>EN</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => changeLanguage('fr')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 cursor-pointer ${
+                    lang === 'fr' ? 'bg-emerald-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <span>🇫🇷</span>
+                  <span>FR</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* ================= MAIN CONTENT VIEWS ================= */}
