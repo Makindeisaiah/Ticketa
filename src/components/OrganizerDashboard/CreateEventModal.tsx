@@ -21,6 +21,27 @@ interface CreateEventModalProps {
   editingEvent?: EventItem | null;
 }
 
+const formatIsoDate = (dStr: string) => {
+  if (!dStr) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) return dStr;
+  const parsed = new Date(dStr);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.toISOString().split('T')[0];
+  }
+  return '';
+};
+
+const formatIsoTime = (tStr: string) => {
+  if (!tStr) return '';
+  const match = tStr.match(/(\d{1,2}):(\d{2})/);
+  if (match) {
+    const hh = match[1].padStart(2, '0');
+    const mm = match[2];
+    return `${hh}:${mm}`;
+  }
+  return '';
+};
+
 export const CreateEventModal: React.FC<CreateEventModalProps> = ({
   isOpen,
   onClose,
@@ -56,8 +77,8 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
         setTitle(editingEvent.title || '');
         setCategory(editingEvent.category || 'Concerts');
         setOrganizerName(editingEvent.organizerName || '');
-        setDate(editingEvent.date || '');
-        setTime(editingEvent.time || '');
+        setDate(formatIsoDate(editingEvent.date || ''));
+        setTime(formatIsoTime(editingEvent.time || ''));
         setVenueName(editingEvent.venueName || '');
         setAddress(editingEvent.address || editingEvent.location || '');
         setImage(editingEvent.image || '');
@@ -287,22 +308,20 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                 <div>
                   <label className="block text-slate-700 font-bold mb-1">{t('eventDateLabel')}</label>
                   <input
-                    type="text"
+                    type="date"
                     value={date}
                     onChange={e => setDate(e.target.value)}
-                    placeholder={t('eventDatePlaceholder')}
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none"
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none cursor-pointer"
                   />
                 </div>
 
                 <div>
                   <label className="block text-slate-700 font-bold mb-1">{t('timeLabel')}</label>
                   <input
-                    type="text"
+                    type="time"
                     value={time}
                     onChange={e => setTime(e.target.value)}
-                    placeholder={t('timePlaceholder')}
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none"
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none cursor-pointer"
                   />
                 </div>
               </div>
