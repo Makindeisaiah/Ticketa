@@ -133,7 +133,7 @@ export const AttendeeWeb: React.FC = () => {
   const [copiedBankAcc, setCopiedBankAcc] = useState(false);
 
   // Categories definition
-  const categories = ['All', 'Concerts', 'Comedy', 'Tech', 'Festival', 'Exhibition'];
+  const categories = ['All', 'Concerts', 'Comedy', 'Tech', 'Festival'];
   
   // Dynamic Locations from events or defaults
   const uniqueEventLocations = Array.from(new Set(events.map(e => e.location || e.venueName))).filter(Boolean);
@@ -732,13 +732,12 @@ export const AttendeeWeb: React.FC = () => {
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                   { name: 'Concerts', img: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80' },
                   { name: 'Comedy', img: 'https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&w=600&q=80' },
                   { name: 'Tech', img: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80' },
                   { name: 'Festival', img: 'https://images.unsplash.com/photo-1508997449629-303059a039c0?auto=format&fit=crop&w=600&q=80' },
-                  { name: 'Exhibition', img: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=600&q=80' },
                 ].map(cat => {
                   const eventCount = getCategoryCount(cat.name);
                   return (
@@ -1888,6 +1887,9 @@ export const AttendeeWeb: React.FC = () => {
             <button onClick={() => handleNav('how-it-works')} className="hover:text-white cursor-pointer">{t('howItWorks')}</button>
             <button onClick={() => handleNav('orders')} className="hover:text-white cursor-pointer">{t('myWallet')}</button>
           </div>
+        </div>
+        <div className="max-w-7xl mx-auto pt-6 border-t border-slate-800/60 mt-6 text-center text-xs text-slate-400 font-medium">
+          @2026 Copyright Tickta.
         </div>
       </footer>
 

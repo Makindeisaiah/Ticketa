@@ -22,6 +22,14 @@ export interface ScanResult {
   isOfflineScan?: boolean;
 }
 
+export function sanitizeForFirestore<T>(obj: T): any {
+  if (obj === undefined || obj === null) return null;
+  return JSON.parse(JSON.stringify(obj, (_key, value) => {
+    if (value === undefined) return null;
+    return value;
+  }));
+}
+
 export const INITIAL_NOTIFICATIONS: NotificationLog[] = [
   {
     id: 'notif-101',
@@ -539,7 +547,8 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Update in Firestore
     try {
-      await setDoc(doc(db, 'events', updatedEvent.id), updatedEvent, { merge: true });
+      const cleanData = sanitizeForFirestore(updatedEvent);
+      await setDoc(doc(db, 'events', updatedEvent.id), cleanData, { merge: true });
     } catch (err) {
       console.error('Error updating event in Firestore:', err);
     }
@@ -565,7 +574,9 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Save to Firestore
     try {
-      await setDoc(doc(db, 'events', newId), newEvent);
+      const cleanData = sanitizeForFirestore(newEvent);
+      await setDoc(doc(db, 'events', newId), cleanData);
+      console.log(`Successfully persisted event ${newId} to Firestore:`, cleanData);
     } catch (err) {
       console.error('Error saving event to Firestore:', err);
     }
@@ -660,7 +671,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       (async () => {
         try {
-          await setDoc(doc(db, 'users', existing.id), updatedExisting);
+          await setDoc(doc(db, 'users', existing.id), sanitizeForFirestore(updatedExisting));
         } catch (err) {
           console.error('Error updating existing user in Firestore:', err);
         }
@@ -708,7 +719,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Persist to Firestore
     (async () => {
       try {
-        await setDoc(doc(db, 'users', newUserId), newUser);
+        await setDoc(doc(db, 'users', newUserId), sanitizeForFirestore(newUser));
         console.log(`User stored in Firebase Firestore at path users/${newUserId}:`, newUser);
       } catch (err) {
         console.error('Error writing user to Firestore:', err);
@@ -813,7 +824,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       (async () => {
         try {
-          await setDoc(doc(db, 'organizers', existing.id), updatedExisting);
+          await setDoc(doc(db, 'organizers', existing.id), sanitizeForFirestore(updatedExisting));
         } catch (err) {
           console.error('Error updating organizer in Firestore:', err);
         }
@@ -847,7 +858,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Persist to Firestore
     (async () => {
       try {
-        await setDoc(doc(db, 'organizers', newOrgId), newOrganizer);
+        await setDoc(doc(db, 'organizers', newOrgId), sanitizeForFirestore(newOrganizer));
         console.log(`Organizer stored in Firebase Firestore at path organizers/${newOrgId}:`, newOrganizer);
       } catch (err) {
         console.error('Error writing organizer to Firestore:', err);
@@ -1050,13 +1061,13 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Save order, updated event, and user to Firestore async
     (async () => {
       try {
-        await setDoc(doc(db, 'orders', orderId), newOrder);
-        await setDoc(doc(db, 'events', eventId), updatedEventObj);
-        await setDoc(doc(db, 'users', targetUser.id), targetUser);
+        await setDoc(doc(db, 'orders', orderId), sanitizeForFirestore(newOrder));
+        await setDoc(doc(db, 'events', eventId), sanitizeForFirestore(updatedEventObj));
+        await setDoc(doc(db, 'users', targetUser.id), sanitizeForFirestore(targetUser));
         
         // Save tickets to separate collection
         for (const t of tickets) {
-          await setDoc(doc(db, 'tickets', t.ticketCode), t);
+          await setDoc(doc(db, 'tickets', t.ticketCode), sanitizeForFirestore(t));
           
           const qrData: QrTicket = {
             id: `qr-${t.ticketCode}`,
@@ -1065,7 +1076,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             status: 'VALID',
             qrData: JSON.stringify({ code: t.ticketCode, eventId: eventObj.id, tier: t.tierName })
           };
-          await setDoc(doc(db, 'qr_tickets', qrData.id), qrData);
+          await setDoc(doc(db, 'qr_tickets', qrData.id), sanitizeForFirestore(qrData));
         }
       } catch (err) {
         console.error('Error writing records to Firestore:', err);

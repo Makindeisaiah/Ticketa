@@ -190,7 +190,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
       title: title || 'Untitled Event',
       category: category || 'Concerts',
       organizerName: organizerName || currentOrganizer?.organizationName || 'Event Organizer',
-      organizerId: currentOrganizer?.id,
+      organizerId: currentOrganizer?.id || '',
       currency: orgCurrConfig.code,
       country: defaultCountry,
       date: date || 'Dec 25, 2026',
@@ -284,11 +284,10 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                     onChange={e => setCategory(e.target.value)}
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none"
                   >
-                    <option value="Concerts">{t('categoryConcerts')}</option>
-                    <option value="Festivals">{t('categoryFestivals')}</option>
-                    <option value="Nightlife">{t('categoryNightlife')}</option>
-                    <option value="Comedy">{t('categoryComedy')}</option>
-                    <option value="Sports">{t('categorySports')}</option>
+                    <option value="Concerts">{t('catConcerts')}</option>
+                    <option value="Comedy">{t('catComedy')}</option>
+                    <option value="Tech">{t('catTech')}</option>
+                    <option value="Festival">{t('catFestival')}</option>
                   </select>
                 </div>
 
