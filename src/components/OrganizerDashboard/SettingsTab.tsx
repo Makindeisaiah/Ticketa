@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useEventContext } from '../../context/EventContext';
 import { useLanguage } from '../../utils/translations';
-import { formatOrganizerCurrency } from '../../utils/currency';
+import { formatOrganizerCurrency, getOrganizerCurrencyConfig } from '../../utils/currency';
 import { 
   Building2, 
   Users, 
@@ -711,10 +711,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                       </thead>
                       <tbody className="divide-y divide-slate-100">
                         {[
-                          { date: 'Nov 19, 2025', amount: '₦1,466,866,000', bank: 'GTBank **** 5399', status: t('pendingStatus') },
-                          { date: 'Oct 10, 2025', amount: '₦850,538,000', bank: 'GTBank **** 5399', status: t('paidStatus') },
-                          { date: 'July 30, 2025', amount: '₦904,866,000', bank: 'GTBank **** 5399', status: t('paidStatus') },
-                          { date: 'Mar 27, 2025', amount: '₦450,100,000', bank: 'GTBank **** 5399', status: t('paidStatus') },
+                          { date: 'Nov 19, 2025', amount: formatOrganizerCurrency(1466866000, currentOrganizer), bank: 'GTBank **** 5399', status: t('pendingStatus') },
+                          { date: 'Oct 10, 2025', amount: formatOrganizerCurrency(850538000, currentOrganizer), bank: 'GTBank **** 5399', status: t('paidStatus') },
+                          { date: 'July 30, 2025', amount: formatOrganizerCurrency(904866000, currentOrganizer), bank: 'GTBank **** 5399', status: t('paidStatus') },
+                          { date: 'Mar 27, 2025', amount: formatOrganizerCurrency(450100000, currentOrganizer), bank: 'GTBank **** 5399', status: t('paidStatus') },
                         ].map((row, i) => (
                           <tr key={i} className="hover:bg-slate-50">
                             <td className="px-3 py-3 text-slate-500">{row.date}</td>
@@ -799,12 +799,12 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                         <div className="text-xs text-slate-500">Event Organizer</div>
                       </div>
                     </div>
-                    <div className="px-3 py-1 bg-[#00C896] text-white rounded text-xs font-bold">XOF</div>
+                    <div className="px-3 py-1 bg-[#00C896] text-white rounded text-xs font-bold">{getOrganizerCurrencyConfig(currentOrganizer).code}</div>
                   </div>
                   <div>
                     <span className="block text-[10px] font-bold text-slate-400 mb-1">{t('country')}</span>
                     <div className="flex items-center gap-2 font-bold text-slate-900 text-sm">
-                      Côte d'Ivoire
+                      {currentOrganizer?.payoutAccount?.country || currentOrganizer?.country || "Côte d'Ivoire"}
                     </div>
                   </div>
                 </div>
@@ -835,9 +835,9 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                       </thead>
                       <tbody className="divide-y divide-slate-100">
                         {[
-                          { date: 'Nov 19, 2025', amount: '₦1,466,866,000', bank: 'GTBank **** 5399', status: t('pendingStatus') },
-                          { date: 'Oct 10, 2025', amount: '₦850,538,000', bank: 'GTBank **** 5399', status: t('paidStatus') },
-                          { date: 'July 30, 2025', amount: '₦904,866,000', bank: 'GTBank **** 5399', status: t('paidStatus') },
+                          { date: 'Nov 19, 2025', amount: formatOrganizerCurrency(1466866000, currentOrganizer), bank: 'GTBank **** 5399', status: t('pendingStatus') },
+                          { date: 'Oct 10, 2025', amount: formatOrganizerCurrency(850538000, currentOrganizer), bank: 'GTBank **** 5399', status: t('paidStatus') },
+                          { date: 'July 30, 2025', amount: formatOrganizerCurrency(904866000, currentOrganizer), bank: 'GTBank **** 5399', status: t('paidStatus') },
                         ].map((row, i) => (
                           <tr key={i} className="hover:bg-slate-50">
                             <td className="px-3 py-3 text-slate-500">{row.date}</td>
@@ -903,7 +903,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                   <h3 className="text-base font-extrabold text-slate-900">{t('feesBreakdown')}</h3>
                   <div className="flex justify-between items-center pb-3 border-b border-slate-100">
                     <span className="text-sm font-bold text-slate-900">{t('totalRefundedLabel')}</span>
-                    <span className="font-mono text-sm font-black text-slate-900">₦3,653,000</span>
+                    <span className="font-mono text-sm font-black text-slate-900">{formatOrganizerCurrency(3653000, currentOrganizer)}</span>
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-slate-100">
                     <span className="text-xs font-semibold text-slate-600">{t('perPaidTicket5')}</span>
@@ -911,7 +911,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-slate-100">
                     <span className="text-xs font-semibold text-slate-600">{t('perPaidTicketFix')}</span>
-                    <span className="text-xs font-bold text-slate-900">₦1,567,000</span>
+                    <span className="text-xs font-bold text-slate-900">{formatOrganizerCurrency(1567000, currentOrganizer)}</span>
                   </div>
                 </div>
               </div>
@@ -943,11 +943,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {[
-                        { date: 'Nov 19, 2025', ticket: 'TKA-4553353', amount: '₦1,466,866,000', reason: 'Event Canceled', status: t('pendingStatus') },
-                        { date: 'Oct 10, 2025', ticket: 'TKA-4553473', amount: '₦850,538,000', reason: 'Scheduling Conflict', status: t('paidStatus') },
-                        { date: 'July 30, 2025', ticket: 'TKA-4553474', amount: '₦904,866,000', reason: 'Medical Emergency', status: t('paidStatus') },
-                        { date: 'Mar 27, 2025', ticket: 'TKA-4677786', amount: '₦450,100,000', reason: 'Event Canceled', status: t('paidStatus') },
-                        { date: 'Mar 27, 2025', ticket: 'TKA-7757890', amount: '₦450,100,000', reason: 'Scheduling Conflict', status: t('paidStatus') },
+                        { date: 'Nov 19, 2025', ticket: 'TKA-4553353', amount: formatOrganizerCurrency(1466866000, currentOrganizer), reason: 'Event Canceled', status: t('pendingStatus') },
+                        { date: 'Oct 10, 2025', ticket: 'TKA-4553473', amount: formatOrganizerCurrency(850538000, currentOrganizer), reason: 'Scheduling Conflict', status: t('paidStatus') },
+                        { date: 'July 30, 2025', ticket: 'TKA-4553474', amount: formatOrganizerCurrency(904866000, currentOrganizer), reason: 'Medical Emergency', status: t('paidStatus') },
+                        { date: 'Mar 27, 2025', ticket: 'TKA-4677786', amount: formatOrganizerCurrency(450100000, currentOrganizer), reason: 'Event Canceled', status: t('paidStatus') },
+                        { date: 'Mar 27, 2025', ticket: 'TKA-7757890', amount: formatOrganizerCurrency(450100000, currentOrganizer), reason: 'Scheduling Conflict', status: t('paidStatus') },
                       ].map((row, i) => (
                         <tr key={i} className="hover:bg-slate-50">
                           <td className="px-3 py-3 text-slate-500">{row.date}</td>
@@ -986,7 +986,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                 <h3 className="text-lg font-black text-slate-900">{t('proPlan')}</h3>
                 <span className="px-2.5 py-1 bg-emerald-100 text-[#00C896] font-extrabold rounded-full text-[10px]">{t('currentPlan')}</span>
               </div>
-              <div className="text-2xl font-black text-slate-900 font-mono">₦250,000 <span className="text-xs text-slate-500 font-normal">{t('monthUnit')}</span></div>
+              <div className="text-2xl font-black text-slate-900 font-mono">{formatOrganizerCurrency(250000, currentOrganizer)} <span className="text-xs text-slate-500 font-normal">{t('monthUnit')}</span></div>
               <ul className="text-xs space-y-2 text-slate-600 font-semibold">
                 <li>✓ {t('unlimitedEventsFeature')}</li>
                 <li>✓ {t('reducedTicketFeesFeature')}</li>

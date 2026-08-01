@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Search, Bell, Menu, ArrowLeft, ChevronDown, Plus, LogOut, Mail, Printer } from 'lucide-react';
 import { useLanguage } from '../../utils/translations';
+import { useEventContext } from '../../context/EventContext';
+import { formatOrganizerCurrency } from '../../utils/currency';
 
 interface OrganizerHeaderProps {
   searchQuery: string;
@@ -32,12 +34,13 @@ export const OrganizerHeader: React.FC<OrganizerHeaderProps> = ({
   organizerEmail = 'organizer@ticketa.com'
 }) => {
   const { lang, changeLanguage, t } = useLanguage();
+  const { currentOrganizer } = useEventContext();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [notifications] = useState([
     { id: 1, title: 'New Ticket Purchased', desc: 'Elena R. bought 2x VIP Pass for Davido Live', time: '2 mins ago', unread: true },
     { id: 2, title: 'Gate Check-In Peak', desc: 'Over 500 tickets scanned at Main Gate in last 15m', time: '12 mins ago', unread: true },
-    { id: 3, title: 'Payout Scheduled', desc: '₦ 1,466,866,000 ready for bank processing', time: '1 hour ago', unread: false },
+    { id: 3, title: 'Payout Scheduled', desc: `${formatOrganizerCurrency(1466866000, currentOrganizer)} ready for bank processing`, time: '1 hour ago', unread: false },
     { id: 4, title: 'Promo Code Applied', desc: 'Code VIP2026 used for 15% discount', time: '3 hours ago', unread: false },
   ]);
 

@@ -200,13 +200,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               ) : (
                 <>
                   <line x1="60" y1="20" x2="880" y2="20" stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" />
-                  <text x="50" y="24" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">₦ 100,000</text>
+                  <text x="50" y="24" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">{formatNaira(100000)}</text>
 
                   <line x1="60" y1="80" x2="880" y2="80" stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" />
-                  <text x="50" y="84" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">₦ 50,000</text>
+                  <text x="50" y="84" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">{formatNaira(50000)}</text>
 
                   <line x1="60" y1="140" x2="880" y2="140" stroke="#E2E8F0" strokeDasharray="4 4" strokeWidth="1" />
-                  <text x="50" y="144" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">₦ 10,000</text>
+                  <text x="50" y="144" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">{formatNaira(10000)}</text>
 
                   <line x1="60" y1="200" x2="880" y2="200" stroke="#E2E8F0" strokeWidth="1" />
                   <text x="50" y="204" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">0</text>

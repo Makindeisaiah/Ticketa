@@ -27,8 +27,9 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
   onSubmit,
   editingEvent
 }) => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { currentOrganizer } = useEventContext();
+  const orgCurrConfig = getOrganizerCurrencyConfig(currentOrganizer);
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
 
   // Form State
@@ -447,7 +448,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                       </div>
 
                       <div>
-                        <label className="block text-[10px] text-slate-500 font-bold mb-0.5">{t('priceLabelCfa')}</label>
+                        <label className="block text-[10px] text-slate-500 font-bold mb-0.5">{lang === 'fr' ? `Prix (${orgCurrConfig.code})` : `Price (${orgCurrConfig.code})`}</label>
                         <input
                           type="number"
                           value={tier.price}

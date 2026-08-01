@@ -146,7 +146,7 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders 
               {t('refundIssued')}
             </span>
             <div className="text-xl font-black text-slate-900 mt-0.5 font-mono">
-              ₦ 0
+              {formatNaira(0)}
             </div>
           </div>
         </div>
@@ -197,13 +197,13 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders 
               ) : (
                 <>
                   <line x1="60" y1="20" x2="680" y2="20" stroke="#E2E8F0" strokeDasharray="4 4" />
-                  <text x="50" y="24" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">₦ 100,000</text>
+                  <text x="50" y="24" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">{formatNaira(100000)}</text>
 
                   <line x1="60" y1="80" x2="680" y2="80" stroke="#E2E8F0" strokeDasharray="4 4" />
-                  <text x="50" y="84" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">₦ 50,000</text>
+                  <text x="50" y="84" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">{formatNaira(50000)}</text>
 
                   <line x1="60" y1="140" x2="680" y2="140" stroke="#E2E8F0" strokeDasharray="4 4" />
-                  <text x="50" y="144" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">₦ 10,000</text>
+                  <text x="50" y="144" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">{formatNaira(10000)}</text>
 
                   <line x1="60" y1="190" x2="680" y2="190" stroke="#E2E8F0" />
                   <text x="50" y="194" textAnchor="end" className="text-[10px] fill-slate-400 font-mono">0</text>

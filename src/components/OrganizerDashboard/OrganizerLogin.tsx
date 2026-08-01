@@ -973,7 +973,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                       {/* Coins */}
                       <circle cx="95" cy="190" r="16" fill="#FFEAA7" stroke="#FDCB6E" strokeWidth="2" />
                       <circle cx="95" cy="190" r="11" fill="#FDCB6E" />
-                      <text x="92" y="194" fill="#D35400" fontSize="12" fontWeight="bold">₦</text>
+                      <text x="88" y="194" fill="#D35400" fontSize="10" fontWeight="bold">{currentCountryConfig.currencySymbol}</text>
                     </svg>
                   )}
 
