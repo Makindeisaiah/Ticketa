@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { 
   EventItem, Order, TicketPass, PlatformType, PromoCode, 
   UserProfile, PaymentCard, TicketaUser, OrganizerUser, OfflineScanRecord, NotificationLog, QrTicket
@@ -208,6 +208,7 @@ const EventContext = createContext<EventContextType | undefined>(undefined);
 
 export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentPlatform, setCurrentPlatform] = useState<PlatformType>('attendee-mobile');
+  const deletedEventIdsRef = useRef<Set<string>>(new Set());
   
   const [events, setEvents] = useState<EventItem[]>(() => {
     const isCleaned = localStorage.getItem('tix_clean_zero_v4');
@@ -380,14 +381,22 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // 1. Sync Events from Firestore
       const eventsCol = collection(db, 'events');
       unsubscribeEvents = onSnapshot(eventsCol, (snapshot) => {
-        if (!snapshot.empty) {
-          const loadedEvents = snapshot.docs.map(docSnap => docSnap.data() as EventItem);
-          setEvents(loadedEvents);
-          localStorage.setItem('tix_events', JSON.stringify(loadedEvents));
-        } else {
-          setEvents([]);
-          localStorage.setItem('tix_events', JSON.stringify([]));
-        }
+        const loadedEvents = snapshot.docs.map(docSnap => ({
+          id: docSnap.id,
+          ...(docSnap.data() as EventItem)
+        }));
+
+        setEvents(prev => {
+          const loadedMap = new Map(loadedEvents.map(e => [e.id, e]));
+          const merged = [...loadedEvents];
+          for (const localEvt of prev) {
+            if (localEvt.id && !loadedMap.has(localEvt.id) && !deletedEventIdsRef.current.has(localEvt.id)) {
+              merged.push(localEvt);
+            }
+          }
+          localStorage.setItem('tix_events', JSON.stringify(merged));
+          return merged;
+        });
       }, (err) => {
         console.warn('Firestore events listener error, using local state:', err);
       });
@@ -395,14 +404,22 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // 2. Sync Orders from Firestore
       const ordersCol = collection(db, 'orders');
       unsubscribeOrders = onSnapshot(ordersCol, (snapshot) => {
-        if (!snapshot.empty) {
-          const loadedOrders = snapshot.docs.map(docSnap => docSnap.data() as Order);
-          setOrders(loadedOrders);
-          localStorage.setItem('tix_orders', JSON.stringify(loadedOrders));
-        } else {
-          setOrders([]);
-          localStorage.setItem('tix_orders', JSON.stringify([]));
-        }
+        const loadedOrders = snapshot.docs.map(docSnap => ({
+          id: docSnap.id,
+          ...(docSnap.data() as Order)
+        }));
+
+        setOrders(prev => {
+          const loadedIds = new Set(loadedOrders.map(o => o.id));
+          const merged = [...loadedOrders];
+          for (const localOrd of prev) {
+            if (localOrd.id && !loadedIds.has(localOrd.id)) {
+              merged.push(localOrd);
+            }
+          }
+          localStorage.setItem('tix_orders', JSON.stringify(merged));
+          return merged;
+        });
       }, (err) => {
         console.warn('Firestore orders listener error, using local state:', err);
       });
@@ -410,14 +427,22 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // 3. Sync Users from Firestore
       const usersCol = collection(db, 'users');
       unsubscribeUsers = onSnapshot(usersCol, (snapshot) => {
-        if (!snapshot.empty) {
-          const loadedUsers = snapshot.docs.map(docSnap => docSnap.data() as TicketaUser);
-          setUsers(loadedUsers);
-          localStorage.setItem('tix_users', JSON.stringify(loadedUsers));
-        } else {
-          setUsers([]);
-          localStorage.setItem('tix_users', JSON.stringify([]));
-        }
+        const loadedUsers = snapshot.docs.map(docSnap => ({
+          id: docSnap.id,
+          ...(docSnap.data() as TicketaUser)
+        }));
+
+        setUsers(prev => {
+          const loadedIds = new Set(loadedUsers.map(u => u.id));
+          const merged = [...loadedUsers];
+          for (const localUser of prev) {
+            if (localUser.id && !loadedIds.has(localUser.id)) {
+              merged.push(localUser);
+            }
+          }
+          localStorage.setItem('tix_users', JSON.stringify(merged));
+          return merged;
+        });
       }, (err) => {
         console.warn('Firestore users listener error, using local state:', err);
       });
@@ -425,14 +450,22 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // 4. Sync Tickets from Firestore
       const ticketsCol = collection(db, 'tickets');
       unsubscribeTickets = onSnapshot(ticketsCol, (snapshot) => {
-        if (!snapshot.empty) {
-          const loadedTickets = snapshot.docs.map(docSnap => docSnap.data() as TicketPass);
-          setAllTickets(loadedTickets);
-          localStorage.setItem('tix_all_tickets', JSON.stringify(loadedTickets));
-        } else {
-          setAllTickets([]);
-          localStorage.setItem('tix_all_tickets', JSON.stringify([]));
-        }
+        const loadedTickets = snapshot.docs.map(docSnap => ({
+          ticketCode: docSnap.id,
+          ...(docSnap.data() as TicketPass)
+        }));
+
+        setAllTickets(prev => {
+          const loadedCodes = new Set(loadedTickets.map(t => t.ticketCode));
+          const merged = [...loadedTickets];
+          for (const localTkt of prev) {
+            if (localTkt.ticketCode && !loadedCodes.has(localTkt.ticketCode)) {
+              merged.push(localTkt);
+            }
+          }
+          localStorage.setItem('tix_all_tickets', JSON.stringify(merged));
+          return merged;
+        });
       }, (err) => {
         console.warn('Firestore tickets listener error:', err);
       });
@@ -440,14 +473,22 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // 5. Sync QR Tickets from Firestore
       const qrTicketsCol = collection(db, 'qr_tickets');
       unsubscribeQrTickets = onSnapshot(qrTicketsCol, (snapshot) => {
-        if (!snapshot.empty) {
-          const loadedQr = snapshot.docs.map(docSnap => docSnap.data() as QrTicket);
-          setQrTickets(loadedQr);
-          localStorage.setItem('tix_qr_tickets', JSON.stringify(loadedQr));
-        } else {
-          setQrTickets([]);
-          localStorage.setItem('tix_qr_tickets', JSON.stringify([]));
-        }
+        const loadedQr = snapshot.docs.map(docSnap => ({
+          id: docSnap.id,
+          ...(docSnap.data() as QrTicket)
+        }));
+
+        setQrTickets(prev => {
+          const loadedIds = new Set(loadedQr.map(q => q.id));
+          const merged = [...loadedQr];
+          for (const localQr of prev) {
+            if (localQr.id && !loadedIds.has(localQr.id)) {
+              merged.push(localQr);
+            }
+          }
+          localStorage.setItem('tix_qr_tickets', JSON.stringify(merged));
+          return merged;
+        });
       }, (err) => {
         console.warn('Firestore qr_tickets listener error:', err);
       });
@@ -455,14 +496,22 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // 6. Sync Organizers from Firestore
       const organizersCol = collection(db, 'organizers');
       unsubscribeOrganizers = onSnapshot(organizersCol, (snapshot) => {
-        if (!snapshot.empty) {
-          const loadedOrganizers = snapshot.docs.map(docSnap => docSnap.data() as OrganizerUser);
-          setOrganizers(loadedOrganizers);
-          localStorage.setItem('tix_organizers', JSON.stringify(loadedOrganizers));
-        } else {
-          setOrganizers([]);
-          localStorage.setItem('tix_organizers', JSON.stringify([]));
-        }
+        const loadedOrganizers = snapshot.docs.map(docSnap => ({
+          id: docSnap.id,
+          ...(docSnap.data() as OrganizerUser)
+        }));
+
+        setOrganizers(prev => {
+          const loadedIds = new Set(loadedOrganizers.map(o => o.id));
+          const merged = [...loadedOrganizers];
+          for (const localOrg of prev) {
+            if (localOrg.id && !loadedIds.has(localOrg.id)) {
+              merged.push(localOrg);
+            }
+          }
+          localStorage.setItem('tix_organizers', JSON.stringify(merged));
+          return merged;
+        });
       }, (err) => {
         console.warn('Firestore organizers listener error, using local state:', err);
       });
@@ -563,14 +612,16 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return;
     }
 
-    const newId = candidateId || `evt-${Date.now().toString().slice(-4)}`;
+    const newId = candidateId || `evt-${Date.now()}`;
+    deletedEventIdsRef.current.delete(newId);
+
     const newEvent: EventItem = {
       ...eventData,
       id: newId
     };
     
     // Update local state immediately
-    setEvents(prev => [newEvent, ...prev]);
+    setEvents(prev => [newEvent, ...prev.filter(e => e.id !== newId)]);
 
     // Save to Firestore
     try {
@@ -587,6 +638,8 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const deleteEvent = async (eventId: string) => {
     const targetEvent = events.find(e => e.id === eventId);
     if (!targetEvent) return;
+
+    deletedEventIdsRef.current.add(eventId);
 
     const affectedOrders = orders.filter(o => o.eventId === eventId);
     const affectedTickets = allTickets.filter(t => t.eventId === eventId);
@@ -1429,6 +1482,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const resetAllData = async () => {
+    deletedEventIdsRef.current.clear();
     setEvents([]);
     setOrders([]);
     setAllTickets([]);
