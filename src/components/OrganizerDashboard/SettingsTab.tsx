@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useEventContext } from '../../context/EventContext';
 import { useLanguage } from '../../utils/translations';
 import { formatOrganizerCurrency, getOrganizerCurrencyConfig } from '../../utils/currency';
+import { configureSupabase, isSupabaseConfigured } from '../../lib/supabase';
 import { 
   Building2, 
   Users, 
@@ -29,7 +30,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Calendar,
-  LogOut
+  LogOut,
+  Database
 } from 'lucide-react';
 
 type SettingsSubpage = 
@@ -78,6 +80,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
     { id: '4', name: 'Makinde Isaiah', email: 'info@makindeisaiah.com', role: 'Gate Staff', status: 'Pending' },
     { id: '5', name: 'Makinde Isaiah', email: 'info@makindeisaiah.com', role: 'Support', status: 'Active' },
   ]);
+
+  // Supabase Config State
+  const [spUrl, setSpUrl] = useState(() => localStorage.getItem('tix_supabase_url') || (import.meta as any).env?.VITE_SUPABASE_URL || '');
+  const [spKey, setSpKey] = useState(() => localStorage.getItem('tix_supabase_anon_key') || (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '');
 
   // Flutterwave Config State
   const [showFlwModal, setShowFlwModal] = useState(false);
@@ -1069,6 +1075,70 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
           <button onClick={() => setActiveSubpage('grid')} className="hover:text-[#00C896] flex items-center gap-1 text-xs font-bold text-slate-500">
             <ArrowLeft className="w-3.5 h-3.5" /> {t('backToSettings')} / {t('integrationsTitle')}
           </button>
+
+          {/* Supabase Database Integration Card */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4 max-w-2xl text-xs">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div>
+                <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                  <Database className="w-5 h-5 text-[#00C896]" />
+                  Supabase Database Integration
+                </h2>
+                <p className="text-slate-500 text-xs mt-0.5">
+                  Connect your Supabase PostgreSQL project to sync events, ticket sales, orders, and organizers in real-time.
+                </p>
+              </div>
+              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                isSupabaseConfigured() ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'
+              }`}>
+                {isSupabaseConfigured() ? '● Connected' : '○ Not Configured'}
+              </span>
+            </div>
+
+            <div className="space-y-4 pt-1">
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1">Supabase Project URL</label>
+                <input
+                  type="text"
+                  value={spUrl}
+                  onChange={(e) => setSpUrl(e.target.value)}
+                  placeholder="https://your-project-id.supabase.co"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00C896]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1">Supabase Anon API Key</label>
+                <input
+                  type="password"
+                  value={spKey}
+                  onChange={(e) => setSpKey(e.target.value)}
+                  placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00C896]"
+                />
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-[11px] text-slate-400">
+                  {isSupabaseConfigured() ? 'Database connected and syncing.' : 'Enter keys above to store data in Supabase.'}
+                </span>
+                <button
+                  onClick={() => {
+                    if (!spUrl.trim() || !spKey.trim()) {
+                      showToast('Please provide both Supabase URL and Anon Key');
+                      return;
+                    }
+                    configureSupabase(spUrl, spKey);
+                    showToast('Supabase Database Connected Successfully!');
+                  }}
+                  className="px-4 py-2 bg-[#00C896] hover:bg-[#00b084] text-white font-extrabold text-xs rounded-xl transition shadow-sm cursor-pointer"
+                >
+                  Save & Connect Supabase Database
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4 max-w-2xl text-xs font-semibold">
              <h2 className="text-base font-extrabold text-slate-900">{t('connectedApps')}</h2>
              <div className="p-4 border border-slate-200 rounded-xl flex items-center justify-between">

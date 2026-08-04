@@ -208,16 +208,14 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   })());
   
-  const DEFAULT_MOCK_IDS = ['evt-afro-riviera-2026', 'evt-tech-ai-summit-2026', 'evt-lagos-comedy-fest-2026', 'evt-accra-beach-wave-2026'];
-
   const [events, setEvents] = useState<EventItem[]>(() => {
     const saved = localStorage.getItem('tix_events');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          const realEvents = parsed.filter((e: any) => e && e.id && !DEFAULT_MOCK_IDS.includes(e.id));
-          return realEvents;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const realEvents = parsed.filter((e: any) => e && e.id && !deletedEventIdsRef.current.has(e.id));
+          if (realEvents.length > 0) return realEvents;
         }
       } catch (e) {
         console.warn('Failed to parse saved events:', e);

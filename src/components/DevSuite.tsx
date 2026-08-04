@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useEventContext } from '../context/EventContext';
+import { configureSupabase, isSupabaseConfigured } from '../lib/supabase';
 import { 
   Globe, Smartphone, LayoutDashboard, QrCode, 
   Sparkles, RefreshCw, Database, ExternalLink, ShieldAlert,
@@ -127,6 +128,69 @@ export const DevSuite: React.FC = () => {
           <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
             <p className="text-xs text-slate-400 font-semibold">Issued Ticket Passes</p>
             <p className="text-2xl font-black text-indigo-400 mt-1">{allTickets.length}</p>
+          </div>
+        </div>
+
+        {/* Supabase Connection Status Card */}
+        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
+            <div>
+              <h2 className="text-base font-extrabold text-white flex items-center gap-2">
+                <Database className="w-5 h-5 text-emerald-400" />
+                Supabase Cloud Database Settings
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {isSupabaseConfigured()
+                  ? 'Supabase backend is configured and active. Events, sales, and organizers sync automatically.'
+                  : 'Enter your Supabase Project credentials below to store and sync data with your Supabase cloud backend.'}
+              </p>
+            </div>
+            <span className={`self-start sm:self-auto px-3 py-1 rounded-full text-xs font-bold ${
+              isSupabaseConfigured() ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+            }`}>
+              {isSupabaseConfigured() ? '✓ Connected' : '⚠ Disconnected'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+            <div>
+              <label className="block text-xs font-bold text-slate-300 mb-1">Supabase URL</label>
+              <input
+                type="text"
+                defaultValue={localStorage.getItem('tix_supabase_url') || (import.meta as any).env?.VITE_SUPABASE_URL || ''}
+                id="dev_sp_url"
+                placeholder="https://your-project.supabase.co"
+                className="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-emerald-500 font-mono"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-300 mb-1">Supabase Anon Key</label>
+              <input
+                type="password"
+                defaultValue={localStorage.getItem('tix_supabase_anon_key') || (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || ''}
+                id="dev_sp_key"
+                placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                className="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-emerald-500 font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={() => {
+                const u = (document.getElementById('dev_sp_url') as HTMLInputElement)?.value || '';
+                const k = (document.getElementById('dev_sp_key') as HTMLInputElement)?.value || '';
+                if (!u.trim() || !k.trim()) {
+                  alert('Please enter both Supabase URL and Anon Key');
+                  return;
+                }
+                configureSupabase(u, k);
+                window.location.reload();
+              }}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-emerald-600/20 cursor-pointer"
+            >
+              Connect & Sync Supabase Database
+            </button>
           </div>
         </div>
 
