@@ -671,6 +671,11 @@ export const TRANSLATIONS = {
     realtimeSyncNotice: 'Real-time Sync with Supabase Database & Twilio SMS Service',
     invalidCodeError: 'Invalid code. Enter the 6-digit code shown in the badge or sent to {email}',
     newCodeDispatched: 'A new verification code has been dispatched to your email.',
+    continueWithGoogle: 'Continue with Google',
+    continueWithApple: 'Continue with Apple',
+    orContinueWithEmail: 'Or continue with email',
+    selectAccount: 'Select Account',
+    authenticateWith: 'Authenticate with',
 
     // Create Event Modal Keys
     stepOfFive: 'Step {step} of 5',
@@ -1343,6 +1348,11 @@ export const TRANSLATIONS = {
     realtimeSyncNotice: 'Synchronisation en temps réel avec la base de données Supabase & le service SMS Twilio',
     invalidCodeError: 'Code invalide. Entrez le code à 6 chiffres indiqué ou envoyé à {email}',
     newCodeDispatched: 'Un nouveau code de vérification a été envoyé à votre e-mail.',
+    continueWithGoogle: 'Continuer avec Google',
+    continueWithApple: 'Continuer avec Apple',
+    orContinueWithEmail: 'Ou continuer avec votre e-mail',
+    selectAccount: 'Sélectionner le Compte',
+    authenticateWith: 'S\'authentifier avec',
 
     // Create Event Modal Keys
     stepOfFive: 'Étape {step} sur 5',

@@ -852,7 +852,36 @@ export const AttendeeWeb: React.FC = () => {
 
               {/* Event Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredEvents.map(evt => {
+                {filteredEvents.length === 0 ? (
+                  <div className="col-span-full bg-slate-900 border border-slate-800 rounded-3xl p-10 sm:p-14 text-center space-y-4 shadow-xl">
+                    <div className="w-16 h-16 bg-slate-950 border border-slate-800 rounded-2xl flex items-center justify-center mx-auto text-emerald-400 shadow-inner">
+                      <Calendar className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <h3 className="text-lg sm:text-xl font-black text-white">No Published Events Available</h3>
+                      <p className="text-xs sm:text-sm text-slate-400 max-w-lg mx-auto font-medium">
+                        There are currently no active events in the attendee catalog. Switch to your Organizer account to publish a new event — it will automatically reflect here for attendees to start purchasing tickets!
+                      </p>
+                    </div>
+                    <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+                      <button
+                        onClick={() => { setSelectedCategory('All'); setSearchQuery(''); setLocationFilter('All Locations'); }}
+                        className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl transition cursor-pointer"
+                      >
+                        Reset Search Filters
+                      </button>
+                      <button
+                        onClick={() => window.location.hash = '#organizer'}
+                        className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 text-xs font-black rounded-xl transition shadow-lg shadow-emerald-500/20 flex items-center space-x-2 cursor-pointer"
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        <span>Create Event from Organizer Account</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  filteredEvents.map(evt => {
+
                   const tiers = Array.isArray(evt?.ticketTiers) ? evt.ticketTiers : [];
                   const lowestPrice = tiers.length > 0 ? Math.min(...tiers.map(t => t.price || 0)) : 0;
                   const isSaved = savedEventIds.includes(evt.id);
@@ -949,7 +978,7 @@ export const AttendeeWeb: React.FC = () => {
                       </div>
                     </div>
                   );
-                })}
+                }))}
               </div>
 
             </section>

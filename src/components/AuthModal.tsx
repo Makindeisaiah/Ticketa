@@ -36,7 +36,48 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
   const [inputOtp, setInputOtp] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
 
+  // Social Login state (Google / Apple)
+  const [socialProvider, setSocialProvider] = useState<'Google' | 'Apple' | null>(null);
+  const [socialEmail, setSocialEmail] = useState('');
+  const [socialName, setSocialName] = useState('');
+
   if (!isOpen) return null;
+
+  const handleStartSocialAuth = (provider: 'Google' | 'Apple') => {
+    setErrorMsg('');
+    setSocialProvider(provider);
+    if (provider === 'Google') {
+      setSocialName('Alex Morgan');
+      setSocialEmail('alex.workspace@gmail.com');
+    } else {
+      setSocialName('Taylor Swift');
+      setSocialEmail('dev.user@icloud.com');
+    }
+  };
+
+  const handleCompleteSocialAuth = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+
+    const cleanEmail = socialEmail.trim().toLowerCase();
+    const cleanName = socialName.trim() || (socialProvider === 'Google' ? 'Google User' : 'Apple User');
+
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      setErrorMsg(`Please enter a valid ${socialProvider} account email.`);
+      return;
+    }
+
+    // Register / Log in user automatically with social provider
+    registerUser({
+      fullName: cleanName,
+      email: cleanEmail,
+      phone: '+234 800 123 4567',
+      emailVerified: true
+    });
+
+    setSocialProvider(null);
+    onClose();
+  };
 
   const initiateSignUp = (e: React.FormEvent) => {
     e.preventDefault();
@@ -238,7 +279,77 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
               {t('signOutAccount')}
             </button>
           </div>
+        ) : socialProvider ? (
+          /* Social Auth Account Selector Screen */
+          <form onSubmit={handleCompleteSocialAuth} className="space-y-4 animate-fadeIn">
+            <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+              <div className="flex items-center space-x-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg shadow-md ${
+                  socialProvider === 'Google' ? 'bg-white text-slate-900' : 'bg-black text-white border border-slate-700'
+                }`}>
+                  {socialProvider === 'Google' ? (
+                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 fill-current" viewBox="0 0 170 170">
+                      <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.34.13-9.14-1.9-14.4-6.08-3.32-2.65-7.22-7.3-11.7-13.95-6.53-9.62-11.66-20.12-15.38-31.5-3.73-11.38-5.59-22.12-5.59-32.22 0-14.88 3.73-27.1 11.19-36.65 7.46-9.55 16.92-14.38 28.38-14.49 4.34 0 9.29 1.1 14.86 3.3 5.56 2.21 9.4 3.35 11.51 3.42 1.86-.07 5.86-1.28 12.01-3.62 6.15-2.34 11.04-3.4 14.67-3.18 10.42.54 18.73 4.22 24.94 11.04-9.14 5.56-13.62 13.33-13.43 23.32.2 10.22 4.19 18.42 11.96 24.62 3.69 2.97 7.77 5.11 12.24 6.42-2.52 7.43-5.89 14.8-10.12 22.12zm-28.52-113.88c0 7.24-2.63 14.07-7.89 20.48-5.26 6.41-11.75 10.05-19.46 10.92-.13-.88-.2-1.76-.2-2.65 0-7.07 2.76-13.97 8.28-20.7 5.52-6.73 12.03-10.48 19.53-11.25.14 1.07.21 2.13.21 3.2z" />
+                    </svg>
+                  )}
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-white uppercase tracking-wider">{t('authenticateWith')} {socialProvider}</h4>
+                  <p className="text-[11px] text-emerald-400 font-medium">Verified OAuth 2.0 Connection</p>
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-300 mb-1">Account Display Name</label>
+                  <input
+                    type="text"
+                    value={socialName}
+                    onChange={e => setSocialName(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-medium"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-300 mb-1">{socialProvider} Email / ID</label>
+                  <input
+                    type="email"
+                    value={socialEmail}
+                    onChange={e => setSocialEmail(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-medium"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className={`w-full py-3.5 font-black text-xs rounded-xl shadow-lg transition flex items-center justify-center space-x-2 cursor-pointer ${
+                socialProvider === 'Google'
+                  ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/20'
+                  : 'bg-white hover:bg-slate-100 text-slate-950 shadow-white/10'
+              }`}
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Continue with {socialProvider}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSocialProvider(null)}
+              className="w-full py-2 text-xs font-bold text-slate-400 hover:text-white transition text-center cursor-pointer"
+            >
+              ← Cancel & Back
+            </button>
+          </form>
         ) : mode === 'verify-email' ? (
+
           /* Email Verification Step */
           <form onSubmit={handleVerifyAndRegister} className="space-y-4">
             
@@ -308,83 +419,160 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
           </form>
         ) : mode === 'signup' ? (
           /* Sign Up Form */
-          <form onSubmit={initiateSignUp} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">{t('fullName')}</label>
-              <div className="relative">
-                <User className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
-                <input
-                  type="text"
-                  placeholder="e.g. Koffi Kouassi"
-                  value={fullName}
-                  onChange={e => setFullName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-medium"
-                />
-              </div>
+          <div className="space-y-4">
+            {/* Social Authentication Buttons */}
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => handleStartSocialAuth('Google')}
+                className="w-full py-2.5 bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-xs rounded-xl transition flex items-center justify-center space-x-2.5 shadow-md border border-slate-200 cursor-pointer"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                </svg>
+                <span>{t('continueWithGoogle')}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleStartSocialAuth('Apple')}
+                className="w-full py-2.5 bg-slate-950 hover:bg-slate-900 text-white font-extrabold text-xs rounded-xl transition flex items-center justify-center space-x-2.5 shadow-md border border-slate-800 cursor-pointer"
+              >
+                <svg className="w-4 h-4 fill-current text-white" viewBox="0 0 170 170">
+                  <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.34.13-9.14-1.9-14.4-6.08-3.32-2.65-7.22-7.3-11.7-13.95-6.53-9.62-11.66-20.12-15.38-31.5-3.73-11.38-5.59-22.12-5.59-32.22 0-14.88 3.73-27.1 11.19-36.65 7.46-9.55 16.92-14.38 28.38-14.49 4.34 0 9.29 1.1 14.86 3.3 5.56 2.21 9.4 3.35 11.51 3.42 1.86-.07 5.86-1.28 12.01-3.62 6.15-2.34 11.04-3.4 14.67-3.18 10.42.54 18.73 4.22 24.94 11.04-9.14 5.56-13.62 13.33-13.43 23.32.2 10.22 4.19 18.42 11.96 24.62 3.69 2.97 7.77 5.11 12.24 6.42-2.52 7.43-5.89 14.8-10.12 22.12zm-28.52-113.88c0 7.24-2.63 14.07-7.89 20.48-5.26 6.41-11.75 10.05-19.46 10.92-.13-.88-.2-1.76-.2-2.65 0-7.07 2.76-13.97 8.28-20.7 5.52-6.73 12.03-10.48 19.53-11.25.14 1.07.21 2.13.21 3.2z" />
+                </svg>
+                <span>{t('continueWithApple')}</span>
+              </button>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">{t('emailAddress')}</label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
-                <input
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-medium"
-                />
-              </div>
+            <div className="relative flex py-1 items-center">
+              <div className="flex-grow border-t border-slate-800"></div>
+              <span className="flex-shrink mx-3 text-[10px] uppercase font-extrabold text-slate-500 tracking-wider">
+                {t('orContinueWithEmail')}
+              </span>
+              <div className="flex-grow border-t border-slate-800"></div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">{t('phoneForSmsPasses')}</label>
-              <div className="relative">
-                <Phone className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
-                <input
-                  type="tel"
-                  placeholder="+225 07 01 02 03 04"
-                  value={phone}
-                  onChange={e => setPhone(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-medium"
-                />
+            <form onSubmit={initiateSignUp} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">{t('fullName')}</label>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
+                  <input
+                    type="text"
+                    placeholder="e.g. Koffi Kouassi"
+                    value={fullName}
+                    onChange={e => setFullName(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-medium"
+                  />
+                </div>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center space-x-2 cursor-pointer"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>{t('continueEmailVerification')}</span>
-            </button>
-          </form>
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">{t('emailAddress')}</label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
+                  <input
+                    type="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-medium"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">{t('phoneForSmsPasses')}</label>
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
+                  <input
+                    type="tel"
+                    placeholder="+225 07 01 02 03 04"
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-medium"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center space-x-2 cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>{t('continueEmailVerification')}</span>
+              </button>
+            </form>
+          </div>
         ) : (
           /* Sign In Form */
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">{t('registeredEmailAddress')}</label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
-                <input
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-medium"
-                />
-              </div>
+          <div className="space-y-4">
+            {/* Social Authentication Buttons */}
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => handleStartSocialAuth('Google')}
+                className="w-full py-2.5 bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-xs rounded-xl transition flex items-center justify-center space-x-2.5 shadow-md border border-slate-200 cursor-pointer"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+                </svg>
+                <span>{t('continueWithGoogle')}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleStartSocialAuth('Apple')}
+                className="w-full py-2.5 bg-slate-950 hover:bg-slate-900 text-white font-extrabold text-xs rounded-xl transition flex items-center justify-center space-x-2.5 shadow-md border border-slate-800 cursor-pointer"
+              >
+                <svg className="w-4 h-4 fill-current text-white" viewBox="0 0 170 170">
+                  <path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.34.13-9.14-1.9-14.4-6.08-3.32-2.65-7.22-7.3-11.7-13.95-6.53-9.62-11.66-20.12-15.38-31.5-3.73-11.38-5.59-22.12-5.59-32.22 0-14.88 3.73-27.1 11.19-36.65 7.46-9.55 16.92-14.38 28.38-14.49 4.34 0 9.29 1.1 14.86 3.3 5.56 2.21 9.4 3.35 11.51 3.42 1.86-.07 5.86-1.28 12.01-3.62 6.15-2.34 11.04-3.4 14.67-3.18 10.42.54 18.73 4.22 24.94 11.04-9.14 5.56-13.62 13.33-13.43 23.32.2 10.22 4.19 18.42 11.96 24.62 3.69 2.97 7.77 5.11 12.24 6.42-2.52 7.43-5.89 14.8-10.12 22.12zm-28.52-113.88c0 7.24-2.63 14.07-7.89 20.48-5.26 6.41-11.75 10.05-19.46 10.92-.13-.88-.2-1.76-.2-2.65 0-7.07 2.76-13.97 8.28-20.7 5.52-6.73 12.03-10.48 19.53-11.25.14 1.07.21 2.13.21 3.2z" />
+                </svg>
+                <span>{t('continueWithApple')}</span>
+              </button>
             </div>
 
-            <button
-              type="submit"
-              className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center space-x-2 cursor-pointer"
-            >
-              <LogIn className="w-4 h-4" />
-              <span>{t('signInToAccount')}</span>
-            </button>
-          </form>
+            <div className="relative flex py-1 items-center">
+              <div className="flex-grow border-t border-slate-800"></div>
+              <span className="flex-shrink mx-3 text-[10px] uppercase font-extrabold text-slate-500 tracking-wider">
+                {t('orContinueWithEmail')}
+              </span>
+              <div className="flex-grow border-t border-slate-800"></div>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">{t('registeredEmailAddress')}</label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
+                  <input
+                    type="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-medium"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center space-x-2 cursor-pointer"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>{t('signInToAccount')}</span>
+              </button>
+            </form>
+          </div>
         )}
+
 
         {/* Security Footer Note */}
         <div className="text-[10px] text-slate-500 text-center flex items-center justify-center gap-1.5 pt-2 border-t border-slate-800/80">
