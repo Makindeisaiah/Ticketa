@@ -328,10 +328,10 @@ export const StaffCheckIn: React.FC = () => {
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 flex justify-between items-center">
                   <div>
                     <p className="text-[10px] text-slate-400 font-medium">Assigned Event</p>
-                    <p className="font-bold text-slate-900">{activeEvent.title}</p>
+                    <p className="font-bold text-slate-900">{activeEvent?.title || 'No Active Event'}</p>
                   </div>
                   <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">
-                    {activeEvent.date}
+                    {activeEvent?.date || 'N/A'}
                   </span>
                 </div>
 
@@ -567,20 +567,26 @@ export const StaffCheckIn: React.FC = () => {
         {/* TOP BAR / EVENT HEADER */}
         <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between gap-4 sticky top-0 z-20">
           <div className="flex items-center space-x-3 min-w-0">
-            <img 
-              src={activeEvent.image} 
-              alt={activeEvent.title} 
-              className="w-12 h-12 rounded-xl object-cover border border-slate-200 flex-shrink-0"
-            />
+            {activeEvent?.image ? (
+              <img 
+                src={activeEvent.image} 
+                alt={activeEvent.title || 'Event'} 
+                className="w-12 h-12 rounded-xl object-cover border border-slate-200 flex-shrink-0"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 font-bold text-xs flex-shrink-0">
+                TIX
+              </div>
+            )}
             <div className="min-w-0">
               <div className="flex items-center space-x-2">
-                <h1 className="text-base font-bold text-slate-900 truncate">{activeEvent.title}</h1>
+                <h1 className="text-base font-bold text-slate-900 truncate">{activeEvent?.title || 'No Event Selected'}</h1>
                 <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
                   Active
                 </span>
               </div>
               <p className="text-xs text-slate-500 truncate">
-                {activeEvent.date} • {activeEvent.time} • {activeEvent.venueName}
+                {activeEvent?.date || 'N/A'} • {activeEvent?.time || 'N/A'} • {activeEvent?.venueName || 'N/A'}
               </p>
             </div>
           </div>

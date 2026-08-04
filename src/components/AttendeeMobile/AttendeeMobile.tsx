@@ -310,41 +310,47 @@ export const AttendeeMobile: React.FC = () => {
                     </h3>
                   </div>
 
-                  {events.find(e => e.featured) && (
-                    <div 
-                      onClick={() => setViewingEvent(events.find(e => e.featured)!)}
-                      className="relative bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 cursor-pointer group shadow-lg"
-                    >
-                      <img 
-                        src={events.find(e => e.featured)!.image} 
-                        alt="Featured" 
-                        className="w-full h-44 object-cover group-hover:scale-105 transition duration-300"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-                      
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleSaveEvent(events.find(e => e.featured)!.id);
-                        }}
-                        className="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-950/60 backdrop-blur-md flex items-center justify-center text-white border border-white/10"
-                      >
-                        <Bookmark className={`w-4 h-4 ${savedEventIds.includes(events.find(e => e.featured)!.id) ? 'fill-emerald-400 text-emerald-400' : ''}`} />
-                      </button>
+                  {(() => {
+                    const featuredEvt = events.find(e => e.featured) || events[0];
+                    if (!featuredEvt) return null;
+                    const isSaved = savedEventIds.includes(featuredEvt.id);
 
-                      <div className="absolute bottom-3 left-3 right-3">
-                        <span className="text-[10px] bg-emerald-500 text-slate-950 px-2 py-0.5 rounded font-black uppercase">
-                          {events.find(e => e.featured)!.category}
-                        </span>
-                        <h4 className="text-sm font-bold text-white mt-1 leading-tight">
-                          {events.find(e => e.featured)!.title}
-                        </h4>
-                        <p className="text-[11px] text-slate-300 mt-0.5">
-                          {events.find(e => e.featured)!.date} • {events.find(e => e.featured)!.venueName}
-                        </p>
+                    return (
+                      <div 
+                        onClick={() => setViewingEvent(featuredEvt)}
+                        className="relative bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 cursor-pointer group shadow-lg"
+                      >
+                        <img 
+                          src={featuredEvt.image} 
+                          alt="Featured" 
+                          className="w-full h-44 object-cover group-hover:scale-105 transition duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+                        
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSaveEvent(featuredEvt.id);
+                          }}
+                          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-950/60 backdrop-blur-md flex items-center justify-center text-white border border-white/10"
+                        >
+                          <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-emerald-400 text-emerald-400' : ''}`} />
+                        </button>
+
+                        <div className="absolute bottom-3 left-3 right-3">
+                          <span className="text-[10px] bg-emerald-500 text-slate-950 px-2 py-0.5 rounded font-black uppercase">
+                            {featuredEvt.category}
+                          </span>
+                          <h4 className="text-sm font-bold text-white mt-1 leading-tight">
+                            {featuredEvt.title}
+                          </h4>
+                          <p className="text-[11px] text-slate-300 mt-0.5">
+                            {featuredEvt.date} • {featuredEvt.venueName}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
               )}
 

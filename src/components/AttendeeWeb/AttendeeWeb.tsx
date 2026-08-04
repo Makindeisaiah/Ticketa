@@ -1386,6 +1386,15 @@ export const AttendeeWeb: React.FC = () => {
         )}
 
         {/* ---------------- 4. CHECKOUT & PAYMENT FLOW VIEW ---------------- */}
+        {currentView === 'checkout' && !activeEvent && (
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+            <h2 className="text-xl font-bold text-white mb-2">No Event Selected for Checkout</h2>
+            <button onClick={() => setCurrentView('home')} className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl transition">
+              Return to Catalog
+            </button>
+          </div>
+        )}
+
         {currentView === 'checkout' && activeEvent && (
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
             
@@ -1400,7 +1409,7 @@ export const AttendeeWeb: React.FC = () => {
             <div>
               <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">{t('step2Of2')}</span>
               <h1 className="text-3xl font-black text-white mt-1">{t('completeYourTicketOrder')}</h1>
-              <p className="text-xs text-slate-400">{activeEvent.title} • {activeEvent.date}</p>
+              <p className="text-xs text-slate-400">{activeEvent?.title} • {activeEvent?.date}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
