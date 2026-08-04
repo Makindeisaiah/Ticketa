@@ -9,8 +9,13 @@ import {
   Sparkles, CheckCircle2, ArrowRight, X, Clock, Users, ChevronRight,
   Filter, Lock, Share2, Bookmark, Download, ExternalLink, QrCode,
   Building2, ChevronDown, Check, AlertCircle, ArrowLeft, Copy, Smartphone,
-  RefreshCw, Layers, FileText, Mail, Printer, Menu, Facebook, Instagram
+  RefreshCw, Layers, FileText, Mail, Printer, Menu, Facebook, Instagram,
+  User, UserPlus, LogIn, LogOut, Languages
 } from 'lucide-react';
+import { exportTicketAsPdf, exportTicketToAppleWallet, printThermalWristband } from '../../utils/ticketExporter';
+import { AuthModal } from '../AuthModal';
+import { useLanguage } from '../../utils/translations';
+import { formatEventCurrency } from '../../utils/currency';
 
 const XIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -23,11 +28,6 @@ const TikTokIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
     <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 3 15.68 6.34 6.34 0 0 0 9.35 22a6.33 6.33 0 0 0 6.33-6.33V9.05a8.16 8.16 0 0 0 3.91 1v-3.36a4.85 4.85 0 0 1-.001-0.001z" />
   </svg>
 );
-import { exportTicketAsPdf, exportTicketToAppleWallet, printThermalWristband } from '../../utils/ticketExporter';
-import { AuthModal } from '../AuthModal';
-import { User, UserPlus, LogIn, LogOut, Languages } from 'lucide-react';
-import { useLanguage } from '../../utils/translations';
-import { formatEventCurrency } from '../../utils/currency';
 
 export const AttendeeWeb: React.FC = () => {
   const { lang, changeLanguage, t } = useLanguage();
@@ -124,6 +124,24 @@ export const AttendeeWeb: React.FC = () => {
     }
   }, [eventId, events]);
 
+  // Keep activeEvent in sync with database events updates
+  useEffect(() => {
+    if (events.length > 0) {
+      if (!activeEvent) {
+        setActiveEvent(events[0]);
+      } else {
+        const found = events.find(e => e.id === activeEvent.id);
+        if (found) {
+          setActiveEvent(found);
+        } else {
+          setActiveEvent(events[0]);
+        }
+      }
+    } else {
+      setActiveEvent(null);
+    }
+  }, [events]);
+
   
   // Checkout Form State
   const [fullName, setFullName] = useState(currentUser?.fullName || (userProfile.firstName ? `${userProfile.firstName} ${userProfile.lastName}`.trim() : ''));
@@ -170,7 +188,7 @@ export const AttendeeWeb: React.FC = () => {
   const categories = ['All', 'Concerts', 'Comedy', 'Tech', 'Festival'];
   
   // Dynamic Locations from events or defaults
-  const uniqueEventLocations = Array.from(new Set(events.map(e => e.location || e.venueName))).filter(Boolean);
+  const uniqueEventLocations = Array.from(new Set((events || []).map(e => (e && (e.location || e.venueName)) || ''))).filter(Boolean);
   const locations = uniqueEventLocations.length > 0 
     ? ['All Locations', ...uniqueEventLocations] 
     : ['All Locations', "Abidjan, Côte d'Ivoire", 'Lagos, Nigeria', 'Accra, Ghana'];
@@ -179,7 +197,7 @@ export const AttendeeWeb: React.FC = () => {
     return formatEventCurrency(amount, eventObj || activeEvent, organizers, currentOrganizer);
   };
 
-  const isCategoryMatch = (eventCat: string, selCat: string) => {
+  const isCategoryMatch = (eventCat: string | undefined, selCat: string) => {
     if (!selCat || selCat === 'All') return true;
     if (!eventCat) return false;
     const eCat = eventCat.toLowerCase().trim();
@@ -192,11 +210,11 @@ export const AttendeeWeb: React.FC = () => {
   };
 
   const getCategoryCount = (catName: string) => {
-    return events.filter(e => isCategoryMatch(e.category, catName)).length;
+    return (events || []).filter(e => e && isCategoryMatch(e.category, catName)).length;
   };
 
   const getCategoryLabel = (catName: string) => {
-    switch (catName.toLowerCase().trim()) {
+    switch ((catName || '').toLowerCase().trim()) {
       case 'all': return t('catAll');
       case 'concerts': return t('catConcerts');
       case 'comedy': return t('catComedy');
@@ -208,30 +226,41 @@ export const AttendeeWeb: React.FC = () => {
   };
 
   // Filtered Events logic
-  const filteredEvents = events.filter(e => {
+  const filteredEvents = (events || []).filter(e => {
+    if (!e) return false;
+    const title = e.title || '';
+    const location = e.location || '';
+    const organizerName = e.organizerName || '';
+    const tags = Array.isArray(e.tags) ? e.tags : [];
+    const query = (searchQuery || '').toLowerCase();
+
     const matchesCategory = isCategoryMatch(e.category, selectedCategory);
-    const matchesSearch = e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          e.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          e.organizerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          e.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesLocation = locationFilter === 'All Locations' || e.location.toLowerCase().includes(locationFilter.toLowerCase().split(',')[0]);
+    const matchesSearch = !query ||
+                          title.toLowerCase().includes(query) ||
+                          location.toLowerCase().includes(query) ||
+                          organizerName.toLowerCase().includes(query) ||
+                          tags.some(t => t && t.toLowerCase().includes(query));
+    const matchesLocation = locationFilter === 'All Locations' || location.toLowerCase().includes(locationFilter.toLowerCase().split(',')[0]);
     
     return matchesCategory && matchesSearch && matchesLocation;
   }).sort((a, b) => {
+    const tiersA = Array.isArray(a.ticketTiers) ? a.ticketTiers : [];
+    const tiersB = Array.isArray(b.ticketTiers) ? b.ticketTiers : [];
+
     if (priceSort === 'price-low') {
-      const minA = Math.min(...a.ticketTiers.map(t => t.price));
-      const minB = Math.min(...b.ticketTiers.map(t => t.price));
+      const minA = tiersA.length > 0 ? Math.min(...tiersA.map(t => t.price || 0)) : 0;
+      const minB = tiersB.length > 0 ? Math.min(...tiersB.map(t => t.price || 0)) : 0;
       return minA - minB;
     }
     if (priceSort === 'price-high') {
-      const maxA = Math.max(...a.ticketTiers.map(t => t.price));
-      const maxB = Math.max(...b.ticketTiers.map(t => t.price));
+      const maxA = tiersA.length > 0 ? Math.max(...tiersA.map(t => t.price || 0)) : 0;
+      const maxB = tiersB.length > 0 ? Math.max(...tiersB.map(t => t.price || 0)) : 0;
       return maxB - maxA;
     }
     return 0;
   });
 
-  const featuredEvents = events.filter(e => e.featured);
+  const featuredEvents = (events || []).filter(e => e && e.featured);
 
   // Open Event Details
   const handleOpenEventDetails = (evt: EventItem) => {

@@ -5,6 +5,7 @@ import {
 } from '../types';
 import { INITIAL_EVENTS, INITIAL_ORDERS, INITIAL_PROMOS, EVENT_IMAGE_OVERRIDE_MAP } from '../data/mockEvents';
 import { db } from '../lib/firebase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { 
   collection, 
   onSnapshot, 
@@ -208,7 +209,14 @@ const EventContext = createContext<EventContextType | undefined>(undefined);
 
 export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentPlatform, setCurrentPlatform] = useState<PlatformType>('attendee-mobile');
-  const deletedEventIdsRef = useRef<Set<string>>(new Set());
+  const deletedEventIdsRef = useRef<Set<string>>((() => {
+    try {
+      const saved = localStorage.getItem('tix_deleted_event_ids');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  })());
   
   const [events, setEvents] = useState<EventItem[]>(() => {
     const isCleaned = localStorage.getItem('tix_clean_zero_v4');
@@ -378,7 +386,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     let unsubscribeOrganizers: () => void;
 
     try {
-      // 1. Sync Events from Firestore
+      // 1. Sync Events from Firestore / Supabase
       const eventsCol = collection(db, 'events');
       unsubscribeEvents = onSnapshot(eventsCol, (snapshot) => {
         const loadedEvents = snapshot.docs.map(docSnap => ({
@@ -386,24 +394,108 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           ...(docSnap.data() as EventItem)
         }));
 
-        setEvents(prev => {
-          const loadedMap = new Map(loadedEvents.map(e => [e.id, e]));
-          const merged = [...loadedEvents];
-          for (const localEvt of prev) {
-            if (localEvt.id && !loadedMap.has(localEvt.id) && !deletedEventIdsRef.current.has(localEvt.id)) {
-              merged.push(localEvt);
-              // Ensure local events (including newly created events) are auto-persisted to Firestore
-              setDoc(doc(db, 'events', localEvt.id), sanitizeForFirestore(localEvt), { merge: true }).catch(err => {
-                console.warn(`Auto-persisting event ${localEvt.id} to Firestore failed:`, err);
-              });
-            }
-          }
-          localStorage.setItem('tix_events', JSON.stringify(merged));
-          return merged;
-        });
+        const cleanList = loadedEvents.filter(e => e.id && !deletedEventIdsRef.current.has(e.id));
+        if (cleanList.length > 0) {
+          setEvents(cleanList);
+          localStorage.setItem('tix_events', JSON.stringify(cleanList));
+        } else {
+          setEvents(prev => prev.length > 0 ? prev : INITIAL_EVENTS);
+        }
       }, (err) => {
         console.warn('Firestore events listener error, using local state:', err);
       });
+
+      // 1b. Sync Events from Supabase if configured
+      if (isSupabaseConfigured()) {
+        (async () => {
+          try {
+            const { data, error } = await supabase.from('events').select('*');
+            if (!error && data && Array.isArray(data)) {
+              const cleanSupabaseEvents = data.filter((e: any) => e.id && !deletedEventIdsRef.current.has(e.id));
+              if (cleanSupabaseEvents.length > 0) {
+                setEvents(prev => {
+                  const combinedMap = new Map();
+                  prev.forEach(item => combinedMap.set(item.id, item));
+                  cleanSupabaseEvents.forEach(item => combinedMap.set(item.id, item));
+                  const finalEvents = Array.from(combinedMap.values()).filter(e => !deletedEventIdsRef.current.has(e.id));
+                  localStorage.setItem('tix_events', JSON.stringify(finalEvents));
+                  return finalEvents;
+                });
+              }
+            }
+          } catch (err) {
+            console.warn('Supabase fetch events error:', err);
+          }
+
+          // Fetch Orders from Supabase
+          try {
+            const { data: ordersData, error: ordersErr } = await supabase.from('orders').select('*');
+            if (!ordersErr && ordersData && Array.isArray(ordersData) && ordersData.length > 0) {
+              setOrders(prev => {
+                const map = new Map();
+                prev.forEach(o => map.set(o.id, o));
+                ordersData.forEach((o: any) => map.set(o.id, o));
+                const finalOrders = Array.from(map.values());
+                localStorage.setItem('tix_orders', JSON.stringify(finalOrders));
+                return finalOrders;
+              });
+            }
+          } catch (err) {
+            console.warn('Supabase fetch orders error:', err);
+          }
+
+          // Fetch Tickets from Supabase
+          try {
+            const { data: ticketsData, error: ticketsErr } = await supabase.from('tickets').select('*');
+            if (!ticketsErr && ticketsData && Array.isArray(ticketsData) && ticketsData.length > 0) {
+              setAllTickets(prev => {
+                const map = new Map();
+                prev.forEach(t => map.set(t.ticketCode, t));
+                ticketsData.forEach((t: any) => map.set(t.ticketCode, t));
+                const finalTickets = Array.from(map.values());
+                localStorage.setItem('tix_all_tickets', JSON.stringify(finalTickets));
+                return finalTickets;
+              });
+            }
+          } catch (err) {
+            console.warn('Supabase fetch tickets error:', err);
+          }
+
+          // Fetch Users from Supabase if table exists
+          try {
+            const { data: usersData, error: usersErr } = await supabase.from('users').select('*');
+            if (!usersErr && usersData && Array.isArray(usersData) && usersData.length > 0) {
+              setUsers(prev => {
+                const map = new Map();
+                prev.forEach(u => map.set(u.id, u));
+                usersData.forEach((u: any) => map.set(u.id, u));
+                const finalUsers = Array.from(map.values());
+                localStorage.setItem('tix_users', JSON.stringify(finalUsers));
+                return finalUsers;
+              });
+            }
+          } catch (err) {
+            console.warn('Supabase fetch users error:', err);
+          }
+
+          // Fetch Organizers from Supabase if table exists
+          try {
+            const { data: orgsData, error: orgsErr } = await supabase.from('organizers').select('*');
+            if (!orgsErr && orgsData && Array.isArray(orgsData) && orgsData.length > 0) {
+              setOrganizers(prev => {
+                const map = new Map();
+                prev.forEach(o => map.set(o.id, o));
+                orgsData.forEach((o: any) => map.set(o.id, o));
+                const finalOrgs = Array.from(map.values());
+                localStorage.setItem('tix_organizers', JSON.stringify(finalOrgs));
+                return finalOrgs;
+              });
+            }
+          } catch (err) {
+            console.warn('Supabase fetch organizers error:', err);
+          }
+        })();
+      }
 
       // 2. Sync Orders from Firestore
       const ordersCol = collection(db, 'orders');
@@ -597,6 +689,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const updateEvent = async (updatedEvent: EventItem) => {
     // Update local state immediately
     setEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEvent : e));
+    localStorage.setItem('tix_events', JSON.stringify(events.map(e => e.id === updatedEvent.id ? updatedEvent : e)));
 
     // Update in Firestore
     try {
@@ -604,6 +697,15 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       await setDoc(doc(db, 'events', updatedEvent.id), cleanData, { merge: true });
     } catch (err) {
       console.error('Error updating event in Firestore:', err);
+    }
+
+    // Update in Supabase if configured
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('events').upsert([sanitizeForFirestore(updatedEvent)]);
+      } catch (err) {
+        console.warn('Supabase update event error:', err);
+      }
     }
 
     triggerNotification(`Event "${updatedEvent.title}" updated successfully!`);
@@ -618,6 +720,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const newId = candidateId || `evt-${Date.now()}`;
     deletedEventIdsRef.current.delete(newId);
+    localStorage.setItem('tix_deleted_event_ids', JSON.stringify(Array.from(deletedEventIdsRef.current)));
 
     const activeOrgId = currentOrganizer?.id || (eventData as EventItem).organizerId || '';
     const activeOrgName = currentOrganizer?.organizationName || (eventData as EventItem).organizerName || 'Event Organizer';
@@ -630,13 +733,18 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
     
     // Update local state immediately
-    setEvents(prev => [newEvent, ...prev.filter(e => e.id !== newId)]);
+    const updatedEventsList = [newEvent, ...events.filter(e => e.id !== newId)];
+    setEvents(updatedEventsList);
+    localStorage.setItem('tix_events', JSON.stringify(updatedEventsList));
 
-    // Save to Firestore
+    // Save to Firestore & Supabase
     try {
       const cleanData = sanitizeForFirestore(newEvent);
       await setDoc(doc(db, 'events', newId), cleanData);
-      console.log(`Successfully persisted event ${newId} to Firestore:`, cleanData);
+
+      if (isSupabaseConfigured()) {
+        await supabase.from('events').upsert([cleanData]);
+      }
 
       if (currentOrganizer) {
         const updatedOrg: OrganizerUser = {
@@ -646,9 +754,12 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setCurrentOrganizer(updatedOrg);
         setOrganizers(prev => prev.map(o => o.id === currentOrganizer.id ? updatedOrg : o));
         await setDoc(doc(db, 'organizers', currentOrganizer.id), sanitizeForFirestore(updatedOrg), { merge: true });
+        if (isSupabaseConfigured()) {
+          await supabase.from('organizers').upsert([sanitizeForFirestore(updatedOrg)]);
+        }
       }
     } catch (err) {
-      console.error('Error saving event to Firestore:', err);
+      console.error('Error saving event to database:', err);
     }
 
     triggerNotification(`Event "${newEvent.title}" published successfully!`);
@@ -659,13 +770,16 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!targetEvent) return;
 
     deletedEventIdsRef.current.add(eventId);
+    localStorage.setItem('tix_deleted_event_ids', JSON.stringify(Array.from(deletedEventIdsRef.current)));
 
     const affectedOrders = orders.filter(o => o.eventId === eventId);
     const affectedTickets = allTickets.filter(t => t.eventId === eventId);
     const totalRefundAmount = affectedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
 
-    // Update local states
-    setEvents(prev => prev.filter(e => e.id !== eventId));
+    // Update local states & local storage
+    const remainingEvents = events.filter(e => e.id !== eventId);
+    setEvents(remainingEvents);
+    localStorage.setItem('tix_events', JSON.stringify(remainingEvents));
     setOrders(prev => prev.filter(o => o.eventId !== eventId));
     setAllTickets(prev => prev.filter(t => t.eventId !== eventId));
 
@@ -686,7 +800,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
     }
 
-    // Delete from Firestore
+    // Delete from Firestore & Supabase
     try {
       await deleteDoc(doc(db, 'events', eventId));
       for (const ord of affectedOrders) {
@@ -696,8 +810,18 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         await deleteDoc(doc(db, 'tickets', tkt.ticketCode));
         await deleteDoc(doc(db, 'qr_tickets', `qr-${tkt.ticketCode}`));
       }
+
+      if (isSupabaseConfigured()) {
+        await supabase.from('events').delete().eq('id', eventId);
+        for (const ord of affectedOrders) {
+          await supabase.from('orders').delete().eq('id', ord.id);
+        }
+        for (const tkt of affectedTickets) {
+          await supabase.from('tickets').delete().eq('ticketCode', tkt.ticketCode);
+        }
+      }
     } catch (err) {
-      console.error('Error deleting event from Firestore:', err);
+      console.error('Error deleting event from database:', err);
     }
 
     if (affectedOrders.length > 0) {
@@ -744,8 +868,11 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       (async () => {
         try {
           await setDoc(doc(db, 'users', existing.id), sanitizeForFirestore(updatedExisting));
+          if (isSupabaseConfigured()) {
+            await supabase.from('users').upsert([sanitizeForFirestore(updatedExisting)]);
+          }
         } catch (err) {
-          console.error('Error updating existing user in Firestore:', err);
+          console.error('Error updating existing user in database:', err);
         }
       })();
 
@@ -788,13 +915,16 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentUser(newUser);
     setUserProfile(freshProfile);
 
-    // Persist to Firestore
+    // Persist to Firestore & Supabase
     (async () => {
       try {
         await setDoc(doc(db, 'users', newUserId), sanitizeForFirestore(newUser));
-        console.log(`User stored in Firebase Firestore at path users/${newUserId}:`, newUser);
+        if (isSupabaseConfigured()) {
+          await supabase.from('users').upsert([sanitizeForFirestore(newUser)]);
+        }
+        console.log(`User stored at users/${newUserId}:`, newUser);
       } catch (err) {
-        console.error('Error writing user to Firestore:', err);
+        console.error('Error writing user to database:', err);
       }
     })();
 
@@ -897,8 +1027,11 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       (async () => {
         try {
           await setDoc(doc(db, 'organizers', existing.id), sanitizeForFirestore(updatedExisting));
+          if (isSupabaseConfigured()) {
+            await supabase.from('organizers').upsert([sanitizeForFirestore(updatedExisting)]);
+          }
         } catch (err) {
-          console.error('Error updating organizer in Firestore:', err);
+          console.error('Error updating organizer in database:', err);
         }
       })();
 
@@ -927,13 +1060,16 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setOrganizers(prev => [newOrganizer, ...prev]);
     setCurrentOrganizer(newOrganizer);
 
-    // Persist to Firestore
+    // Persist to Firestore & Supabase
     (async () => {
       try {
         await setDoc(doc(db, 'organizers', newOrgId), sanitizeForFirestore(newOrganizer));
-        console.log(`Organizer stored in Firebase Firestore at path organizers/${newOrgId}:`, newOrganizer);
+        if (isSupabaseConfigured()) {
+          await supabase.from('organizers').upsert([sanitizeForFirestore(newOrganizer)]);
+        }
+        console.log(`Organizer stored at organizers/${newOrgId}:`, newOrganizer);
       } catch (err) {
-        console.error('Error writing organizer to Firestore:', err);
+        console.error('Error writing organizer to database:', err);
       }
     })();
 
@@ -1130,16 +1266,32 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setCurrentUser(targetUser);
     }
 
-    // Save order, updated event, and user to Firestore async
+    // Save order, updated event, and user to Firestore & Supabase async
     (async () => {
       try {
         await setDoc(doc(db, 'orders', orderId), sanitizeForFirestore(newOrder));
         await setDoc(doc(db, 'events', eventId), sanitizeForFirestore(updatedEventObj));
         await setDoc(doc(db, 'users', targetUser.id), sanitizeForFirestore(targetUser));
         
+        if (isSupabaseConfigured()) {
+          try {
+            await supabase.from('orders').upsert([sanitizeForFirestore(newOrder)]);
+            await supabase.from('events').upsert([sanitizeForFirestore(updatedEventObj)]);
+          } catch (spErr) {
+            console.warn('Supabase order/event upsert error:', spErr);
+          }
+        }
+
         // Save tickets to separate collection
         for (const t of tickets) {
           await setDoc(doc(db, 'tickets', t.ticketCode), sanitizeForFirestore(t));
+          if (isSupabaseConfigured()) {
+            try {
+              await supabase.from('tickets').upsert([sanitizeForFirestore(t)]);
+            } catch (spErr) {
+              console.warn('Supabase ticket upsert error:', spErr);
+            }
+          }
           
           const qrData: QrTicket = {
             id: `qr-${t.ticketCode}`,
@@ -1151,7 +1303,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           await setDoc(doc(db, 'qr_tickets', qrData.id), sanitizeForFirestore(qrData));
         }
       } catch (err) {
-        console.error('Error writing records to Firestore:', err);
+        console.error('Error writing records to database:', err);
       }
     })();
 

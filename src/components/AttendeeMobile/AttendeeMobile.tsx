@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useEventContext } from '../../context/EventContext';
 import { QRCodeDisplay } from '../QRCodeDisplay';
 import { triggerFlutterwavePayment } from '../../lib/flutterwave';
@@ -49,6 +49,16 @@ export const AttendeeMobile: React.FC = () => {
   
   // Selected Event for details modal/screen
   const [viewingEvent, setViewingEvent] = useState<EventItem | null>(null);
+
+  // Sync viewingEvent with database events update
+  useEffect(() => {
+    if (viewingEvent && events.length > 0) {
+      const updated = events.find(e => e.id === viewingEvent.id);
+      if (updated) {
+        setViewingEvent(updated);
+      }
+    }
+  }, [events]);
 
   // Ticket Checkout Modal
   const [buyingEvent, setBuyingEvent] = useState<EventItem | null>(null);
