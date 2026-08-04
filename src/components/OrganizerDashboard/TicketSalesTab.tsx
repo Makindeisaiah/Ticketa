@@ -60,8 +60,15 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
     : allTickets.filter(t => t.eventId === selectedEvent);
 
   const targetCapacity = selectedEvent === 'all'
-    ? events.reduce((acc, e) => acc + e.ticketTiers.reduce((s, t) => s + t.availableQuantity, 0), 0)
-    : (events.find(e => e.id === selectedEvent)?.ticketTiers.reduce((s, t) => s + t.availableQuantity, 0) || 0);
+    ? events.reduce((acc, e) => {
+        const tiers = Array.isArray(e?.ticketTiers) ? e.ticketTiers : [];
+        return acc + tiers.reduce((s, t) => s + (t.availableQuantity || 0), 0);
+      }, 0)
+    : (() => {
+        const found = events.find(e => e.id === selectedEvent);
+        const tiers = Array.isArray(found?.ticketTiers) ? found.ticketTiers : [];
+        return tiers.reduce((s, t) => s + (t.availableQuantity || 0), 0);
+      })();
 
   const totalRevenue = targetOrders.reduce((acc, o) => acc + o.totalAmount, 0);
   const platformFees = Math.round(totalRevenue * 0.025);
@@ -234,7 +241,8 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
                 const tierPerformanceMap = new Map<string, { price: number; sold: number; available: number; rev: number }>();
 
                 relevantEvents.forEach(evt => {
-                  evt.ticketTiers.forEach(tier => {
+                  const tiers = Array.isArray(evt?.ticketTiers) ? evt.ticketTiers : [];
+                  tiers.forEach(tier => {
                     const existing = tierPerformanceMap.get(tier.name) || { price: tier.price, sold: 0, available: 0, rev: 0 };
                     const tierTickets = targetTickets.filter(t => t.tierName.toLowerCase() === tier.name.toLowerCase());
                     const soldCount = tierTickets.length || tier.soldQuantity;

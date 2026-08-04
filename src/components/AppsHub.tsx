@@ -20,7 +20,10 @@ import { formatOrganizerCurrency } from '../utils/currency';
 export const AppsHub: React.FC = () => {
   const { events, orders, seedLiveSales, resetAllData, currentOrganizer } = useEventContext();
 
-  const totalTicketsSold = events.reduce((acc, e) => acc + e.ticketTiers.reduce((sum, t) => sum + t.soldQuantity, 0), 0);
+  const totalTicketsSold = events.reduce((acc, e) => {
+    const tiers = Array.isArray(e?.ticketTiers) ? e.ticketTiers : [];
+    return acc + tiers.reduce((sum, t) => sum + (t.soldQuantity || 0), 0);
+  }, 0);
   const totalRevenue = orders.reduce((acc, o) => acc + o.totalAmount, 0);
 
   const applications = [

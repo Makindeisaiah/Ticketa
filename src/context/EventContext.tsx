@@ -1134,9 +1134,11 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const validEntries = Object.entries(selectionsMap).filter(([_, qty]) => qty > 0);
     if (validEntries.length === 0) return null;
 
+    const tiers = Array.isArray(eventObj?.ticketTiers) ? eventObj.ticketTiers : [];
+
     // Check availability for all selected tiers
     for (const [tId, qty] of validEntries) {
-      const tier = eventObj.ticketTiers.find(t => t.id === tId);
+      const tier = tiers.find(t => t.id === tId);
       if (!tier || (tier.availableQuantity - tier.soldQuantity) < qty) {
         console.error(`Insufficient tickets available for tier ${tId}`);
         return null;
@@ -1144,7 +1146,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     // Updated ticket tiers sold quantities
-    const updatedTicketTiers = eventObj.ticketTiers.map(t => {
+    const updatedTicketTiers = tiers.map(t => {
       const qty = selectionsMap[t.id] || 0;
       if (qty <= 0) return t;
       return { ...t, soldQuantity: t.soldQuantity + qty };
@@ -1175,7 +1177,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     let totalTicketsIssued = 0;
 
     for (const [tId, qty] of validEntries) {
-      const tier = eventObj.ticketTiers.find(t => t.id === tId);
+      const tier = tiers.find(t => t.id === tId);
       if (!tier) continue;
 
       const unitPrice = tier.price * (1 - discountPercentage / 100);
@@ -1695,9 +1697,10 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const seedLiveSales = () => {
     const randomEvent = events[Math.floor(Math.random() * events.length)];
-    if (!randomEvent || !randomEvent.ticketTiers.length) return;
+    const tiers = Array.isArray(randomEvent?.ticketTiers) ? randomEvent.ticketTiers : [];
+    if (!randomEvent || !tiers.length) return;
 
-    const randomTier = randomEvent.ticketTiers[Math.floor(Math.random() * randomEvent.ticketTiers.length)];
+    const randomTier = tiers[Math.floor(Math.random() * tiers.length)];
     const sampleNames = ['Elena Rostova', 'David K.', 'Chloe Bennet', 'Taylor Swift Fan', 'Liam Hemsworth', 'Noah Centineo'];
     const chosenName = sampleNames[Math.floor(Math.random() * sampleNames.length)];
     

@@ -181,9 +181,10 @@ export const EventsTab: React.FC<EventsTabProps> = ({
       {/* Events List Cards */}
       <div className="space-y-4">
         {filteredEvents.map((evt, idx) => {
-          const totalTierCap = evt.ticketTiers.reduce((acc, t) => acc + t.availableQuantity, 0);
+          const tiers = Array.isArray(evt?.ticketTiers) ? evt.ticketTiers : [];
+          const totalTierCap = tiers.reduce((acc, t) => acc + (t.availableQuantity || 0), 0);
           const eventTickets = allTickets.filter(t => t.eventId === evt.id);
-          const totalTierSold = eventTickets.length || evt.ticketTiers.reduce((acc, t) => acc + t.soldQuantity, 0);
+          const totalTierSold = eventTickets.length || tiers.reduce((acc, t) => acc + (t.soldQuantity || 0), 0);
           const percentage = totalTierCap > 0 ? Math.round((totalTierSold / totalTierCap) * 100) : 0;
           const eventOrders = orders.filter(o => o.eventId === evt.id);
           const eventRevenue = eventOrders.reduce((acc, o) => acc + o.totalAmount, 0);

@@ -357,7 +357,8 @@ export const AttendeeMobile: React.FC = () => {
                 <div className="space-y-3">
                   {filteredEvents.map(evt => {
                     const isSaved = savedEventIds.includes(evt.id);
-                    const minPrice = Math.min(...evt.ticketTiers.map(t => t.price));
+                    const tiers = Array.isArray(evt?.ticketTiers) ? evt.ticketTiers : [];
+                    const minPrice = tiers.length > 0 ? Math.min(...tiers.map(t => t.price || 0)) : 0;
                     return (
                       <div
                         key={evt.id}
@@ -612,14 +613,21 @@ export const AttendeeMobile: React.FC = () => {
                           <p className="text-[10px] text-slate-400 truncate">{evt.date}</p>
                         </div>
                         <div className="flex justify-between items-center mt-2">
-                          <span className="text-[11px] font-bold text-emerald-400">
-                            From {fmtPrice(Math.min(...evt.ticketTiers.map(t => t.price)), evt)}
-                          </span>
+                          {(() => {
+                            const tiers = Array.isArray(evt?.ticketTiers) ? evt.ticketTiers : [];
+                            const minVal = tiers.length > 0 ? Math.min(...tiers.map(t => t.price || 0)) : 0;
+                            return (
+                              <span className="text-[11px] font-bold text-emerald-400">
+                                From {fmtPrice(minVal, evt)}
+                              </span>
+                            );
+                          })()}
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
+                              const tiers = Array.isArray(evt?.ticketTiers) ? evt.ticketTiers : [];
                               setBuyingEvent(evt);
-                              setSelectedTier(evt.ticketTiers[0]);
+                              setSelectedTier(tiers[0] || null);
                             }}
                             className="px-2.5 py-1 bg-emerald-500 text-slate-950 font-bold text-[10px] rounded-lg"
                           >
@@ -896,14 +904,19 @@ export const AttendeeMobile: React.FC = () => {
               <div>
                 <span className="text-[10px] text-slate-400 block">Starting from</span>
                 <span className="text-base font-black text-emerald-400">
-                  {fmtPrice(Math.min(...viewingEvent.ticketTiers.map(t => t.price)), viewingEvent)}
+                  {(() => {
+                    const tiers = Array.isArray(viewingEvent?.ticketTiers) ? viewingEvent.ticketTiers : [];
+                    const minVal = tiers.length > 0 ? Math.min(...tiers.map(t => t.price || 0)) : 0;
+                    return fmtPrice(minVal, viewingEvent);
+                  })()}
                 </span>
               </div>
 
               <button
                 onClick={() => {
                   setBuyingEvent(viewingEvent);
-                  const availableTier = viewingEvent.ticketTiers.find(t => (t.availableQuantity - t.soldQuantity) > 0) || viewingEvent.ticketTiers[0];
+                  const tiers = Array.isArray(viewingEvent?.ticketTiers) ? viewingEvent.ticketTiers : [];
+                  const availableTier = tiers.find(t => (t.availableQuantity - t.soldQuantity) > 0) || tiers[0] || null;
                   setSelectedTier(availableTier);
                   const tierAvail = availableTier ? Math.max(0, availableTier.availableQuantity - availableTier.soldQuantity) : 0;
                   setQuantity(tierAvail > 0 ? 1 : 0);
@@ -934,7 +947,7 @@ export const AttendeeMobile: React.FC = () => {
 
               {/* Tier Selection */}
               <div className="space-y-2">
-                {buyingEvent.ticketTiers.map(tier => {
+                {(Array.isArray(buyingEvent?.ticketTiers) ? buyingEvent.ticketTiers : []).map(tier => {
                   const avail = Math.max(0, tier.availableQuantity - tier.soldQuantity);
                   const isSold = avail <= 0;
 

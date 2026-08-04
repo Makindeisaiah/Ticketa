@@ -115,8 +115,9 @@ export const AttendeeWeb: React.FC = () => {
       if (match) {
         setActiveEvent(match);
         const initialTiers: { [tierId: string]: number } = {};
-        if (match.ticketTiers.length > 0) {
-          initialTiers[match.ticketTiers[0].id] = 1;
+        const matchTiers = Array.isArray(match?.ticketTiers) ? match.ticketTiers : [];
+        if (matchTiers.length > 0) {
+          initialTiers[matchTiers[0].id] = 1;
         }
         setSelectedTiers(initialTiers);
         setCurrentView('details');
@@ -267,7 +268,8 @@ export const AttendeeWeb: React.FC = () => {
     setActiveEvent(evt);
     // Initialize ticket quantities (1 for the first tier that actually has available tickets)
     const initialTiers: { [tierId: string]: number } = {};
-    const availableTier = evt.ticketTiers.find(t => (t.availableQuantity - t.soldQuantity) > 0);
+    const evtTiers = Array.isArray(evt?.ticketTiers) ? evt.ticketTiers : [];
+    const availableTier = evtTiers.find(t => (t.availableQuantity - t.soldQuantity) > 0);
     if (availableTier) {
       initialTiers[availableTier.id] = 1;
     }
@@ -296,7 +298,8 @@ export const AttendeeWeb: React.FC = () => {
   
   const calculateSubtotal = () => {
     if (!activeEvent) return 0;
-    return activeEvent.ticketTiers.reduce((acc, tier) => {
+    const activeTiers = Array.isArray(activeEvent?.ticketTiers) ? activeEvent.ticketTiers : [];
+    return activeTiers.reduce((acc, tier) => {
       const qty = selectedTiers[tier.id] || 0;
       return acc + (tier.price * qty);
     }, 0);
@@ -850,9 +853,10 @@ export const AttendeeWeb: React.FC = () => {
               {/* Event Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredEvents.map(evt => {
-                  const lowestPrice = Math.min(...evt.ticketTiers.map(t => t.price));
+                  const tiers = Array.isArray(evt?.ticketTiers) ? evt.ticketTiers : [];
+                  const lowestPrice = tiers.length > 0 ? Math.min(...tiers.map(t => t.price || 0)) : 0;
                   const isSaved = savedEventIds.includes(evt.id);
-                  const isEventSoldOut = evt.ticketTiers.length > 0 && evt.ticketTiers.every(t => (t.availableQuantity - t.soldQuantity) <= 0);
+                  const isEventSoldOut = tiers.length > 0 && tiers.every(t => (t.availableQuantity - t.soldQuantity) <= 0);
 
                   return (
                     <div
@@ -1030,8 +1034,9 @@ export const AttendeeWeb: React.FC = () => {
             {/* Catalog Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredEvents.map(evt => {
-                const lowestPrice = Math.min(...evt.ticketTiers.map(t => t.price));
-                const isEventSoldOut = evt.ticketTiers.length > 0 && evt.ticketTiers.every(t => (t.availableQuantity - t.soldQuantity) <= 0);
+                const tiers = Array.isArray(evt?.ticketTiers) ? evt.ticketTiers : [];
+                const lowestPrice = tiers.length > 0 ? Math.min(...tiers.map(t => t.price || 0)) : 0;
+                const isEventSoldOut = tiers.length > 0 && tiers.every(t => (t.availableQuantity - t.soldQuantity) <= 0);
 
                 return (
                   <div key={evt.id} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col hover:border-emerald-500/50 transition">
@@ -1235,7 +1240,7 @@ export const AttendeeWeb: React.FC = () => {
 
                 {/* Tiers List */}
                 <div className="space-y-3">
-                  {activeEvent.ticketTiers.map(tier => {
+                  {(Array.isArray(activeEvent?.ticketTiers) ? activeEvent.ticketTiers : []).map(tier => {
                     const quantity = selectedTiers[tier.id] || 0;
                     const available = Math.max(0, tier.availableQuantity - tier.soldQuantity);
                     const isSoldOut = available <= 0;
@@ -1588,7 +1593,7 @@ export const AttendeeWeb: React.FC = () => {
 
                 {/* Selected Tiers Breakdown */}
                 <div className="space-y-3">
-                  {activeEvent.ticketTiers.map(tier => {
+                  {(Array.isArray(activeEvent?.ticketTiers) ? activeEvent.ticketTiers : []).map(tier => {
                     const qty = selectedTiers[tier.id] || 0;
                     if (qty === 0) return null;
 
