@@ -77,7 +77,7 @@ export const DevSuite: React.FC = () => {
                 </span>
                 <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full flex items-center gap-1">
                   <Database className="w-3.5 h-3.5" />
-                  Firebase Realtime
+                  Supabase Database
                 </span>
               </div>
               <h1 className="text-2xl font-black text-white mt-1">Multi-App Suite Testing Hub</h1>

@@ -668,7 +668,7 @@ export const TRANSLATIONS = {
     emailVerificationSentTo: 'Email Verification Sent to',
     codeLabel: 'Code:',
     autoFillCode: 'Auto-Fill Code',
-    realtimeSyncNotice: 'Real-time Sync with Firebase Firestore & Twilio SMS Service',
+    realtimeSyncNotice: 'Real-time Sync with Supabase Database & Twilio SMS Service',
     invalidCodeError: 'Invalid code. Enter the 6-digit code shown in the badge or sent to {email}',
     newCodeDispatched: 'A new verification code has been dispatched to your email.',
 
@@ -1340,7 +1340,7 @@ export const TRANSLATIONS = {
     emailVerificationSentTo: 'Vérification Email Envoyée à',
     codeLabel: 'Code :',
     autoFillCode: 'Remplir Automatiquement',
-    realtimeSyncNotice: 'Synchronisation en temps réel avec Firebase Firestore & le service SMS Twilio',
+    realtimeSyncNotice: 'Synchronisation en temps réel avec la base de données Supabase & le service SMS Twilio',
     invalidCodeError: 'Code invalide. Entrez le code à 6 chiffres indiqué ou envoyé à {email}',
     newCodeDispatched: 'Un nouveau code de vérification a été envoyé à votre e-mail.',
 
