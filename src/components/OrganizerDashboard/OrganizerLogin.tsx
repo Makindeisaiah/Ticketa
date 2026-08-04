@@ -80,8 +80,13 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
   const { loginOrganizer, registerOrganizer } = useEventContext();
   const { lang, changeLanguage, t } = useLanguage();
   
-  // High level mode: 'onboarding' (multi-step registration) or 'login'
-  const [mode, setMode] = useState<'onboarding' | 'login'>('onboarding');
+  // High level mode: 'onboarding' (multi-step registration), 'login', or 'forgot'
+  const [mode, setMode] = useState<'onboarding' | 'login' | 'forgot'>('onboarding');
+  
+  // FORGOT PASSWORD STATE
+  const [resetEmail, setResetEmail] = useState('');
+  const [newResetPassword, setNewResetPassword] = useState('');
+  const [resetSuccess, setResetSuccess] = useState(false);
   
   // Onboarding step (1 to 4)
   const [step, setStep] = useState<number>(1);
@@ -258,6 +263,22 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
     }
   };
 
+  // Handle Forgot Password Reset Submit
+  const handleResetPasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    if (!resetEmail.trim() || !resetEmail.includes('@')) {
+      setErrorMsg(t('enterValidEmail'));
+      return;
+    }
+    if (!newResetPassword || newResetPassword.length < 6) {
+      setErrorMsg(t('passwordMinLength'));
+      return;
+    }
+
+    setResetSuccess(true);
+  };
+
   return (
     <div className="min-h-screen bg-[#1F445B] text-slate-800 flex flex-col justify-center items-center p-3 sm:p-6 font-sans">
       
@@ -376,9 +397,18 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                   />
                   <span>{t('rememberMe')}</span>
                 </label>
-                <a href="#forgot" onClick={(e) => e.preventDefault()} className="text-[#00C896] hover:underline font-bold">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('forgot');
+                    setResetEmail(loginEmail);
+                    setResetSuccess(false);
+                    setErrorMsg('');
+                  }}
+                  className="text-[#00C896] hover:underline font-bold cursor-pointer"
+                >
                   {t('forgotPassword')}
-                </a>
+                </button>
               </div>
 
               <button
@@ -394,11 +424,92 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
               <button
                 type="button"
                 onClick={() => { setMode('onboarding'); setStep(1); }}
-                className="text-[#00C896] font-bold hover:underline"
+                className="text-[#00C896] font-bold hover:underline cursor-pointer"
               >
                 {t('registerAsHost')}
               </button>
             </div>
+          </div>
+        ) : mode === 'forgot' ? (
+          /* FORGOT PASSWORD SCREEN */
+          <div className="p-6 sm:p-10 max-w-md mx-auto space-y-6">
+            <div>
+              <h2 className="text-2xl font-black text-slate-900">{t('resetPasswordTitle')}</h2>
+              <p className="text-xs text-slate-500 mt-1">{t('resetPasswordDesc')}</p>
+            </div>
+
+            {resetSuccess ? (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 text-center space-y-4">
+                <div className="w-12 h-12 rounded-full bg-[#00C896] text-white flex items-center justify-center mx-auto shadow-md">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900">{t('resetSuccessTitle')}</h3>
+                  <p className="text-xs text-slate-600 mt-1">{t('resetSuccessDesc')}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('login');
+                    setLoginEmail(resetEmail);
+                    if (newResetPassword) setLoginPassword(newResetPassword);
+                    setErrorMsg('');
+                  }}
+                  className="w-full py-2.5 bg-[#00C896] text-white font-bold rounded-xl text-xs hover:bg-[#00b084] transition shadow-md cursor-pointer"
+                >
+                  {t('backToLogin')}
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">{t('emailAddress')}</label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="email"
+                      required
+                      placeholder={t('emailAddress')}
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      className="w-full pl-10 pr-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">{t('setNewPassword')}</label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="password"
+                      required
+                      placeholder={t('setNewPassword')}
+                      value={newResetPassword}
+                      onChange={(e) => setNewResetPassword(e.target.value)}
+                      className="w-full pl-10 pr-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00C896]/30 focus:border-[#00C896]"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3 bg-[#00C896] hover:bg-[#00b084] text-white font-bold rounded-xl text-xs transition shadow-lg shadow-[#00C896]/20 cursor-pointer"
+                >
+                  {t('updatePasswordBtn')}
+                </button>
+
+                <div className="text-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => { setMode('login'); setErrorMsg(''); }}
+                    className="text-xs font-bold text-slate-500 hover:text-slate-800 hover:underline cursor-pointer"
+                  >
+                    ← {t('backToLogin')}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         ) : (
           /* ONBOARDING FLOW (4 STEPS) */

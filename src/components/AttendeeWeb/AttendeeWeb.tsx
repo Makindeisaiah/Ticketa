@@ -9,8 +9,20 @@ import {
   Sparkles, CheckCircle2, ArrowRight, X, Clock, Users, ChevronRight,
   Filter, Lock, Share2, Bookmark, Download, ExternalLink, QrCode,
   Building2, ChevronDown, Check, AlertCircle, ArrowLeft, Copy, Smartphone,
-  RefreshCw, Layers, FileText, Mail, Printer, Menu
+  RefreshCw, Layers, FileText, Mail, Printer, Menu, Facebook, Instagram
 } from 'lucide-react';
+
+const XIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
+
+const TikTokIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 3 15.68 6.34 6.34 0 0 0 9.35 22a6.33 6.33 0 0 0 6.33-6.33V9.05a8.16 8.16 0 0 0 3.91 1v-3.36a4.85 4.85 0 0 1-.001-0.001z" />
+  </svg>
+);
 import { exportTicketAsPdf, exportTicketToAppleWallet, printThermalWristband } from '../../utils/ticketExporter';
 import { AuthModal } from '../AuthModal';
 import { User, UserPlus, LogIn, LogOut, Languages } from 'lucide-react';
@@ -65,13 +77,35 @@ export const AttendeeWeb: React.FC = () => {
   const [activeEvent, setActiveEvent] = useState<EventItem | null>(events[0] || null);
   const [selectedTiers, setSelectedTiers] = useState<{ [tierId: string]: number }>({});
 
-  const handleNav = (view: 'home' | 'browse' | 'details' | 'checkout' | 'orders' | 'how-it-works') => {
+  const handleNav = (view: 'home' | 'browse' | 'details' | 'checkout' | 'orders' | 'how-it-works' | 'about') => {
     if (eventId) {
       navigate('/', { replace: true });
+    }
+    if (view === 'about') {
+      setCurrentView('browse');
+      setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }, 100);
+      setIsMobileMenuOpen(false);
+      return;
     }
     setCurrentView(view);
     setIsMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Footer Newsletter State
+  const [footerNewsletterEmail, setFooterNewsletterEmail] = useState('');
+  const [footerNewsletterSubmitted, setFooterNewsletterSubmitted] = useState(false);
+
+  const handleFooterNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!footerNewsletterEmail.trim() || !footerNewsletterEmail.includes('@')) return;
+    setFooterNewsletterSubmitted(true);
+    setTimeout(() => {
+      setFooterNewsletterEmail('');
+      setFooterNewsletterSubmitted(false);
+    }, 4000);
   };
 
   // Direct URL routing sync for /events/:eventId
@@ -1872,24 +1906,105 @@ export const AttendeeWeb: React.FC = () => {
       )}
 
       {/* ================= FOOTER ================= */}
-      <footer className="bg-slate-900 border-t border-slate-800 py-8 px-4 sm:px-6 lg:px-8 mt-12">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-400">
-          <div className="flex items-center space-x-2">
-            <div className="w-6 h-6 rounded-lg bg-emerald-500 flex items-center justify-center text-slate-950 font-black text-xs">
-              T
+      <footer className="bg-slate-900 border-t border-slate-800 py-12 px-4 sm:px-6 lg:px-8 mt-12 text-slate-300">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+          
+          {/* COLUMN 1: Ticketa Logo & Tagline */}
+          <div className="md:col-span-4 space-y-3">
+            <div className="flex items-center space-x-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#00C896] flex items-center justify-center text-slate-950 font-black text-sm shadow-md shadow-[#00C896]/20">
+                T
+              </div>
+              <span className="font-black text-lg text-white tracking-wider">TICKETA</span>
             </div>
-            <span className="font-bold text-white">TICKETA</span>
-            <span>{t('footerTagline')}</span>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              {t('footerTagline') || 'Empowering extraordinary live experiences across West Africa. Discover, book, and enjoy events seamlessly.'}
+            </p>
           </div>
 
-          <div className="flex space-x-6 text-slate-400">
-            <button onClick={() => handleNav('browse')} className="hover:text-white cursor-pointer">{t('browseEvents')}</button>
-            <button onClick={() => handleNav('how-it-works')} className="hover:text-white cursor-pointer">{t('howItWorks')}</button>
-            <button onClick={() => handleNav('orders')} className="hover:text-white cursor-pointer">{t('myWallet')}</button>
+          {/* COLUMN 2: Newsletter Form & Sign Up Button */}
+          <div className="md:col-span-5 space-y-3">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">
+              Subscribe to Newsletter
+            </h4>
+            <p className="text-xs text-slate-400">
+              Get weekly updates on hot upcoming concerts, festival passes, and exclusive event announcements.
+            </p>
+            {footerNewsletterSubmitted ? (
+              <div className="flex items-center space-x-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400 text-xs font-medium">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>Thank you for subscribing to Ticketa! Check your inbox soon.</span>
+              </div>
+            ) : (
+              <form onSubmit={handleFooterNewsletterSubmit} className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    required
+                    placeholder="Enter your email address"
+                    value={footerNewsletterEmail}
+                    onChange={(e) => setFooterNewsletterEmail(e.target.value)}
+                    className="w-full pl-10 pr-3.5 py-2.5 text-xs bg-slate-950 border border-slate-800 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00C896]/40 focus:border-[#00C896]"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="px-4 py-2.5 bg-[#00C896] hover:bg-[#00b084] text-white font-bold rounded-xl text-xs transition shadow-md shadow-[#00C896]/20 cursor-pointer whitespace-nowrap"
+                >
+                  Sign Up
+                </button>
+              </form>
+            )}
           </div>
+
+          {/* COLUMN 3: Links & Social Icons */}
+          <div className="md:col-span-3 space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200">
+              Navigation & Community
+            </h4>
+            <div className="flex flex-col space-y-2 text-xs text-slate-400 font-medium">
+              <button onClick={() => handleNav('browse')} className="hover:text-white transition cursor-pointer text-left">
+                {t('browseEvents')}
+              </button>
+              <button onClick={() => handleNav('about')} className="hover:text-white transition cursor-pointer text-left">
+                About
+              </button>
+              <button onClick={() => handleNav('how-it-works')} className="hover:text-white transition cursor-pointer text-left">
+                {t('howItWorks')}
+              </button>
+            </div>
+
+            {/* Social Media Icons: Facebook, X, Instagram, TikTok */}
+            <div className="pt-2">
+              <p className="text-[11px] font-bold text-slate-400 mb-2">Follow Us</p>
+              <div className="flex items-center space-x-3 text-slate-400">
+                <a href="https://facebook.com" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-slate-800 hover:bg-[#00C896] hover:text-white flex items-center justify-center transition cursor-pointer">
+                  <Facebook className="w-4 h-4" />
+                </a>
+                <a href="https://x.com" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-slate-800 hover:bg-[#00C896] hover:text-white flex items-center justify-center transition cursor-pointer">
+                  <XIcon className="w-3.5 h-3.5" />
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-slate-800 hover:bg-[#00C896] hover:text-white flex items-center justify-center transition cursor-pointer">
+                  <Instagram className="w-4 h-4" />
+                </a>
+                <a href="https://tiktok.com" target="_blank" rel="noreferrer" className="w-8 h-8 rounded-full bg-slate-800 hover:bg-[#00C896] hover:text-white flex items-center justify-center transition cursor-pointer">
+                  <TikTokIcon className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+          </div>
+
         </div>
-        <div className="max-w-7xl mx-auto pt-6 border-t border-slate-800/60 mt-6 text-center text-xs text-slate-400 font-medium">
-          @2026 Copyright Tickta.
+
+        {/* Bottom Bar */}
+        <div className="max-w-7xl mx-auto pt-8 border-t border-slate-800/80 mt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 font-medium gap-2">
+          <span>© 2026 Ticketa Inc. All rights reserved.</span>
+          <div className="flex space-x-4">
+            <span className="hover:text-slate-400 cursor-pointer">Privacy Policy</span>
+            <span className="hover:text-slate-400 cursor-pointer">Terms of Service</span>
+            <span className="hover:text-slate-400 cursor-pointer">Support</span>
+          </div>
         </div>
       </footer>
 

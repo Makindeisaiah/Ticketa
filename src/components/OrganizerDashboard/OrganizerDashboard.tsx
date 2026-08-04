@@ -26,6 +26,8 @@ export const OrganizerDashboard: React.FC = () => {
     events, 
     orders, 
     allTickets, 
+    currentOrganizer,
+    loginOrganizer,
     createNewEvent, 
     updateEvent,
     deleteEvent,
@@ -47,6 +49,33 @@ export const OrganizerDashboard: React.FC = () => {
     }
     return { isLoggedIn: false, name: '', email: '' };
   });
+
+  // Ensure currentOrganizer in context matches logged-in organizer session
+  React.useEffect(() => {
+    if (organizerAuth.isLoggedIn && organizerAuth.email) {
+      if (!currentOrganizer || currentOrganizer.email.toLowerCase() !== organizerAuth.email.toLowerCase()) {
+        loginOrganizer(organizerAuth.email);
+      }
+    }
+  }, [organizerAuth.isLoggedIn, organizerAuth.email, currentOrganizer, loginOrganizer]);
+
+  // Filter data specifically for the logged-in organizer to ensure fresh account for new hosts
+  const organizerEvents = React.useMemo(() => {
+    return events.filter(e => {
+      if (currentOrganizer) {
+        if (e.organizerId && e.organizerId === currentOrganizer.id) return true;
+        if (e.organizerName && e.organizerName.toLowerCase() === currentOrganizer.organizationName.toLowerCase()) return true;
+      }
+      if (organizerAuth.name) {
+        if (e.organizerName && e.organizerName.toLowerCase() === organizerAuth.name.toLowerCase()) return true;
+      }
+      return false;
+    });
+  }, [events, currentOrganizer, organizerAuth.name]);
+
+  const organizerEventIds = React.useMemo(() => new Set(organizerEvents.map(e => e.id)), [organizerEvents]);
+  const organizerOrders = React.useMemo(() => orders.filter(o => organizerEventIds.has(o.eventId)), [orders, organizerEventIds]);
+  const organizerTickets = React.useMemo(() => allTickets.filter(t => organizerEventIds.has(t.eventId)), [allTickets, organizerEventIds]);
 
   const [activeTab, setActiveTab] = useState<OrganizerTabType>('dashboard');
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -89,7 +118,7 @@ export const OrganizerDashboard: React.FC = () => {
   };
 
   const handleOpenRevenueModal = (eventId: string) => {
-    const found = events.find(e => e.id === eventId) || events[0];
+    const found = organizerEvents.find(e => e.id === eventId) || organizerEvents[0] || events[0];
     if (found) {
       setRevenueModalEvent(found);
       setIsRevenueModalOpen(true);
@@ -159,9 +188,9 @@ export const OrganizerDashboard: React.FC = () => {
           {/* 1. Dashboard Overview Tab */}
           {activeTab === 'dashboard' && (
             <OverviewTab
-              events={events}
-              orders={orders}
-              allTickets={allTickets}
+              events={organizerEvents}
+              orders={organizerOrders}
+              allTickets={organizerTickets}
               organizerName={organizerAuth.name || 'Organizer'}
               onSelectEvent={(id) => handleOpenRevenueModal(id)}
               onNavigateToEvents={() => setActiveTab('events')}
@@ -174,9 +203,9 @@ export const OrganizerDashboard: React.FC = () => {
           {/* 2. Events Management Tab */}
           {activeTab === 'events' && (
             <EventsTab
-              events={events}
-              orders={orders}
-              allTickets={allTickets}
+              events={organizerEvents}
+              orders={organizerOrders}
+              allTickets={organizerTickets}
               onCreateEventClick={handleOpenCreateModal}
               onSelectEvent={(id) => handleOpenRevenueModal(id)}
               onViewRevenue={(id) => handleOpenRevenueModal(id)}
@@ -187,15 +216,15 @@ export const OrganizerDashboard: React.FC = () => {
 
           {/* 3. Analytics Tab */}
           {activeTab === 'analytics' && (
-            <AnalyticsTab events={events} orders={orders} allTickets={allTickets} />
+            <AnalyticsTab events={organizerEvents} orders={organizerOrders} allTickets={organizerTickets} />
           )}
 
           {/* 4. Ticket Sales Tab */}
           {activeTab === 'ticket-sales' && (
             <TicketSalesTab
-              events={events}
-              orders={orders}
-              allTickets={allTickets}
+              events={organizerEvents}
+              orders={organizerOrders}
+              allTickets={organizerTickets}
             />
           )}
 
@@ -207,8 +236,8 @@ export const OrganizerDashboard: React.FC = () => {
           {/* 6. Check-Ins Tab */}
           {activeTab === 'check-ins' && (
             <CheckInsTab
-              events={events}
-              allTickets={allTickets}
+              events={organizerEvents}
+              allTickets={organizerTickets}
               onOpenScanner={() => handleOpenCheckInModal('scan')}
               onOpenManualCheckIn={() => handleOpenCheckInModal('manual')}
             />
@@ -243,7 +272,7 @@ export const OrganizerDashboard: React.FC = () => {
         isOpen={isRevenueModalOpen}
         onClose={() => setIsRevenueModalOpen(false)}
         event={revenueModalEvent}
-        orders={orders}
+        orders={organizerOrders}
       />
 
       {/* Delete Event Safety Modal */}
@@ -251,8 +280,8 @@ export const OrganizerDashboard: React.FC = () => {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         event={deletingEvent}
-        orders={orders}
-        allTickets={allTickets}
+        orders={organizerOrders}
+        allTickets={organizerTickets}
         onConfirmDelete={deleteEvent}
       />
 
@@ -261,8 +290,8 @@ export const OrganizerDashboard: React.FC = () => {
         isOpen={isCheckInModalOpen}
         initialMode={checkInModalMode}
         onClose={() => setIsCheckInModalOpen(false)}
-        events={events}
-        allTickets={allTickets}
+        events={organizerEvents}
+        allTickets={organizerTickets}
       />
 
       {/* Notification Dispatch Center Modal */}

@@ -392,6 +392,10 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           for (const localEvt of prev) {
             if (localEvt.id && !loadedMap.has(localEvt.id) && !deletedEventIdsRef.current.has(localEvt.id)) {
               merged.push(localEvt);
+              // Ensure local events (including newly created events) are auto-persisted to Firestore
+              setDoc(doc(db, 'events', localEvt.id), sanitizeForFirestore(localEvt), { merge: true }).catch(err => {
+                console.warn(`Auto-persisting event ${localEvt.id} to Firestore failed:`, err);
+              });
             }
           }
           localStorage.setItem('tix_events', JSON.stringify(merged));
@@ -615,9 +619,14 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const newId = candidateId || `evt-${Date.now()}`;
     deletedEventIdsRef.current.delete(newId);
 
+    const activeOrgId = currentOrganizer?.id || (eventData as EventItem).organizerId || '';
+    const activeOrgName = currentOrganizer?.organizationName || (eventData as EventItem).organizerName || 'Event Organizer';
+
     const newEvent: EventItem = {
       ...eventData,
-      id: newId
+      id: newId,
+      organizerId: activeOrgId,
+      organizerName: activeOrgName
     };
     
     // Update local state immediately
@@ -628,6 +637,16 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const cleanData = sanitizeForFirestore(newEvent);
       await setDoc(doc(db, 'events', newId), cleanData);
       console.log(`Successfully persisted event ${newId} to Firestore:`, cleanData);
+
+      if (currentOrganizer) {
+        const updatedOrg: OrganizerUser = {
+          ...currentOrganizer,
+          eventsCount: (currentOrganizer.eventsCount || 0) + 1
+        };
+        setCurrentOrganizer(updatedOrg);
+        setOrganizers(prev => prev.map(o => o.id === currentOrganizer.id ? updatedOrg : o));
+        await setDoc(doc(db, 'organizers', currentOrganizer.id), sanitizeForFirestore(updatedOrg), { merge: true });
+      }
     } catch (err) {
       console.error('Error saving event to Firestore:', err);
     }
