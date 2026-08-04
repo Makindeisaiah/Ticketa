@@ -27,11 +27,10 @@ export const RevenueWithdrawModal: React.FC<RevenueWithdrawModalProps> = ({
   event,
   orders = []
 }) => {
-  if (!isOpen || !event) return null;
-
+  const { currentOrganizer } = useEventContext();
   const [withdrawSuccess, setWithdrawSuccess] = useState(false);
 
-  const { currentOrganizer } = useEventContext();
+  if (!isOpen || !event) return null;
 
   const eventOrders = orders.filter(o => o.eventId === event.id);
   const grossSales = eventOrders.reduce((acc, o) => acc + o.totalAmount, 0);

@@ -209,56 +209,65 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   })());
   
   const [events, setEvents] = useState<EventItem[]>(() => {
-    const isCleaned = localStorage.getItem('tix_clean_zero_v4');
-    if (!isCleaned) {
-      localStorage.removeItem('tix_events');
-      localStorage.removeItem('tix_orders');
-      localStorage.removeItem('tix_all_tickets');
-      localStorage.removeItem('tix_qr_tickets');
-      localStorage.removeItem('tix_users');
-      localStorage.removeItem('tix_saved_events');
-      localStorage.removeItem('tix_promos');
-      localStorage.setItem('tix_clean_zero_v4', 'true');
-      return [];
-    }
     const saved = localStorage.getItem('tix_events');
-    if (!saved) return [];
-    try {
-      return JSON.parse(saved) as EventItem[];
-    } catch {
-      return [];
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.warn('Failed to parse saved events:', e);
+      }
     }
+    return INITIAL_EVENTS;
   });
 
   const [orders, setOrders] = useState<Order[]>(() => {
     const saved = localStorage.getItem('tix_orders');
-    if (!saved) return [];
-    try {
-      const list = JSON.parse(saved);
-      return Array.isArray(list) ? list : [];
-    } catch {
-      return [];
+    if (saved) {
+      try {
+        const list = JSON.parse(saved);
+        if (Array.isArray(list) && list.length > 0) return list;
+      } catch (e) {
+        console.warn('Failed to parse saved orders:', e);
+      }
     }
+    return INITIAL_ORDERS;
   });
 
   const [allTickets, setAllTickets] = useState<TicketPass[]>(() => {
     const saved = localStorage.getItem('tix_all_tickets');
-    if (!saved) return [];
-    try {
-      return JSON.parse(saved);
-    } catch {
-      return [];
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.warn('Failed to parse saved tickets:', e);
+      }
     }
+    // Extract initial tickets from initial orders
+    return INITIAL_ORDERS.flatMap(o => o.tickets || []);
   });
 
   const [qrTickets, setQrTickets] = useState<QrTicket[]>(() => {
     const saved = localStorage.getItem('tix_qr_tickets');
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {}
+    }
+    return [];
   });
 
   const [promos, setPromos] = useState<PromoCode[]>(() => {
     const saved = localStorage.getItem('tix_promos');
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {}
+    }
+    return INITIAL_PROMOS;
   });
 
   const [savedEventIds, setSavedEventIds] = useState<string[]>(() => {
