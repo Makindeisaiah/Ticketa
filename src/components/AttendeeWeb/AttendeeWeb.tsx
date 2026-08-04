@@ -241,7 +241,13 @@ export const AttendeeWeb: React.FC = () => {
                           location.toLowerCase().includes(query) ||
                           organizerName.toLowerCase().includes(query) ||
                           tags.some(t => t && t.toLowerCase().includes(query));
-    const matchesLocation = locationFilter === 'All Locations' || location.toLowerCase().includes(locationFilter.toLowerCase().split(',')[0]);
+    const cleanLocFilter = (locationFilter || 'All Locations').toLowerCase().split(',')[0].trim();
+    const matchesLocation = locationFilter === 'All Locations' ||
+                            !locationFilter ||
+                            location.toLowerCase().includes(cleanLocFilter) ||
+                            (e.country && e.country.toLowerCase().includes(cleanLocFilter)) ||
+                            (e.venueName && e.venueName.toLowerCase().includes(cleanLocFilter)) ||
+                            (e.address && e.address.toLowerCase().includes(cleanLocFilter));
     
     return matchesCategory && matchesSearch && matchesLocation;
   }).sort((a, b) => {

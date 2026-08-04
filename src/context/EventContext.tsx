@@ -570,7 +570,13 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const cleanData = sanitizeForStorage(newEvent);
 
       if (isSupabaseConfigured()) {
-        await supabase.from('events').upsert([cleanData]);
+        const { error: spErr } = await supabase.from('events').upsert([cleanData]);
+        if (spErr) {
+          console.error('Supabase save event error:', spErr);
+          triggerNotification(`Database alert: Event saved locally. Supabase error: ${spErr.message}`);
+        } else {
+          console.log('Successfully saved event to Supabase database:', newEvent.id);
+        }
       }
 
       if (currentOrganizer) {
@@ -581,7 +587,8 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setCurrentOrganizer(updatedOrg);
         setOrganizers(prev => prev.map(o => o.id === currentOrganizer.id ? updatedOrg : o));
         if (isSupabaseConfigured()) {
-          await supabase.from('organizers').upsert([sanitizeForStorage(updatedOrg)]);
+          const { error: orgErr } = await supabase.from('organizers').upsert([sanitizeForStorage(updatedOrg)]);
+          if (orgErr) console.error('Supabase update organizer error:', orgErr);
         }
       }
     } catch (err) {
@@ -877,7 +884,13 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     (async () => {
       try {
         if (isSupabaseConfigured()) {
-          await supabase.from('organizers').upsert([sanitizeForStorage(newOrganizer)]);
+          const { error: spErr } = await supabase.from('organizers').upsert([sanitizeForStorage(newOrganizer)]);
+          if (spErr) {
+            console.error('Supabase save organizer error:', spErr);
+            triggerNotification(`Database alert: Organizer registered locally. Supabase error: ${spErr.message}`);
+          } else {
+            console.log('Successfully saved organizer to Supabase database:', newOrganizer.id);
+          }
         }
       } catch (err) {
         console.error('Error writing organizer to database:', err);

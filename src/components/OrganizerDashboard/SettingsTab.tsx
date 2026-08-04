@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useEventContext } from '../../context/EventContext';
 import { useLanguage } from '../../utils/translations';
 import { formatOrganizerCurrency, getOrganizerCurrencyConfig } from '../../utils/currency';
-import { configureSupabase, isSupabaseConfigured } from '../../lib/supabase';
+import { supabase, configureSupabase, isSupabaseConfigured } from '../../lib/supabase';
 import { 
   Building2, 
   Users, 
@@ -1118,23 +1118,165 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                 />
               </div>
 
-              <div className="flex items-center justify-between pt-2">
-                <span className="text-[11px] text-slate-400">
-                  {isSupabaseConfigured() ? 'Database connected and syncing.' : 'Enter keys above to store data in Supabase.'}
+              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                <span className="text-[11px] text-slate-500">
+                  {isSupabaseConfigured() ? 'Database keys saved in browser session.' : 'Enter your project credentials to enable database syncing.'}
                 </span>
-                <button
-                  onClick={() => {
-                    if (!spUrl.trim() || !spKey.trim()) {
-                      showToast('Please provide both Supabase URL and Anon Key');
-                      return;
-                    }
-                    configureSupabase(spUrl, spKey);
-                    showToast('Supabase Database Connected Successfully!');
-                  }}
-                  className="px-4 py-2 bg-[#00C896] hover:bg-[#00b084] text-white font-extrabold text-xs rounded-xl transition shadow-sm cursor-pointer"
-                >
-                  Save & Connect Supabase Database
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={async () => {
+                      if (!isSupabaseConfigured()) {
+                        showToast('Please save & connect Supabase first');
+                        return;
+                      }
+                      try {
+                        const { error } = await supabase.from('events').select('count', { count: 'exact', head: true });
+                        if (error) {
+                          alert(`Supabase Connection Test Result:\n\n❌ Error: ${error.message}\n\nHint: Make sure you ran the SQL Schema script in your Supabase SQL Editor to create the "events" table!`);
+                        } else {
+                          showToast('✅ Supabase Connection Test Passed! Tables verified.');
+                        }
+                      } catch (e: any) {
+                        alert(`Connection test failed: ${e?.message || e}`);
+                      }
+                    }}
+                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition cursor-pointer"
+                  >
+                    Test Connection
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!spUrl.trim() || !spKey.trim()) {
+                        showToast('Please provide both Supabase URL and Anon Key');
+                        return;
+                      }
+                      configureSupabase(spUrl, spKey);
+                      showToast('Supabase Database Connected Successfully!');
+                    }}
+                    className="px-4 py-2 bg-[#00C896] hover:bg-[#00b084] text-white font-extrabold text-xs rounded-xl transition shadow-sm cursor-pointer"
+                  >
+                    Save & Connect Supabase Database
+                  </button>
+                </div>
+              </div>
+
+              {/* Copy SQL Schema Box */}
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 mt-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-extrabold text-slate-900 text-xs">Required Supabase Database Tables</h4>
+                    <p className="text-[11px] text-slate-500">If your events or organizers are not saving to Supabase, run this SQL script in your Supabase SQL Editor once.</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const sqlScript = `-- Run this script in your Supabase SQL Editor:
+create table if not exists public.events (
+  id text primary key,
+  title text,
+  category text,
+  "organizerName" text,
+  "organizerId" text,
+  currency text,
+  country text,
+  date text,
+  time text,
+  location text,
+  "venueName" text,
+  address text,
+  image text,
+  "bannerImage" text,
+  description text,
+  featured boolean default false,
+  tags jsonb default '[]'::jsonb,
+  expectations jsonb default '[]'::jsonb,
+  "refundPolicy" text,
+  "importantInfo" jsonb default '[]'::jsonb,
+  "ticketTiers" jsonb default '[]'::jsonb,
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+
+create table if not exists public.orders (
+  id text primary key,
+  "orderNumber" text,
+  "eventId" text,
+  "eventTitle" text,
+  "organizerId" text,
+  "customerName" text,
+  "customerEmail" text,
+  "customerPhone" text,
+  "ticketsCount" integer default 1,
+  "totalAmount" numeric default 0,
+  currency text,
+  "paymentStatus" text,
+  "paymentMethod" text,
+  "paymentReference" text,
+  tickets jsonb default '[]'::jsonb,
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+
+create table if not exists public.tickets (
+  "ticketCode" text primary key,
+  id text,
+  "orderId" text,
+  "eventId" text,
+  "tierId" text,
+  "tierName" text,
+  "attendeeName" text,
+  "attendeeEmail" text,
+  price numeric default 0,
+  status text,
+  "checkedIn" boolean default false,
+  "checkedInAt" text,
+  "checkedInBy" text,
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+
+create table if not exists public.users (
+  id text primary key,
+  name text,
+  email text,
+  phone text,
+  role text,
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+
+create table if not exists public.organizers (
+  id text primary key,
+  "organizationName" text,
+  email text,
+  phone text,
+  country text,
+  currency text,
+  "logoUrl" text,
+  verified boolean default false,
+  "eventsCount" integer default 0,
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+
+create table if not exists public.qr_tickets (
+  id text primary key,
+  "ticketCode" text,
+  "orderId" text,
+  "eventId" text,
+  "qrData" text,
+  created_at timestamp with time zone default timezone('utc'::text, now())
+);
+
+alter table public.events disable row level security;
+alter table public.orders disable row level security;
+alter table public.tickets disable row level security;
+alter table public.users disable row level security;
+alter table public.organizers disable row level security;
+alter table public.qr_tickets disable row level security;
+`;
+                      navigator.clipboard.writeText(sqlScript);
+                      showToast('Copied Supabase SQL Script to Clipboard!');
+                    }}
+                    className="px-3 py-1.5 bg-slate-900 text-white hover:bg-slate-800 text-[11px] font-bold rounded-lg transition"
+                  >
+                    Copy SQL Setup Script
+                  </button>
+                </div>
               </div>
             </div>
           </div>
