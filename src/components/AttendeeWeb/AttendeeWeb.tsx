@@ -496,22 +496,13 @@ export const AttendeeWeb: React.FC = () => {
                   <span className="max-w-[100px] truncate">{currentUser.fullName}</span>
                 </button>
               ) : (
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => { setAuthModalMode('signup'); setShowAuthModal(true); }}
-                    className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black transition shadow-md shadow-emerald-500/20 flex items-center space-x-1.5 cursor-pointer"
-                  >
-                    <UserPlus className="w-3.5 h-3.5" />
-                    <span>{t('signUp')}</span>
-                  </button>
-                  <button
-                    onClick={() => { setAuthModalMode('login'); setShowAuthModal(true); }}
-                    className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold transition border border-slate-700 cursor-pointer flex items-center space-x-1.5"
-                  >
-                    <LogIn className="w-3.5 h-3.5" />
-                    <span>{t('signIn')}</span>
-                  </button>
-                </div>
+                <button
+                  onClick={() => { setAuthModalMode('login'); setShowAuthModal(true); }}
+                  className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black transition shadow-md shadow-emerald-500/20 flex items-center space-x-1.5 cursor-pointer"
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>Sign In / Register</span>
+                </button>
               )}
 
               <button
@@ -620,30 +611,17 @@ export const AttendeeWeb: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      setAuthModalMode('signup');
-                      setShowAuthModal(true);
-                    }}
-                    className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black transition shadow-md flex items-center justify-center space-x-1.5 cursor-pointer"
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    <span>{t('signUp')}</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      setAuthModalMode('login');
-                      setShowAuthModal(true);
-                    }}
-                    className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition border border-slate-700 flex items-center justify-center space-x-1.5 cursor-pointer"
-                  >
-                    <LogIn className="w-4 h-4" />
-                    <span>{t('signIn')}</span>
-                  </button>
-                </div>
+                <button
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setAuthModalMode('login');
+                    setShowAuthModal(true);
+                  }}
+                  className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-black transition shadow-md flex items-center justify-center space-x-1.5 cursor-pointer"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Sign In / Register</span>
+                </button>
               )}
             </div>
 
