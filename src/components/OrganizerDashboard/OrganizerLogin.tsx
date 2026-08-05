@@ -416,7 +416,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
     }
   };
 
-  // Handle Login Submit using Supabase Auth
+  // Handle Login Submit
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -459,7 +459,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
     }
   };
 
-  // Handle Forgot Password Reset via Supabase Auth email
+  // Handle Forgot Password Reset
   const handleResetPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -627,12 +627,12 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
             </div>
           </div>
         ) : mode === 'forgot' ? (
-          /* FORGOT PASSWORD SCREEN (Supabase Auth Email) */
+          /* FORGOT PASSWORD SCREEN */
           <div className="p-6 sm:p-10 max-w-md mx-auto space-y-6">
             <div>
               <h2 className="text-2xl font-black text-slate-900">Reset Your Password</h2>
               <p className="text-xs text-slate-500 mt-1">
-                Enter your organizer email address below. We'll send you a password reset link via Supabase Auth email.
+                Enter your organizer email address below. We'll send you a password reset link.
               </p>
             </div>
 
@@ -644,7 +644,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
                 <div>
                   <h3 className="text-sm font-black text-slate-900">Reset Email Dispatched!</h3>
                   <p className="text-xs text-slate-600 mt-1">
-                    A secure password reset email has been dispatched via Supabase Auth to <strong>{resetEmail}</strong>. Please check your inbox and spam folder.
+                    A secure password reset email has been dispatched to <strong>{resetEmail}</strong>. Please check your inbox and spam folder.
                   </p>
                 </div>
                 <button

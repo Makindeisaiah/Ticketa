@@ -376,8 +376,6 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('tix_users', JSON.stringify(users));
   }, [users]);
 
-  // Supabase Data Sync & LocalStorage Fallback
-
   // Server Database Sync Initializer
   useEffect(() => {
     fetch('/api/db/sync')
@@ -811,18 +809,18 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     let selectionsMap: { [tierId: string]: number } = {};
     let attendeeDetails: { name: string; email: string; phone: string };
-    let paymentMethod: Order['paymentMethod'] = 'Flutterwave';
+    let paymentMethod: Order['paymentMethod'] = 'Credit Card';
     let discountPercentage = 0;
 
     if (typeof tierIdOrSelections === 'object' && tierIdOrSelections !== null) {
       selectionsMap = tierIdOrSelections;
       if (typeof quantityOrDetails === 'object' && quantityOrDetails !== null) {
         attendeeDetails = quantityOrDetails;
-        paymentMethod = (attendeeDetailsOrPayment as Order['paymentMethod']) || 'Flutterwave';
+        paymentMethod = (attendeeDetailsOrPayment as Order['paymentMethod']) || 'Credit Card';
         discountPercentage = (paymentMethodOrDiscount as number) || 0;
       } else {
         attendeeDetails = attendeeDetailsOrPayment as { name: string; email: string; phone: string };
-        paymentMethod = (paymentMethodOrDiscount as Order['paymentMethod']) || 'Flutterwave';
+        paymentMethod = (paymentMethodOrDiscount as Order['paymentMethod']) || 'Credit Card';
         discountPercentage = discountPercentageParam || 0;
       }
     } else {
@@ -830,7 +828,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const quantity = quantityOrDetails as number;
       selectionsMap = { [tierId]: quantity };
       attendeeDetails = attendeeDetailsOrPayment as { name: string; email: string; phone: string };
-      paymentMethod = (paymentMethodOrDiscount as Order['paymentMethod']) || 'Flutterwave';
+      paymentMethod = (paymentMethodOrDiscount as Order['paymentMethod']) || 'Credit Card';
       discountPercentage = discountPercentageParam || 0;
     }
 

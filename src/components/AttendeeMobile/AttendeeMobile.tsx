@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useEventContext } from '../../context/EventContext';
 import { QRCodeDisplay } from '../QRCodeDisplay';
-import { triggerFlutterwavePayment } from '../../lib/flutterwave';
 import { EventItem, EventCategory, TicketTier } from '../../types';
 import { 
   Smartphone, Ticket, MapPin, Compass, Calendar, 
@@ -112,63 +111,27 @@ export const AttendeeMobile: React.FC = () => {
     }
   };
 
-  // Handle Complete Purchase with Flutterwave Integration
+  // Handle Complete Purchase
   const handleCheckout = () => {
     if (!buyingEvent || !selectedTier) return;
     
-    const subtotal = selectedTier.price * quantity;
-    const discountAmount = subtotal * (appliedDiscount / 100);
-    const finalTotal = Math.max(0, subtotal - discountAmount);
-
-    triggerFlutterwavePayment({
-      amount: finalTotal,
-      email: userProfile.email,
-      name: `${userProfile.firstName} ${userProfile.lastName}`,
-      phone: userProfile.phone,
-      eventTitle: buyingEvent.title,
-      onSuccess: (flwResponse) => {
-        const newOrder = purchaseTickets(
-          buyingEvent.id,
-          selectedTier.id,
-          quantity,
-          {
-            name: `${userProfile.firstName} ${userProfile.lastName}`,
-            email: userProfile.email,
-            phone: userProfile.phone
-          },
-          'Flutterwave',
-          appliedDiscount
-        );
-
-        if (newOrder) {
-          setCheckoutSuccessOrder({
-            ...newOrder,
-            paymentMethod: `Flutterwave (${flwResponse.flw_ref || flwResponse.tx_ref})`
-          });
-          setBuyingEvent(null);
-        }
+    const newOrder = purchaseTickets(
+      buyingEvent.id,
+      selectedTier.id,
+      quantity,
+      {
+        name: `${userProfile.firstName} ${userProfile.lastName}`,
+        email: userProfile.email,
+        phone: userProfile.phone
       },
-      onError: () => {
-        // Fallback or direct confirmation
-        const newOrder = purchaseTickets(
-          buyingEvent.id,
-          selectedTier.id,
-          quantity,
-          {
-            name: `${userProfile.firstName} ${userProfile.lastName}`,
-            email: userProfile.email,
-            phone: userProfile.phone
-          },
-          'Flutterwave',
-          appliedDiscount
-        );
+      'Card Payment',
+      appliedDiscount
+    );
 
-        if (newOrder) {
-          setCheckoutSuccessOrder(newOrder);
-          setBuyingEvent(null);
-        }
-      }
-    });
+    if (newOrder) {
+      setCheckoutSuccessOrder(newOrder);
+      setBuyingEvent(null);
+    }
   };
 
   // Handle Add Payment Card

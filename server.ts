@@ -144,7 +144,7 @@ async function startServer() {
     }
   });
 
-  // 3. BANK ACCOUNT RESOLUTION (Flutterwave / Paystack / Server Verified Lookup)
+  // 3. BANK ACCOUNT RESOLUTION (Server Verified Lookup)
   app.post("/api/bank/resolve", async (req, res) => {
     try {
       const { accountNumber, bankCode, bankName } = req.body;
@@ -152,30 +152,7 @@ async function startServer() {
         return res.status(400).json({ error: "Account number must be 10 digits" });
       }
 
-      const flwKey = process.env.FLUTTERWAVE_SECRET_KEY;
       const paystackKey = process.env.PAYSTACK_SECRET_KEY;
-
-      if (flwKey && bankCode) {
-        try {
-          const response = await fetch("https://api.flutterwave.com/v3/accounts/resolve", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${flwKey}`
-            },
-            body: JSON.stringify({ account_number: accountNumber, account_bank: bankCode })
-          });
-          const data = await response.json();
-          if (data.status === "success" && data.data?.account_name) {
-            return res.json({
-              success: true,
-              accountName: data.data.account_name,
-              accountNumber: data.data.account_number,
-              bankName: bankName || "Verified Bank"
-            });
-          }
-        } catch (e) {}
-      }
 
       if (paystackKey && bankCode) {
         try {

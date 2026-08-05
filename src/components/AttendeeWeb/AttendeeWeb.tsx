@@ -3,7 +3,6 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useEventContext } from '../../context/EventContext';
 import { EventItem, TicketTier, Order } from '../../types';
 import { QRCodeDisplay } from '../QRCodeDisplay';
-import { triggerFlutterwavePayment } from '../../lib/flutterwave';
 import { 
   Search, Calendar, MapPin, Tag, ShieldCheck, Ticket, CreditCard, 
   Sparkles, CheckCircle2, ArrowRight, X, Clock, Users, ChevronRight,
@@ -148,7 +147,7 @@ export const AttendeeWeb: React.FC = () => {
   const [fullName, setFullName] = useState(currentUser?.fullName || (userProfile.firstName ? `${userProfile.firstName} ${userProfile.lastName}`.trim() : ''));
   const [email, setEmail] = useState(currentUser?.email || userProfile.email || '');
   const [phone, setPhone] = useState(currentUser?.phone || userProfile.phone || '');
-  const [paymentMethod, setPaymentMethod] = useState<'Flutterwave' | 'Credit Card' | 'Bank Transfer' | 'USSD'>('Flutterwave');
+  const [paymentMethod, setPaymentMethod] = useState<'Credit Card' | 'Bank Transfer' | 'USSD'>('Credit Card');
   const [promoCode, setPromoCode] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
   const [promoError, setPromoError] = useState('');
@@ -334,59 +333,14 @@ export const AttendeeWeb: React.FC = () => {
     }
   };
 
-  // Submit Order / Payment Execution via Flutterwave or local methods
+  // Submit Order / Payment Execution via direct methods
   const handleExecutePayment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeEvent || totalSelectedTicketsCount === 0) return;
 
     setIsProcessingPayment(true);
 
-    if (paymentMethod === 'Flutterwave') {
-      // Trigger Official Flutterwave Popup Modal
-      triggerFlutterwavePayment({
-        amount: finalTotalPrice,
-        email,
-        name: fullName,
-        phone,
-        eventTitle: activeEvent.title,
-        onSuccess: (flwResponse) => {
-          const newOrder = purchaseTickets(
-            activeEvent.id,
-            selectedTiers,
-            { name: fullName, email, phone },
-            'Flutterwave',
-            discountPercent
-          );
-          setIsProcessingPayment(false);
-          if (newOrder) {
-            setPaymentSuccessOrder({
-              ...newOrder,
-              paymentMethod: `Flutterwave (${flwResponse.flw_ref || flwResponse.tx_ref})`
-            });
-          }
-        },
-        onClose: () => {
-          setIsProcessingPayment(false);
-        },
-        onError: () => {
-          // Fallback simulation if network or script fails
-          const newOrder = purchaseTickets(
-            activeEvent.id,
-            selectedTiers,
-            { name: fullName, email, phone },
-            'Flutterwave',
-            discountPercent
-          );
-          setIsProcessingPayment(false);
-          if (newOrder) {
-            setPaymentSuccessOrder(newOrder);
-          }
-        }
-      });
-      return;
-    }
-
-    // Direct card / bank transfer simulation
+    // Direct card / bank transfer payment processing
     setTimeout(() => {
       const newOrder = purchaseTickets(
         activeEvent.id,
@@ -401,7 +355,7 @@ export const AttendeeWeb: React.FC = () => {
       if (newOrder) {
         setPaymentSuccessOrder(newOrder);
       }
-    }, 1500);
+    }, 1200);
   };
 
   const copyBankToClipboard = () => {
@@ -1472,16 +1426,15 @@ export const AttendeeWeb: React.FC = () => {
                     <h3 className="text-sm font-extrabold text-white uppercase tracking-wider text-emerald-400">
                       {t('selectPaymentGateway')}
                     </h3>
-                    <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-amber-400" />
-                      {t('flutterwaveIntegrated')}
+                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                      Encrypted Checkout
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     {[
-                      { id: 'Flutterwave', label: 'Flutterwave', sub: 'Instant Modal', icon: Sparkles, badge: 'Popular' },
-                      { id: 'Credit Card', label: 'Credit Card', sub: 'Direct Card', icon: CreditCard },
+                      { id: 'Credit Card', label: 'Credit Card', sub: 'Direct Card', icon: CreditCard, badge: 'Popular' },
                       { id: 'Bank Transfer', label: 'Bank Transfer', sub: 'Virtual Acc', icon: Building2 },
                       { id: 'USSD', label: 'USSD Code', sub: '*737# Direct', icon: Smartphone },
                     ].map(pm => {
@@ -1499,7 +1452,7 @@ export const AttendeeWeb: React.FC = () => {
                           }`}
                         >
                           {pm.badge && (
-                            <span className="absolute -top-2 right-1 text-[9px] font-black bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 px-1.5 py-0.2 rounded-full uppercase">
+                            <span className="absolute -top-2 right-1 text-[9px] font-black bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 px-1.5 py-0.2 rounded-full uppercase">
                               {pm.badge}
                             </span>
                           )}
@@ -1510,36 +1463,6 @@ export const AttendeeWeb: React.FC = () => {
                       );
                     })}
                   </div>
-
-                  {/* Flutterwave Info Banner */}
-                  {paymentMethod === 'Flutterwave' && (
-                    <div className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-600/10 p-4 rounded-xl border border-amber-500/30 space-y-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center font-black text-slate-950 text-sm shadow-lg shadow-amber-500/20 shrink-0">
-                          FW
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-bold text-white flex items-center gap-2">
-                            {t('flutterwaveSecured')}
-                            <span className="text-[10px] bg-amber-500/20 text-amber-300 font-semibold px-2 py-0.5 rounded-full border border-amber-500/30">
-                              {t('officialSdk')}
-                            </span>
-                          </h4>
-                          <p className="text-[11px] text-slate-300 mt-0.5">
-                            {t('flutterwaveNotice')}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="text-[11px] text-slate-300 bg-slate-950/80 p-2.5 rounded-lg border border-slate-800/80 flex items-center justify-between">
-                        <span className="flex items-center gap-1.5 text-slate-400">
-                          <Lock className="w-3.5 h-3.5 text-amber-400" />
-                          <span>{t('pciEncryption')}</span>
-                        </span>
-                        <span className="text-amber-400 font-mono font-bold">{t('instantPassGen')}</span>
-                      </div>
-                    </div>
-                  )}
 
                   {/* Card Form */}
                   {paymentMethod === 'Credit Card' && (

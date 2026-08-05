@@ -80,12 +80,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
     { id: '5', name: 'Makinde Isaiah', email: 'info@makindeisaiah.com', role: 'Support', status: 'Active' },
   ]);
 
-  // Flutterwave Config State
-  const [showFlwModal, setShowFlwModal] = useState(false);
-  const [flwPublicKey, setFlwPublicKey] = useState('FLWPUBK_TEST-SANDBOXDEMOKEY-X');
-  const [flwSecretKey, setFlwSecretKey] = useState('FLWSECK_TEST-••••••••••••••••');
-  const [flwMode, setFlwMode] = useState<'Test' | 'Live'>('Test');
-
   // Toast / notification state
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const showToast = (msg: string) => {
