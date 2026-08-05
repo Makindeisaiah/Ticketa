@@ -776,7 +776,15 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     (async () => {
       try {
         if (isSupabaseConfigured()) {
-          await supabase.from('users').upsert([sanitizeForStorage(newUser)]);
+          const { error: spErr } = await supabase.from('users').upsert([sanitizeForStorage(newUser)]);
+          if (spErr) {
+            console.error('Supabase save user error:', spErr);
+            triggerNotification(`Database Notice: User saved locally. Supabase error: ${spErr.message}`);
+          } else {
+            console.log('Successfully saved user to Supabase database:', newUser.id);
+          }
+        } else {
+          console.warn('Supabase is not configured. Configure keys in Settings to sync with external database.');
         }
       } catch (err) {
         console.error('Error writing user to database:', err);
