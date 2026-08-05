@@ -7,7 +7,6 @@ import {
 import { useEventContext } from '../../context/EventContext';
 import { OrganizerPayoutAccount } from '../../types';
 import { useLanguage, setStoredLanguage } from '../../utils/translations';
-import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 
 export interface CountryConfig {
   name: string;
@@ -243,24 +242,6 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
       return;
     }
 
-    // Attempt Supabase Auth Sign Up if configured
-    if (isSupabaseConfigured()) {
-      try {
-        const { data: spData, error: spErr } = await supabase.auth.signUp({
-          email: cleanEmail,
-          password: password,
-          options: {
-            data: { full_name: fullName, role: 'organizer' }
-          }
-        });
-        if (spErr && !spErr.message.includes('already registered')) {
-          console.warn('Supabase Auth signUp note:', spErr.message);
-        }
-      } catch (err: any) {
-        console.warn('Supabase auth signup notice:', err);
-      }
-    }
-
     setStep(2);
   };
 
@@ -447,22 +428,6 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
     }
 
     setIsLoggingIn(true);
-
-    if (isSupabaseConfigured()) {
-      try {
-        const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
-          email: cleanEmail,
-          password: loginPassword
-        });
-
-        if (authErr) {
-          console.warn('Supabase signIn error:', authErr.message);
-        }
-      } catch (err: any) {
-        console.warn('Supabase signIn exception:', err);
-      }
-    }
-
     setIsLoggingIn(false);
 
     // Context / Store Organizer lookup
@@ -506,20 +471,6 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
     }
 
     setResetLoading(true);
-
-    if (isSupabaseConfigured()) {
-      try {
-        const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-          redirectTo: `${window.location.origin}/reset-password`
-        });
-        if (error) {
-          console.warn('Supabase resetPasswordForEmail warning:', error.message);
-        }
-      } catch (err) {
-        console.warn('Supabase reset password exception:', err);
-      }
-    }
-
     setResetLoading(false);
     setResetSuccess(true);
   };

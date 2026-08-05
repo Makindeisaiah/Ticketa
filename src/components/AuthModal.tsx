@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useEventContext } from '../context/EventContext';
 import { useLanguage } from '../utils/translations';
 import { formatOrganizerCurrency } from '../utils/currency';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { X, UserPlus, LogIn, CheckCircle2, User, Mail, Phone, Lock, Sparkles, ShieldCheck, KeyRound, RefreshCw, Check } from 'lucide-react';
 
 interface AuthModalProps {
@@ -46,24 +45,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
 
   const handleStartSocialAuth = async (provider: 'Google' | 'Apple') => {
     setErrorMsg('');
-    if (provider === 'Google' && isSupabaseConfigured()) {
-      try {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: window.location.origin
-          }
-        });
-        if (error) {
-          console.warn('Supabase OAuth trigger warning:', error.message);
-        } else {
-          return;
-        }
-      } catch (err: any) {
-        console.warn('Supabase OAuth exception:', err);
-      }
-    }
-
     setSocialProvider(provider);
     if (provider === 'Google') {
       setSocialName('');

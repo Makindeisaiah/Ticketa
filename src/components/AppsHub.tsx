@@ -97,7 +97,7 @@ export const AppsHub: React.FC = () => {
           </h1>
 
           <p className="text-sm sm:text-base text-slate-300 font-medium leading-relaxed">
-            Four independent, dedicated applications synchronized in real-time through a shared Supabase backend database and local state.
+            Four independent, dedicated applications synchronized in real-time through a shared local server database engine.
           </p>
 
           <div className="pt-2 flex items-center justify-center gap-3">
@@ -126,7 +126,7 @@ export const AppsHub: React.FC = () => {
             </p>
             <p className="text-lg font-black text-emerald-400 flex items-center gap-1">
               <CheckCircle2 className="w-4 h-4" />
-              Supabase Database
+              Local JSON Database
             </p>
           </div>
 

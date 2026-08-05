@@ -4,7 +4,6 @@ import {
   UserProfile, PaymentCard, TicketaUser, OrganizerUser, OfflineScanRecord, NotificationLog, QrTicket
 } from '../types';
 import { INITIAL_EVENTS, INITIAL_ORDERS, INITIAL_PROMOS, EVENT_IMAGE_OVERRIDE_MAP } from '../data/mockEvents';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 export interface ScanResult {
   success: boolean;
@@ -379,122 +378,42 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Supabase Data Sync & LocalStorage Fallback
 
+  // Server Database Sync Initializer
   useEffect(() => {
-    if (!isSupabaseConfigured()) return;
-
-    // Listen for Supabase Auth state changes (e.g. Google OAuth callback, login)
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        const userEmail = session.user.email || '';
-        const meta = session.user.user_metadata || {};
-        const userName = meta.full_name || meta.name || userEmail.split('@')[0] || 'User';
-        const userPhone = meta.phone || session.user.phone || '';
-
-        const loggedUser: TicketaUser = {
-          id: session.user.id || 'usr-' + Date.now(),
-          fullName: userName,
-          email: userEmail,
-          phone: userPhone,
-          registeredAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-          totalOrders: 0,
-          totalSpent: 0,
-          status: 'Verified',
-          emailVerified: true
-        };
-
-        setCurrentUser(prev => prev || loggedUser);
-
-        try {
-          await supabase.from('users').upsert([sanitizeForStorage(loggedUser)]);
-        } catch (err) {
-          console.warn('Failed to sync auth user to Supabase users table:', err);
-        }
-      }
-    });
-
-    (async () => {
-      try {
-        const { data: eventsData, error: eventsErr } = await supabase.from('events').select('*');
-        if (!eventsErr && eventsData && Array.isArray(eventsData) && eventsData.length > 0) {
-          const cleanList = eventsData.filter((e: any) => e.id && !deletedEventIdsRef.current.has(e.id));
-          if (cleanList.length > 0) {
-            setEvents(cleanList);
-            localStorage.setItem('tix_events', JSON.stringify(cleanList));
+    fetch('/api/db/sync')
+      .then(res => res.json())
+      .then(resData => {
+        if (resData.success && resData.data) {
+          const db = resData.data;
+          if (Array.isArray(db.events) && db.events.length > 0) {
+            const cleanList = db.events.filter((e: any) => e && e.id && !deletedEventIdsRef.current.has(e.id));
+            if (cleanList.length > 0) setEvents(cleanList);
           }
+          if (Array.isArray(db.orders) && db.orders.length > 0) setOrders(db.orders);
+          if (Array.isArray(db.users) && db.users.length > 0) setUsers(db.users);
+          if (Array.isArray(db.organizers) && db.organizers.length > 0) setOrganizers(db.organizers);
+          if (Array.isArray(db.tickets) && db.tickets.length > 0) setAllTickets(db.tickets);
         }
-      } catch (err) {
-        console.warn('Supabase fetch events error:', err);
-      }
-
-      try {
-        const { data: ordersData, error: ordersErr } = await supabase.from('orders').select('*');
-        if (!ordersErr && ordersData && Array.isArray(ordersData) && ordersData.length > 0) {
-          setOrders(prev => {
-            const map = new Map();
-            prev.forEach(o => map.set(o.id, o));
-            ordersData.forEach((o: any) => map.set(o.id, o));
-            const finalOrders = Array.from(map.values());
-            localStorage.setItem('tix_orders', JSON.stringify(finalOrders));
-            return finalOrders;
-          });
-        }
-      } catch (err) {
-        console.warn('Supabase fetch orders error:', err);
-      }
-
-      try {
-        const { data: ticketsData, error: ticketsErr } = await supabase.from('tickets').select('*');
-        if (!ticketsErr && ticketsData && Array.isArray(ticketsData) && ticketsData.length > 0) {
-          setAllTickets(prev => {
-            const map = new Map();
-            prev.forEach(t => map.set(t.ticketCode, t));
-            ticketsData.forEach((t: any) => map.set(t.ticketCode, t));
-            const finalTickets = Array.from(map.values());
-            localStorage.setItem('tix_all_tickets', JSON.stringify(finalTickets));
-            return finalTickets;
-          });
-        }
-      } catch (err) {
-        console.warn('Supabase fetch tickets error:', err);
-      }
-
-      try {
-        const { data: usersData, error: usersErr } = await supabase.from('users').select('*');
-        if (!usersErr && usersData && Array.isArray(usersData) && usersData.length > 0) {
-          setUsers(prev => {
-            const map = new Map();
-            prev.forEach(u => map.set(u.id, u));
-            usersData.forEach((u: any) => map.set(u.id, u));
-            const finalUsers = Array.from(map.values());
-            localStorage.setItem('tix_users', JSON.stringify(finalUsers));
-            return finalUsers;
-          });
-        }
-      } catch (err) {
-        console.warn('Supabase fetch users error:', err);
-      }
-
-      try {
-        const { data: orgsData, error: orgsErr } = await supabase.from('organizers').select('*');
-        if (!orgsErr && orgsData && Array.isArray(orgsData) && orgsData.length > 0) {
-          setOrganizers(prev => {
-            const map = new Map();
-            prev.forEach(o => map.set(o.id, o));
-            orgsData.forEach((o: any) => map.set(o.id, o));
-            const finalOrgs = Array.from(map.values());
-            localStorage.setItem('tix_organizers', JSON.stringify(finalOrgs));
-            return finalOrgs;
-          });
-        }
-      } catch (err) {
-        console.warn('Supabase fetch organizers error:', err);
-      }
-    })();
-
-    return () => {
-      authListener?.subscription?.unsubscribe();
-    };
+      })
+      .catch(err => console.warn('Server sync initial load notice:', err));
   }, []);
+
+  // Helper function to persist state changes to server database
+  const syncToServerDatabase = (nextState?: { events?: EventItem[]; orders?: Order[]; users?: TicketaUser[]; organizers?: OrganizerUser[]; tickets?: TicketPass[] }) => {
+    const payload = {
+      events: nextState?.events || events,
+      orders: nextState?.orders || orders,
+      users: nextState?.users || users,
+      organizers: nextState?.organizers || organizers,
+      tickets: nextState?.tickets || allTickets
+    };
+
+    fetch('/api/db/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(e => console.warn('Database server sync warning:', e));
+  };
 
   // Sync state to localStorage for offline fallback
   useEffect(() => {
@@ -558,18 +477,11 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const updateEvent = async (updatedEvent: EventItem) => {
     // Update local state immediately
-    setEvents(prev => prev.map(e => e.id === updatedEvent.id ? updatedEvent : e));
-    localStorage.setItem('tix_events', JSON.stringify(events.map(e => e.id === updatedEvent.id ? updatedEvent : e)));
+    const nextEvents = events.map(e => e.id === updatedEvent.id ? updatedEvent : e);
+    setEvents(nextEvents);
+    localStorage.setItem('tix_events', JSON.stringify(nextEvents));
 
-    // Update in Supabase if configured
-    if (isSupabaseConfigured()) {
-      try {
-        await supabase.from('events').upsert([sanitizeForStorage(updatedEvent)]);
-      } catch (err) {
-        console.warn('Supabase update event error:', err);
-      }
-    }
-
+    syncToServerDatabase({ events: nextEvents });
     triggerNotification(`Event "${updatedEvent.title}" updated successfully!`);
   };
 
@@ -599,36 +511,18 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setEvents(updatedEventsList);
     localStorage.setItem('tix_events', JSON.stringify(updatedEventsList));
 
-    // Save to Supabase
-    try {
-      const cleanData = sanitizeForStorage(newEvent);
-
-      if (isSupabaseConfigured()) {
-        const { error: spErr } = await supabase.from('events').upsert([cleanData]);
-        if (spErr) {
-          console.error('Supabase save event error:', spErr);
-          triggerNotification(`Database alert: Event saved locally. Supabase error: ${spErr.message}`);
-        } else {
-          console.log('Successfully saved event to Supabase database:', newEvent.id);
-        }
-      }
-
-      if (currentOrganizer) {
-        const updatedOrg: OrganizerUser = {
-          ...currentOrganizer,
-          eventsCount: (currentOrganizer.eventsCount || 0) + 1
-        };
-        setCurrentOrganizer(updatedOrg);
-        setOrganizers(prev => prev.map(o => o.id === currentOrganizer.id ? updatedOrg : o));
-        if (isSupabaseConfigured()) {
-          const { error: orgErr } = await supabase.from('organizers').upsert([sanitizeForStorage(updatedOrg)]);
-          if (orgErr) console.error('Supabase update organizer error:', orgErr);
-        }
-      }
-    } catch (err) {
-      console.error('Error saving event to database:', err);
+    let updatedOrgs = organizers;
+    if (currentOrganizer) {
+      const updatedOrg: OrganizerUser = {
+        ...currentOrganizer,
+        eventsCount: (currentOrganizer.eventsCount || 0) + 1
+      };
+      setCurrentOrganizer(updatedOrg);
+      updatedOrgs = organizers.map(o => o.id === currentOrganizer.id ? updatedOrg : o);
+      setOrganizers(updatedOrgs);
     }
 
+    syncToServerDatabase({ events: updatedEventsList, organizers: updatedOrgs });
     triggerNotification(`Event "${newEvent.title}" published successfully!`);
   };
 
@@ -645,10 +539,13 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Update local states & local storage
     const remainingEvents = events.filter(e => e.id !== eventId);
+    const remainingOrders = orders.filter(o => o.eventId !== eventId);
+    const remainingTickets = allTickets.filter(t => t.eventId !== eventId);
+
     setEvents(remainingEvents);
     localStorage.setItem('tix_events', JSON.stringify(remainingEvents));
-    setOrders(prev => prev.filter(o => o.eventId !== eventId));
-    setAllTickets(prev => prev.filter(t => t.eventId !== eventId));
+    setOrders(remainingOrders);
+    setAllTickets(remainingTickets);
 
     // Log cancellation & refund notifications
     if (affectedOrders.length > 0) {
@@ -667,20 +564,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
     }
 
-    // Delete from Supabase
-    try {
-      if (isSupabaseConfigured()) {
-        await supabase.from('events').delete().eq('id', eventId);
-        for (const ord of affectedOrders) {
-          await supabase.from('orders').delete().eq('id', ord.id);
-        }
-        for (const tkt of affectedTickets) {
-          await supabase.from('tickets').delete().eq('ticketCode', tkt.ticketCode);
-        }
-      }
-    } catch (err) {
-      console.error('Error deleting event from database:', err);
-    }
+    syncToServerDatabase({ events: remainingEvents, orders: remainingOrders, tickets: remainingTickets });
 
     if (affectedOrders.length > 0) {
       triggerNotification(`Event "${targetEvent.title}" deleted. ₦${totalRefundAmount.toLocaleString()} refunded to ${affectedOrders.length} buyer(s).`);
@@ -703,7 +587,8 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         phone: cleanPhone || existing.phone
       };
 
-      setUsers(prev => prev.map(u => u.id === existing.id ? updatedExisting : u));
+      const nextUsers = users.map(u => u.id === existing.id ? updatedExisting : u);
+      setUsers(nextUsers);
       setCurrentUser(updatedExisting);
 
       const nameParts = updatedExisting.fullName.split(' ');
@@ -723,16 +608,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       };
       setUserProfile(freshProfile);
 
-      (async () => {
-        try {
-          if (isSupabaseConfigured()) {
-            await supabase.from('users').upsert([sanitizeForStorage(updatedExisting)]);
-          }
-        } catch (err) {
-          console.error('Error updating existing user in database:', err);
-        }
-      })();
-
+      syncToServerDatabase({ users: nextUsers });
       triggerNotification(`Welcome back, ${existing.fullName}! Account logged in.`);
       return updatedExisting;
     }
@@ -768,28 +644,12 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     };
 
-    setUsers(prev => [newUser, ...prev]);
+    const nextUsers = [newUser, ...users];
+    setUsers(nextUsers);
     setCurrentUser(newUser);
     setUserProfile(freshProfile);
 
-    // Persist to Supabase
-    (async () => {
-      try {
-        if (isSupabaseConfigured()) {
-          const { error: spErr } = await supabase.from('users').upsert([sanitizeForStorage(newUser)]);
-          if (spErr) {
-            console.error('Supabase save user error:', spErr);
-            triggerNotification(`Database Notice: User saved locally. Supabase error: ${spErr.message}`);
-          } else {
-            console.log('Successfully saved user to Supabase database:', newUser.id);
-          }
-        } else {
-          console.warn('Supabase is not configured. Configure keys in Settings to sync with external database.');
-        }
-      } catch (err) {
-        console.error('Error writing user to database:', err);
-      }
-    })();
+    syncToServerDatabase({ users: nextUsers });
 
     // Verification Log Entry
     const verifNotif: NotificationLog = {
@@ -884,19 +744,11 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         payoutAccount: details.payoutAccount || existing.payoutAccount,
         verificationStatus: details.verificationStatus || existing.verificationStatus || 'Verified',
       };
-      setOrganizers(prev => prev.map(o => o.id === existing.id ? updatedExisting : o));
+      const nextOrgs = organizers.map(o => o.id === existing.id ? updatedExisting : o);
+      setOrganizers(nextOrgs);
       setCurrentOrganizer(updatedExisting);
 
-      (async () => {
-        try {
-          if (isSupabaseConfigured()) {
-            await supabase.from('organizers').upsert([sanitizeForStorage(updatedExisting)]);
-          }
-        } catch (err) {
-          console.error('Error updating organizer in database:', err);
-        }
-      })();
-
+      syncToServerDatabase({ organizers: nextOrgs });
       triggerNotification(`Organizer account logged in for ${updatedExisting.organizationName}`);
       return updatedExisting;
     }
@@ -919,26 +771,11 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       eventsCount: events.filter(e => e.organizerName.toLowerCase() === cleanName.toLowerCase()).length
     };
 
-    setOrganizers(prev => [newOrganizer, ...prev]);
+    const nextOrgs = [newOrganizer, ...organizers];
+    setOrganizers(nextOrgs);
     setCurrentOrganizer(newOrganizer);
 
-    // Persist to Supabase
-    (async () => {
-      try {
-        if (isSupabaseConfigured()) {
-          const { error: spErr } = await supabase.from('organizers').upsert([sanitizeForStorage(newOrganizer)]);
-          if (spErr) {
-            console.error('Supabase save organizer error:', spErr);
-            triggerNotification(`Database alert: Organizer registered locally. Supabase error: ${spErr.message}`);
-          } else {
-            console.log('Successfully saved organizer to Supabase database:', newOrganizer.id);
-          }
-        }
-      } catch (err) {
-        console.error('Error writing organizer to database:', err);
-      }
-    })();
-
+    syncToServerDatabase({ organizers: nextOrgs });
     triggerNotification(`Organizer account created for ${newOrganizer.organizationName}!`);
     return newOrganizer;
   };
@@ -1134,48 +971,13 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setCurrentUser(targetUser);
     }
 
-    // Save order, updated event, and user to Supabase async
-    (async () => {
-      try {
-        if (isSupabaseConfigured()) {
-          try {
-            await supabase.from('orders').upsert([sanitizeForStorage(newOrder)]);
-            await supabase.from('events').upsert([sanitizeForStorage(updatedEventObj)]);
-            await supabase.from('users').upsert([sanitizeForStorage(targetUser)]);
-          } catch (spErr) {
-            console.warn('Supabase order/event upsert error:', spErr);
-          }
-        }
-
-        // Save tickets to separate collection
-        for (const t of tickets) {
-          if (isSupabaseConfigured()) {
-            try {
-              await supabase.from('tickets').upsert([sanitizeForStorage(t)]);
-            } catch (spErr) {
-              console.warn('Supabase ticket upsert error:', spErr);
-            }
-          }
-          
-          const qrData: QrTicket = {
-            id: `qr-${t.ticketCode}`,
-            ticketCode: t.ticketCode,
-            eventId: eventObj.id,
-            status: 'VALID',
-            qrData: JSON.stringify({ code: t.ticketCode, eventId: eventObj.id, tier: t.tierName })
-          };
-          if (isSupabaseConfigured()) {
-            try {
-              await supabase.from('qr_tickets').upsert([sanitizeForStorage(qrData)]);
-            } catch (spErr) {
-              console.warn('Supabase qr_tickets upsert error:', spErr);
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Error writing records to database:', err);
-      }
-    })();
+    // Sync order, updated event, user, and tickets to server database
+    syncToServerDatabase({
+      orders: [newOrder, ...orders],
+      events: events.map(e => e.id === updatedEventObj.id ? updatedEventObj : e),
+      users: users.map(u => u.id === targetUser.id ? targetUser : u),
+      tickets: [...tickets, ...allTickets]
+    });
 
     // Auto-dispatch Email and SMS ticket notifications
     sendTicketEmail(newOrder, attendeeDetails.email);
@@ -1279,25 +1081,9 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             return t;
           });
           const updatedOrder = { ...foundOrder, tickets: updatedTickets };
-          if (isSupabaseConfigured()) {
-            await supabase.from('orders').upsert([sanitizeForStorage(updatedOrder)]);
-          }
-          
-          const t = updatedTickets.find(t => t.ticketCode === record.ticketCode);
-          if (t) {
-            if (isSupabaseConfigured()) {
-              await supabase.from('tickets').upsert([sanitizeForStorage(t)]);
-              await supabase.from('qr_tickets').upsert([sanitizeForStorage({
-                id: `qr-${t.ticketCode}`,
-                ticketCode: t.ticketCode,
-                eventId: t.eventId,
-                status: 'CHECKED_IN',
-                qrData: JSON.stringify({ code: t.ticketCode, eventId: t.eventId, tier: t.tierName }),
-                scannedAt: record.scannedAt,
-                assignedGate: record.gateName
-              })]);
-            }
-          }
+          const nextOrders = orders.map(o => o.id === updatedOrder.id ? updatedOrder : o);
+          setOrders(nextOrders);
+          syncToServerDatabase({ orders: nextOrders });
         }
         syncedCount++;
       } catch (e) {
@@ -1422,31 +1208,13 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       tickets: targetOrder.tickets.map(tk => (tk.ticketCode === foundTicket!.ticketCode ? updatedTicket : tk))
     };
 
-    // Update in local state
-    setOrders(prevOrders =>
-      prevOrders.map(ord => (ord.id === targetOrder!.id ? updatedOrder : ord))
-    );
+    const nextOrders = orders.map(ord => (ord.id === targetOrder!.id ? updatedOrder : ord));
+    setOrders(nextOrders);
 
-    // Save to Supabase
-    (async () => {
-      try {
-        if (isSupabaseConfigured()) {
-          await supabase.from('orders').upsert([sanitizeForStorage(updatedOrder)]);
-          await supabase.from('tickets').upsert([sanitizeForStorage(updatedTicket)]);
-          await supabase.from('qr_tickets').upsert([sanitizeForStorage({
-            id: `qr-${updatedTicket.ticketCode}`,
-            ticketCode: updatedTicket.ticketCode,
-            eventId: updatedTicket.eventId,
-            status: 'CHECKED_IN',
-            qrData: JSON.stringify({ code: updatedTicket.ticketCode, eventId: updatedTicket.eventId, tier: updatedTicket.tierName }),
-            scannedAt: nowStr,
-            assignedGate: gateName
-          })]);
-        }
-      } catch (err) {
-        console.error('Error updating ticket check-in in Supabase:', err);
-      }
-    })();
+    const nextTickets = allTickets.map(t => t.ticketCode === updatedTicket.ticketCode ? updatedTicket : t);
+    setAllTickets(nextTickets);
+
+    syncToServerDatabase({ orders: nextOrders, tickets: nextTickets });
 
     triggerNotification(`ENTRY GRANTED: ${updatedTicket.attendeeName} (${updatedTicket.tierName}) at ${gateName}`);
 
@@ -1548,19 +1316,13 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.removeItem('organizer_session');
     localStorage.removeItem('tix_user_profile');
 
-    // Wipe Supabase tables if configured
-    if (isSupabaseConfigured()) {
-      try {
-        await supabase.from('events').delete().neq('id', '');
-        await supabase.from('orders').delete().neq('id', '');
-        await supabase.from('tickets').delete().neq('ticketCode', '');
-        await supabase.from('users').delete().neq('id', '');
-        await supabase.from('organizers').delete().neq('id', '');
-        await supabase.from('qr_tickets').delete().neq('id', '');
-      } catch (e) {
-        console.error('Error wiping Supabase data:', e);
-      }
-    }
+    syncToServerDatabase({
+      events: [],
+      orders: [],
+      users: [],
+      organizers: [],
+      tickets: []
+    });
 
     triggerNotification('Platform dataset reset to clean zero state.');
   };

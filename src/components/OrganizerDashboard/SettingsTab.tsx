@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useEventContext } from '../../context/EventContext';
 import { useLanguage } from '../../utils/translations';
 import { formatOrganizerCurrency, getOrganizerCurrencyConfig } from '../../utils/currency';
-import { supabase, configureSupabase, isSupabaseConfigured } from '../../lib/supabase';
 import { 
   Building2, 
   Users, 
@@ -80,10 +79,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
     { id: '4', name: 'Makinde Isaiah', email: 'info@makindeisaiah.com', role: 'Gate Staff', status: 'Pending' },
     { id: '5', name: 'Makinde Isaiah', email: 'info@makindeisaiah.com', role: 'Support', status: 'Active' },
   ]);
-
-  // Supabase Config State
-  const [spUrl, setSpUrl] = useState(() => localStorage.getItem('tix_supabase_url') || (import.meta as any).env?.VITE_SUPABASE_URL || '');
-  const [spKey, setSpKey] = useState(() => localStorage.getItem('tix_supabase_anon_key') || (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '');
 
   // Flutterwave Config State
   const [showFlwModal, setShowFlwModal] = useState(false);
@@ -1076,207 +1071,46 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
             <ArrowLeft className="w-3.5 h-3.5" /> {t('backToSettings')} / {t('integrationsTitle')}
           </button>
 
-          {/* Supabase Database Integration Card */}
+          {/* Integrated Database Card */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4 max-w-2xl text-xs">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
                 <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
                   <Database className="w-5 h-5 text-[#00C896]" />
-                  Supabase Database Integration
+                  Local Server Database Engine
                 </h2>
                 <p className="text-slate-500 text-xs mt-0.5">
-                  Connect your Supabase PostgreSQL project to sync events, ticket sales, orders, and organizers in real-time.
+                  Your platform is powered by an integrated local file database engine persisting state cleanly in <code className="font-mono text-emerald-600 bg-emerald-50 px-1 py-0.5 rounded">/data/db.json</code>.
                 </p>
               </div>
-              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                isSupabaseConfigured() ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'
-              }`}>
-                {isSupabaseConfigured() ? '● Connected' : '○ Not Configured'}
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                ● Active & Verified
               </span>
             </div>
 
-            <div className="space-y-4 pt-1">
-              <div>
-                <label className="block text-xs font-bold text-slate-800 mb-1">Supabase Project URL</label>
-                <input
-                  type="text"
-                  value={spUrl}
-                  onChange={(e) => setSpUrl(e.target.value)}
-                  placeholder="https://your-project-id.supabase.co"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00C896]"
-                />
+            <div className="space-y-3 pt-1">
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 space-y-1">
+                <div className="font-bold text-slate-900">Automatic Persistence Features:</div>
+                <ul className="list-disc list-inside space-y-0.5 text-[11px] text-slate-600">
+                  <li>Persistent account registration and organizer onboarding data</li>
+                  <li>Real-time event creation, tier management, and publish updates</li>
+                  <li>Instant local SMS OTP generation and account status verification</li>
+                  <li>Nigerian bank account resolution using local deterministic resolution</li>
+                </ul>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-800 mb-1">Supabase Anon API Key</label>
-                <input
-                  type="password"
-                  value={spKey}
-                  onChange={(e) => setSpKey(e.target.value)}
-                  placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#00C896]"
-                />
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
-                <span className="text-[11px] text-slate-500">
-                  {isSupabaseConfigured() ? 'Database keys saved in browser session.' : 'Enter your project credentials to enable database syncing.'}
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={async () => {
-                      if (!isSupabaseConfigured()) {
-                        showToast('Please save & connect Supabase first');
-                        return;
-                      }
-                      try {
-                        const { error } = await supabase.from('events').select('count', { count: 'exact', head: true });
-                        if (error) {
-                          alert(`Supabase Connection Test Result:\n\n❌ Error: ${error.message}\n\nHint: Make sure you ran the SQL Schema script in your Supabase SQL Editor to create the "events" table!`);
-                        } else {
-                          showToast('✅ Supabase Connection Test Passed! Tables verified.');
-                        }
-                      } catch (e: any) {
-                        alert(`Connection test failed: ${e?.message || e}`);
-                      }
-                    }}
-                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition cursor-pointer"
-                  >
-                    Test Connection
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (!spUrl.trim() || !spKey.trim()) {
-                        showToast('Please provide both Supabase URL and Anon Key');
-                        return;
-                      }
-                      configureSupabase(spUrl, spKey);
-                      showToast('Supabase Database Connected Successfully!');
-                    }}
-                    className="px-4 py-2 bg-[#00C896] hover:bg-[#00b084] text-white font-extrabold text-xs rounded-xl transition shadow-sm cursor-pointer"
-                  >
-                    Save & Connect Supabase Database
-                  </button>
-                </div>
-              </div>
-
-              {/* Copy SQL Schema Box */}
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 mt-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-extrabold text-slate-900 text-xs">Required Supabase Database Tables</h4>
-                    <p className="text-[11px] text-slate-500">If your events or organizers are not saving to Supabase, run this SQL script in your Supabase SQL Editor once.</p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const sqlScript = `-- Run this script in your Supabase SQL Editor:
-create table if not exists public.events (
-  id text primary key,
-  title text,
-  category text,
-  "organizerName" text,
-  "organizerId" text,
-  currency text,
-  country text,
-  date text,
-  time text,
-  location text,
-  "venueName" text,
-  address text,
-  image text,
-  "bannerImage" text,
-  description text,
-  featured boolean default false,
-  tags jsonb default '[]'::jsonb,
-  expectations jsonb default '[]'::jsonb,
-  "refundPolicy" text,
-  "importantInfo" jsonb default '[]'::jsonb,
-  "ticketTiers" jsonb default '[]'::jsonb,
-  created_at timestamp with time zone default timezone('utc'::text, now())
-);
-
-create table if not exists public.orders (
-  id text primary key,
-  "orderNumber" text,
-  "eventId" text,
-  "eventTitle" text,
-  "organizerId" text,
-  "customerName" text,
-  "customerEmail" text,
-  "customerPhone" text,
-  "ticketsCount" integer default 1,
-  "totalAmount" numeric default 0,
-  currency text,
-  "paymentStatus" text,
-  "paymentMethod" text,
-  "paymentReference" text,
-  tickets jsonb default '[]'::jsonb,
-  created_at timestamp with time zone default timezone('utc'::text, now())
-);
-
-create table if not exists public.tickets (
-  "ticketCode" text primary key,
-  id text,
-  "orderId" text,
-  "eventId" text,
-  "tierId" text,
-  "tierName" text,
-  "attendeeName" text,
-  "attendeeEmail" text,
-  price numeric default 0,
-  status text,
-  "checkedIn" boolean default false,
-  "checkedInAt" text,
-  "checkedInBy" text,
-  created_at timestamp with time zone default timezone('utc'::text, now())
-);
-
-create table if not exists public.users (
-  id text primary key,
-  name text,
-  email text,
-  phone text,
-  role text,
-  created_at timestamp with time zone default timezone('utc'::text, now())
-);
-
-create table if not exists public.organizers (
-  id text primary key,
-  "organizationName" text,
-  email text,
-  phone text,
-  country text,
-  currency text,
-  "logoUrl" text,
-  verified boolean default false,
-  "eventsCount" integer default 0,
-  created_at timestamp with time zone default timezone('utc'::text, now())
-);
-
-create table if not exists public.qr_tickets (
-  id text primary key,
-  "ticketCode" text,
-  "orderId" text,
-  "eventId" text,
-  "qrData" text,
-  created_at timestamp with time zone default timezone('utc'::text, now())
-);
-
-alter table public.events disable row level security;
-alter table public.orders disable row level security;
-alter table public.tickets disable row level security;
-alter table public.users disable row level security;
-alter table public.organizers disable row level security;
-alter table public.qr_tickets disable row level security;
-`;
-                      navigator.clipboard.writeText(sqlScript);
-                      showToast('Copied Supabase SQL Script to Clipboard!');
-                    }}
-                    className="px-3 py-1.5 bg-slate-900 text-white hover:bg-slate-800 text-[11px] font-bold rounded-lg transition"
-                  >
-                    Copy SQL Setup Script
-                  </button>
-                </div>
+              <div className="flex justify-end pt-2">
+                <button
+                  onClick={() => {
+                    fetch('/api/db/sync')
+                      .then(r => r.json())
+                      .then(() => showToast('Server database verified and in sync!'))
+                      .catch(() => showToast('Database sync check failed.'));
+                  }}
+                  className="px-4 py-2 bg-[#00C896] hover:bg-[#00b084] text-white font-extrabold text-xs rounded-xl transition shadow-sm cursor-pointer"
+                >
+                  Verify Server Database Status
+                </button>
               </div>
             </div>
           </div>
