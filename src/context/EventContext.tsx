@@ -382,6 +382,36 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
 
+    // Listen for Supabase Auth state changes (e.g. Google OAuth callback, login)
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const userEmail = session.user.email || '';
+        const meta = session.user.user_metadata || {};
+        const userName = meta.full_name || meta.name || userEmail.split('@')[0] || 'User';
+        const userPhone = meta.phone || session.user.phone || '';
+
+        const loggedUser: TicketaUser = {
+          id: session.user.id || 'usr-' + Date.now(),
+          fullName: userName,
+          email: userEmail,
+          phone: userPhone,
+          registeredAt: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          totalOrders: 0,
+          totalSpent: 0,
+          status: 'Verified',
+          emailVerified: true
+        };
+
+        setCurrentUser(prev => prev || loggedUser);
+
+        try {
+          await supabase.from('users').upsert([sanitizeForStorage(loggedUser)]);
+        } catch (err) {
+          console.warn('Failed to sync auth user to Supabase users table:', err);
+        }
+      }
+    });
+
     (async () => {
       try {
         const { data: eventsData, error: eventsErr } = await supabase.from('events').select('*');
@@ -460,6 +490,10 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         console.warn('Supabase fetch organizers error:', err);
       }
     })();
+
+    return () => {
+      authListener?.subscription?.unsubscribe();
+    };
   }, []);
 
   // Sync state to localStorage for offline fallback
