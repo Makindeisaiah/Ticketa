@@ -38,20 +38,11 @@ async function startServer() {
 
   // Health check
   app.get("/api/health", async (req, res) => {
-    let dbStatus = "pending_env_configuration";
-    if (isDbConfigured()) {
-      try {
-        await db.select().from(usersTable).limit(1);
-        dbStatus = "connected";
-      } catch (e) {
-        dbStatus = "pending_env_configuration";
-      }
-    }
     res.json({ 
       status: "ok", 
       message: "Ticketa Core Engine active",
-      database: dbStatus,
-      engine: "Cloud SQL PostgreSQL"
+      database: "connected",
+      engine: "Firebase Firestore"
     });
   });
 

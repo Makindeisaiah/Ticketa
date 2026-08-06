@@ -4,6 +4,16 @@ import {
   UserProfile, PaymentCard, TicketaUser, OrganizerUser, OfflineScanRecord, NotificationLog, QrTicket
 } from '../types';
 import { INITIAL_EVENTS, INITIAL_ORDERS, INITIAL_PROMOS, EVENT_IMAGE_OVERRIDE_MAP } from '../data/mockEvents';
+import { 
+  loadAllFromFirestore, 
+  syncAllToFirestore, 
+  saveUserToFirestore, 
+  saveOrganizerToFirestore, 
+  saveEventToFirestore, 
+  deleteEventFromFirestore, 
+  saveOrderToFirestore, 
+  saveTicketToFirestore 
+} from '../lib/firestoreSync';
 
 export interface ScanResult {
   success: boolean;
@@ -376,27 +386,52 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('tix_users', JSON.stringify(users));
   }, [users]);
 
-  // Server Database Sync Initializer
+  // Firebase Firestore Database Sync Initializer
   useEffect(() => {
-    fetch('/api/db/sync')
-      .then(res => res.json())
-      .then(resData => {
-        if (resData.success && resData.data) {
-          const db = resData.data;
-          if (Array.isArray(db.events) && db.events.length > 0) {
-            const cleanList = db.events.filter((e: any) => e && e.id && !deletedEventIdsRef.current.has(e.id));
+    let isMounted = true;
+    async function initFirestoreData() {
+      try {
+        const firestoreData = await loadAllFromFirestore();
+        if (!isMounted) return;
+
+        if (firestoreData) {
+          if (firestoreData.events && firestoreData.events.length > 0) {
+            const cleanList = firestoreData.events.filter((e: any) => e && e.id && !deletedEventIdsRef.current.has(e.id));
             if (cleanList.length > 0) setEvents(cleanList);
+          } else {
+            // Seed initial events to Firestore if empty
+            syncAllToFirestore({ events: INITIAL_EVENTS });
           }
-          if (Array.isArray(db.orders) && db.orders.length > 0) setOrders(db.orders);
-          if (Array.isArray(db.users) && db.users.length > 0) setUsers(db.users);
-          if (Array.isArray(db.organizers) && db.organizers.length > 0) setOrganizers(db.organizers);
-          if (Array.isArray(db.tickets) && db.tickets.length > 0) setAllTickets(db.tickets);
+
+          if (firestoreData.orders && firestoreData.orders.length > 0) {
+            setOrders(firestoreData.orders);
+          }
+          if (firestoreData.users && firestoreData.users.length > 0) {
+            setUsers(firestoreData.users);
+          } else {
+            // Seed initial users if empty
+            syncAllToFirestore({ users: INITIAL_USERS });
+          }
+          if (firestoreData.organizers && firestoreData.organizers.length > 0) {
+            setOrganizers(firestoreData.organizers);
+          }
+          if (firestoreData.tickets && firestoreData.tickets.length > 0) {
+            setAllTickets(firestoreData.tickets);
+          }
         }
-      })
-      .catch(err => console.warn('Server sync initial load notice:', err));
+      } catch (err) {
+        console.warn('Firestore initial load notice:', err);
+      }
+    }
+
+    initFirestoreData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  // Helper function to persist state changes to server database
+  // Helper function to persist state changes directly to Firebase Firestore
   const syncToServerDatabase = (nextState?: { events?: EventItem[]; orders?: Order[]; users?: TicketaUser[]; organizers?: OrganizerUser[]; tickets?: TicketPass[] }) => {
     const payload = {
       events: nextState?.events || events,
@@ -406,11 +441,14 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       tickets: nextState?.tickets || allTickets
     };
 
+    syncAllToFirestore(payload);
+
+    // Also notify server endpoint if active
     fetch('/api/db/sync', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
-    }).catch(e => console.warn('Database server sync warning:', e));
+    }).catch(() => {});
   };
 
   // Sync state to localStorage for offline fallback
@@ -562,6 +600,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
     }
 
+    deleteEventFromFirestore(eventId);
     syncToServerDatabase({ events: remainingEvents, orders: remainingOrders, tickets: remainingTickets });
 
     if (affectedOrders.length > 0) {

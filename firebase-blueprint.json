@@ -1,0 +1,108 @@
+{
+  "entities": {
+    "users": {
+      "title": "users",
+      "description": "Registered attendee users",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "fullName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "registeredAt": { "type": "string" },
+        "totalOrders": { "type": "number" },
+        "totalSpent": { "type": "number" },
+        "status": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "emailVerified": { "type": "boolean" }
+      },
+      "required": ["email", "fullName"]
+    },
+    "organizers": {
+      "title": "organizers",
+      "description": "Event Organizers",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "organizationName": { "type": "string" },
+        "fullName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "category": { "type": "string" },
+        "organizerType": { "type": "string" },
+        "country": { "type": "string" },
+        "verificationStatus": { "type": "string" },
+        "payoutAccount": { "type": "object" },
+        "eventsCount": { "type": "number" },
+        "totalTicketsSold": { "type": "number" },
+        "totalRevenue": { "type": "number" }
+      },
+      "required": ["email", "organizationName"]
+    },
+    "events": {
+      "title": "events",
+      "description": "Published Events",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "organizerName": { "type": "string" },
+        "organizerId": { "type": "string" },
+        "category": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "location": { "type": "string" },
+        "venueName": { "type": "string" },
+        "address": { "type": "string" },
+        "image": { "type": "string" },
+        "bannerImage": { "type": "string" },
+        "description": { "type": "string" },
+        "featured": { "type": "boolean" },
+        "ticketTiers": { "type": "array" },
+        "tags": { "type": "array" },
+        "currency": { "type": "string" },
+        "country": { "type": "string" }
+      },
+      "required": ["title", "category", "date"]
+    },
+    "orders": {
+      "title": "orders",
+      "description": "Ticket Orders",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "eventId": { "type": "string" },
+        "eventTitle": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerEmail": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "totalAmount": { "type": "number" },
+        "currency": { "type": "string" },
+        "paymentStatus": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "tickets": { "type": "array" }
+      },
+      "required": ["eventId", "customerEmail", "totalAmount"]
+    },
+    "tickets": {
+      "title": "tickets",
+      "description": "Issued Ticket Passes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ticketCode": { "type": "string" },
+        "orderId": { "type": "string" },
+        "eventId": { "type": "string" },
+        "eventTitle": { "type": "string" },
+        "tierName": { "type": "string" },
+        "attendeeName": { "type": "string" },
+        "attendeeEmail": { "type": "string" },
+        "price": { "type": "number" },
+        "status": { "type": "string" },
+        "qrData": { "type": "string" },
+        "issuedAt": { "type": "string" }
+      },
+      "required": ["ticketCode", "orderId", "eventId"]
+    }
+  }
+}
