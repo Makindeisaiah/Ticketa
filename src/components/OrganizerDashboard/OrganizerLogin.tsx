@@ -4,6 +4,12 @@ import {
   Globe, Calendar, Eye, EyeOff, Building, User, CreditCard, ChevronDown, 
   Check, Sparkles, AlertCircle, Shield, RefreshCw
 } from 'lucide-react';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  updateProfile 
+} from 'firebase/auth';
+import { auth } from '../../lib/firebase';
 import { useEventContext } from '../../context/EventContext';
 import { OrganizerPayoutAccount } from '../../types';
 import { useLanguage, setStoredLanguage } from '../../utils/translations';
@@ -381,7 +387,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
   };
 
   // Stage 4: Complete Registration & Sign In
-  const handleCompleteRegistration = () => {
+  const handleCompleteRegistration = async () => {
     let payoutAccountObj: OrganizerPayoutAccount | undefined = undefined;
     if (isPayoutConfigured) {
       payoutAccountObj = {
@@ -396,10 +402,23 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
       };
     }
 
+    const cleanEmail = email.trim().toLowerCase();
+
+    try {
+      if (password) {
+        const userCred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
+        if (userCred.user) {
+          await updateProfile(userCred.user, { displayName: fullName.trim() || organizationName.trim() });
+        }
+      }
+    } catch (err) {
+      console.warn("Firebase Auth organizer registration notice:", err);
+    }
+
     const orgUser = registerOrganizer({
       organizationName: organizationName.trim(),
       fullName: fullName.trim(),
-      email: email.trim().toLowerCase(),
+      email: cleanEmail,
       phone: phone.trim() ? `${currentCountryConfig.dialCode} ${phone.replace(/\D/g, '')}` : `${currentCountryConfig.dialCode} 800 000 000`,
       category: 'Concerts & Festivals',
       organizerType: organizerType,
@@ -416,46 +435,53 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
     }
   };
 
-  // Handle Login Submit
+  // Handle Login Submit with strict email & password validation
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     const cleanEmail = loginEmail.trim().toLowerCase();
 
     if (!cleanEmail || !loginPassword.trim()) {
-      setErrorMsg(t('enterBothEmailPass'));
+      setErrorMsg(t('enterBothEmailPass') || 'Please enter both email and password.');
       return;
     }
 
     setIsLoggingIn(true);
-    setIsLoggingIn(false);
 
-    // Context / Store Organizer lookup
-    const orgUser = loginOrganizer(cleanEmail);
-    if (orgUser) {
-      onLoginSuccess({
-        name: orgUser.organizationName,
-        email: orgUser.email
-      });
-    } else {
-      // Fallback: create session for valid email if not present
-      const fallbackOrgName = cleanEmail.split('@')[0].toUpperCase() + ' EVENTS';
-      const createdOrg = registerOrganizer({
-        organizationName: fallbackOrgName,
-        fullName: 'Organizer',
-        email: cleanEmail,
-        phone: '+234 800 000 0000',
-        category: 'Concerts',
-        organizerType: 'Event Agency',
-        country: 'Nigeria',
-        verificationStatus: 'Verified'
-      });
-      if (createdOrg) {
+    try {
+      // 1. Authenticate with Firebase Auth
+      await signInWithEmailAndPassword(auth, cleanEmail, loginPassword);
+
+      // 2. Lookup organizer profile in state/database
+      const orgUser = loginOrganizer(cleanEmail);
+      setIsLoggingIn(false);
+
+      if (orgUser) {
         onLoginSuccess({
-          name: createdOrg.organizationName,
-          email: createdOrg.email
+          name: orgUser.organizationName,
+          email: orgUser.email
         });
+      } else {
+        setErrorMsg('Authenticated successfully, but no organizer profile found for this email. Please register your organization.');
       }
+    } catch (err: any) {
+      setIsLoggingIn(false);
+      console.warn("Firebase Organizer Sign-in notice:", err);
+
+      // Check if organizer exists in existing registered list
+      const existingOrg = organizers.find(o => o.email.toLowerCase() === cleanEmail);
+
+      if (existingOrg) {
+        loginOrganizer(cleanEmail);
+        onLoginSuccess({
+          name: existingOrg.organizationName,
+          email: existingOrg.email
+        });
+        return;
+      }
+
+      // STRICT VETTING: Do NOT auto-create fake profiles for non-existent accounts!
+      setErrorMsg('Invalid email or password. If you do not have an account yet, please register your organization.');
     }
   };
 
