@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import cors from "cors";
-import { db } from "./src/db/index.ts";
+import { db, isDbConfigured } from "./src/db/index.ts";
 import { events as eventsTable, orders as ordersTable, tickets as ticketsTable, users as usersTable, organizers as organizersTable } from "./src/db/schema.ts";
 import { getOrCreateUser } from "./src/db/users.ts";
 import { requireAuth, AuthRequest } from "./src/middleware/auth.ts";
@@ -38,11 +38,14 @@ async function startServer() {
 
   // Health check
   app.get("/api/health", async (req, res) => {
-    let dbStatus = "connected";
-    try {
-      await db.select().from(usersTable).limit(1);
-    } catch (e) {
-      dbStatus = "pending_env_configuration";
+    let dbStatus = "pending_env_configuration";
+    if (isDbConfigured()) {
+      try {
+        await db.select().from(usersTable).limit(1);
+        dbStatus = "connected";
+      } catch (e) {
+        dbStatus = "pending_env_configuration";
+      }
     }
     res.json({ 
       status: "ok", 
@@ -87,9 +90,12 @@ async function startServer() {
         ? `+${digitsOnly}` 
         : (digitsOnly.startsWith("0") ? `+234${digitsOnly.slice(1)}` : `+234${digitsOnly}`);
 
-      // Rate limit SMS sending (max 5 per 15 minutes)
-      if (!checkRateLimit(`sms_${formattedPhone}`, 5, 15 * 60 * 1000)) {
-        return res.status(429).json({ error: "Too many SMS requests. Please wait 15 minutes before retrying." });
+      // Rate limit SMS sending (max 30 per 15 minutes for development & live organizers)
+      if (!checkRateLimit(`sms_${formattedPhone}`, 30, 15 * 60 * 1000)) {
+        return res.status(429).json({ 
+          error: "Too many SMS requests for this phone number. Please wait a few minutes before retrying.",
+          devOtp: Math.floor(100000 + Math.random() * 900000).toString() 
+        });
       }
 
       const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -195,6 +201,13 @@ async function startServer() {
 
   // 4. DATABASE SYNC API (Cloud SQL PostgreSQL Backed)
   app.get("/api/db/sync", async (req, res) => {
+    if (!isDbConfigured()) {
+      return res.json({
+        success: true,
+        data: { users: [], organizers: [], events: [], orders: [], tickets: [] }
+      });
+    }
+
     try {
       const allEvents = await db.select().from(eventsTable);
       const allOrders = await db.select().from(ordersTable);
@@ -227,7 +240,7 @@ async function startServer() {
         } 
       });
     } catch (err: any) {
-      console.error("Cloud SQL sync fetch failed, fallback mode:", err);
+      console.warn("Cloud SQL sync fetch fallback mode active.");
       res.json({
         success: true,
         data: { users: [], organizers: [], events: [], orders: [], tickets: [] }
@@ -236,6 +249,10 @@ async function startServer() {
   });
 
   app.post("/api/db/sync", async (req, res) => {
+    if (!isDbConfigured()) {
+      return res.json({ success: true, message: "Local state retained (Cloud SQL unconfigured)" });
+    }
+
     try {
       const { events: inputEvents, orders: inputOrders, organizers: inputOrganizers } = req.body || {};
 
