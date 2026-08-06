@@ -398,9 +398,6 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           if (firestoreData.events && firestoreData.events.length > 0) {
             const cleanList = firestoreData.events.filter((e: any) => e && e.id && !deletedEventIdsRef.current.has(e.id));
             if (cleanList.length > 0) setEvents(cleanList);
-          } else {
-            // Seed initial events to Firestore if empty
-            syncAllToFirestore({ events: INITIAL_EVENTS });
           }
 
           if (firestoreData.orders && firestoreData.orders.length > 0) {
@@ -408,9 +405,6 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           }
           if (firestoreData.users && firestoreData.users.length > 0) {
             setUsers(firestoreData.users);
-          } else {
-            // Seed initial users if empty
-            syncAllToFirestore({ users: INITIAL_USERS });
           }
           if (firestoreData.organizers && firestoreData.organizers.length > 0) {
             setOrganizers(firestoreData.organizers);
@@ -558,6 +552,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setOrganizers(updatedOrgs);
     }
 
+    saveEventToFirestore(newEvent);
     syncToServerDatabase({ events: updatedEventsList, organizers: updatedOrgs });
     triggerNotification(`Event "${newEvent.title}" published successfully!`);
   };
@@ -645,6 +640,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       };
       setUserProfile(freshProfile);
 
+      saveUserToFirestore(updatedExisting);
       syncToServerDatabase({ users: nextUsers });
       triggerNotification(`Welcome back, ${existing.fullName}! Account logged in.`);
       return updatedExisting;
@@ -686,6 +682,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setCurrentUser(newUser);
     setUserProfile(freshProfile);
 
+    saveUserToFirestore(newUser);
     syncToServerDatabase({ users: nextUsers });
 
     // Verification Log Entry
@@ -785,6 +782,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setOrganizers(nextOrgs);
       setCurrentOrganizer(updatedExisting);
 
+      saveOrganizerToFirestore(updatedExisting);
       syncToServerDatabase({ organizers: nextOrgs });
       triggerNotification(`Organizer account logged in for ${updatedExisting.organizationName}`);
       return updatedExisting;
@@ -812,6 +810,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setOrganizers(nextOrgs);
     setCurrentOrganizer(newOrganizer);
 
+    saveOrganizerToFirestore(newOrganizer);
     syncToServerDatabase({ organizers: nextOrgs });
     triggerNotification(`Organizer account created for ${newOrganizer.organizationName}!`);
     return newOrganizer;
@@ -1007,6 +1006,11 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!currentUser || currentUser.email.toLowerCase() === cleanEmail) {
       setCurrentUser(targetUser);
     }
+
+    saveOrderToFirestore(newOrder);
+    saveEventToFirestore(updatedEventObj);
+    saveUserToFirestore(targetUser);
+    tickets.forEach(t => saveTicketToFirestore(t));
 
     // Sync order, updated event, user, and tickets to server database
     syncToServerDatabase({

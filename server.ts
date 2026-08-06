@@ -3,11 +3,9 @@ import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import cors from "cors";
-import { db, isDbConfigured } from "./src/db/index.ts";
-import { events as eventsTable, orders as ordersTable, tickets as ticketsTable, users as usersTable, organizers as organizersTable } from "./src/db/schema.ts";
 import { getOrCreateUser } from "./src/db/users.ts";
 import { requireAuth, AuthRequest } from "./src/middleware/auth.ts";
-import { eq } from "drizzle-orm";
+
 
 async function startServer() {
   const app = express();
@@ -190,159 +188,17 @@ async function startServer() {
     }
   });
 
-  // 4. DATABASE SYNC API (Cloud SQL PostgreSQL Backed)
+  // 4. DATABASE SYNC API (Firebase Firestore Backed)
   app.get("/api/db/sync", async (req, res) => {
-    if (!isDbConfigured()) {
-      return res.json({
-        success: true,
-        data: { users: [], organizers: [], events: [], orders: [], tickets: [] }
-      });
-    }
-
-    try {
-      const allEvents = await db.select().from(eventsTable);
-      const allOrders = await db.select().from(ordersTable);
-      const allTickets = await db.select().from(ticketsTable);
-      const allOrganizers = await db.select().from(organizersTable);
-      const allUsers = await db.select().from(usersTable);
-
-      const formattedEvents = allEvents.map((evt) => ({
-        ...evt,
-        ticketTiers: evt.ticketTiers || [],
-        tags: evt.tags || []
-      }));
-
-      const formattedOrders = allOrders.map((ord) => {
-        const orderTickets = allTickets.filter((t) => t.orderId === ord.id);
-        return {
-          ...ord,
-          tickets: orderTickets
-        };
-      });
-
-      res.json({ 
-        success: true, 
-        data: {
-          events: formattedEvents,
-          orders: formattedOrders,
-          tickets: allTickets,
-          organizers: allOrganizers,
-          users: allUsers
-        } 
-      });
-    } catch (err: any) {
-      console.warn("Cloud SQL sync fetch fallback mode active.");
-      res.json({
-        success: true,
-        data: { users: [], organizers: [], events: [], orders: [], tickets: [] }
-      });
-    }
+    res.json({
+      success: true,
+      message: "Firebase Firestore active",
+      data: { users: [], organizers: [], events: [], orders: [], tickets: [] }
+    });
   });
 
   app.post("/api/db/sync", async (req, res) => {
-    if (!isDbConfigured()) {
-      return res.json({ success: true, message: "Local state retained (Cloud SQL unconfigured)" });
-    }
-
-    try {
-      const { events: inputEvents, orders: inputOrders, organizers: inputOrganizers } = req.body || {};
-
-      if (Array.isArray(inputEvents) && inputEvents.length > 0) {
-        for (const evt of inputEvents) {
-          if (!evt.id) continue;
-          await db.insert(eventsTable)
-            .values({
-              id: String(evt.id),
-              title: evt.title || "Untitled Event",
-              organizerName: evt.organizerName || "Organizer",
-              organizerId: evt.organizerId || null,
-              category: evt.category || "Concerts",
-              date: evt.date || "",
-              time: evt.time || "",
-              location: evt.location || "",
-              venueName: evt.venueName || "",
-              address: evt.address || "",
-              image: evt.image || "",
-              bannerImage: evt.bannerImage || "",
-              description: evt.description || "",
-              featured: Boolean(evt.featured),
-              ticketTiers: evt.ticketTiers || [],
-              tags: evt.tags || [],
-              currency: evt.currency || "NGN",
-              country: evt.country || "Nigeria"
-            })
-            .onConflictDoUpdate({
-              target: eventsTable.id,
-              set: {
-                title: evt.title,
-                organizerName: evt.organizerName,
-                description: evt.description,
-                ticketTiers: evt.ticketTiers || [],
-                tags: evt.tags || []
-              }
-            });
-        }
-      }
-
-      if (Array.isArray(inputOrders) && inputOrders.length > 0) {
-        for (const ord of inputOrders) {
-          if (!ord.id) continue;
-          await db.insert(ordersTable)
-            .values({
-              id: String(ord.id),
-              eventId: String(ord.eventId || ""),
-              eventTitle: ord.eventTitle || "",
-              customerName: ord.customerName || "Customer",
-              customerEmail: ord.customerEmail || "",
-              customerPhone: ord.customerPhone || null,
-              totalAmount: Number(ord.totalAmount) || 0,
-              paymentMethod: ord.paymentMethod || "Credit Card",
-              purchaseDate: ord.purchaseDate || new Date().toISOString()
-            })
-            .onConflictDoNothing();
-
-          if (Array.isArray(ord.tickets)) {
-            for (const tkt of ord.tickets) {
-              if (!tkt.ticketCode) continue;
-              await db.insert(ticketsTable)
-                .values({
-                  ticketCode: tkt.ticketCode,
-                  orderId: String(ord.id),
-                  eventId: String(tkt.eventId || ord.eventId || ""),
-                  eventTitle: tkt.eventTitle || ord.eventTitle || "",
-                  eventDate: tkt.eventDate || "",
-                  eventTime: tkt.eventTime || "",
-                  venueName: tkt.venueName || "",
-                  tierName: tkt.tierName || "",
-                  attendeeName: tkt.attendeeName || ord.customerName || "Attendee",
-                  attendeeEmail: tkt.attendeeEmail || ord.customerEmail || "",
-                  attendeePhone: tkt.attendeePhone || null,
-                  pricePaid: Number(tkt.pricePaid) || 0,
-                  purchaseDate: tkt.purchaseDate || ord.purchaseDate || new Date().toISOString(),
-                  status: tkt.status || "VALID",
-                  checkedInAt: tkt.checkedInAt || null,
-                  scannedByGate: tkt.scannedByGate || null,
-                  gateNumber: tkt.gateNumber || null
-                })
-                .onConflictDoUpdate({
-                  target: ticketsTable.ticketCode,
-                  set: {
-                    status: tkt.status || "VALID",
-                    checkedInAt: tkt.checkedInAt || null,
-                    scannedByGate: tkt.scannedByGate || null,
-                    gateNumber: tkt.gateNumber || null
-                  }
-                });
-            }
-          }
-        }
-      }
-
-      return res.json({ success: true, timestamp: new Date().toISOString() });
-    } catch (err: any) {
-      console.error("Failed to sync database payload to Cloud SQL:", err);
-      return res.status(500).json({ error: "Failed to persist database to Cloud SQL" });
-    }
+    return res.json({ success: true, message: "Firebase Firestore handles client sync directly", timestamp: new Date().toISOString() });
   });
 
   // 5. SEND SMS DISPATCH
