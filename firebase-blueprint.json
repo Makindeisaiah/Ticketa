@@ -31,11 +31,11 @@
         "category": { "type": "string" },
         "organizerType": { "type": "string" },
         "country": { "type": "string" },
+        "registeredAt": { "type": "string" },
+        "status": { "type": "string" },
         "verificationStatus": { "type": "string" },
         "payoutAccount": { "type": "object" },
-        "eventsCount": { "type": "number" },
-        "totalTicketsSold": { "type": "number" },
-        "totalRevenue": { "type": "number" }
+        "eventsCount": { "type": "number" }
       },
       "required": ["email", "organizationName"]
     },
@@ -77,9 +77,8 @@
         "customerEmail": { "type": "string" },
         "customerPhone": { "type": "string" },
         "totalAmount": { "type": "number" },
-        "currency": { "type": "string" },
-        "paymentStatus": { "type": "string" },
-        "createdAt": { "type": "string" },
+        "paymentMethod": { "type": "string" },
+        "purchaseDate": { "type": "string" },
         "tickets": { "type": "array" }
       },
       "required": ["eventId", "customerEmail", "totalAmount"]
@@ -89,20 +88,85 @@
       "description": "Issued Ticket Passes",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
         "ticketCode": { "type": "string" },
         "orderId": { "type": "string" },
         "eventId": { "type": "string" },
         "eventTitle": { "type": "string" },
+        "eventDate": { "type": "string" },
+        "eventTime": { "type": "string" },
+        "venueName": { "type": "string" },
         "tierName": { "type": "string" },
         "attendeeName": { "type": "string" },
         "attendeeEmail": { "type": "string" },
-        "price": { "type": "number" },
+        "attendeePhone": { "type": "string" },
+        "pricePaid": { "type": "number" },
+        "purchaseDate": { "type": "string" },
         "status": { "type": "string" },
-        "qrData": { "type": "string" },
-        "issuedAt": { "type": "string" }
+        "checkedInAt": { "type": "string" },
+        "scannedByGate": { "type": "string" },
+        "gateNumber": { "type": "string" }
       },
       "required": ["ticketCode", "orderId", "eventId"]
+    },
+    "qr_tickets": {
+      "title": "qr_tickets",
+      "description": "QR Ticket Validation Records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ticketCode": { "type": "string" },
+        "eventId": { "type": "string" },
+        "status": { "type": "string" },
+        "qrData": { "type": "string" },
+        "assignedGate": { "type": "string" },
+        "scannedAt": { "type": "string" }
+      },
+      "required": ["ticketCode", "eventId", "qrData"]
+    },
+    "promos": {
+      "title": "promos",
+      "description": "Promotional Discount Codes",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "discountPercentage": { "type": "number" },
+        "active": { "type": "boolean" },
+        "usedCount": { "type": "number" }
+      },
+      "required": ["code", "discountPercentage"]
+    },
+    "scan_records": {
+      "title": "scan_records",
+      "description": "Gate Check-in Scan Log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ticketCode": { "type": "string" },
+        "gateName": { "type": "string" },
+        "scannedAt": { "type": "string" },
+        "attendeeName": { "type": "string" },
+        "eventTitle": { "type": "string" },
+        "tierName": { "type": "string" },
+        "synced": { "type": "boolean" }
+      },
+      "required": ["ticketCode", "gateName", "scannedAt"]
+    },
+    "notifications": {
+      "title": "notifications",
+      "description": "Dispatched Notification Logs",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "orderId": { "type": "string" },
+        "ticketCode": { "type": "string" },
+        "type": { "type": "string" },
+        "recipient": { "type": "string" },
+        "subject": { "type": "string" },
+        "bodyPreview": { "type": "string" },
+        "sentAt": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["orderId", "recipient", "type"]
     }
   }
 }
