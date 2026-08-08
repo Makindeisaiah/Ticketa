@@ -52,25 +52,82 @@ interface SettingsTabProps {
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
   const { t } = useLanguage();
-  const { orders, currentOrganizer, events } = useEventContext();
+  const { orders, currentOrganizer, updateOrganizerProfile, events } = useEventContext();
   const calculatedTotalEarnings = orders.reduce((acc, o) => acc + o.totalAmount, 0);
 
   const [activeSubpage, setActiveSubpage] = useState<SettingsSubpage>('grid');
   const [paymentsTab, setPaymentsTab] = useState<'overview' | 'payouts' | 'refunds'>('overview');
 
   // Organization Info State
-  const [orgName, setOrgName] = useState('Event Organizer');
-  const [orgType, setOrgType] = useState('Company');
-  const [orgDesc, setOrgDesc] = useState('Live event and ticketing management organization.');
-  const [orgCountry, setOrgCountry] = useState("Côte d'Ivoire");
-  const [orgCity, setOrgCity] = useState('Abidjan');
-  const [orgAddress, setOrgAddress] = useState('Boulevard de la République, Plateau');
-  const [supportEmail, setSupportEmail] = useState('contact@ticketa.com');
-  const [phone, setPhone] = useState('+2250701020304');
-  const [website, setWebsite] = useState('ticketa.com');
-  const [instagram, setInstagram] = useState('flytimefest');
-  const [facebook, setFacebook] = useState('flytimefest');
-  const [twitter, setTwitter] = useState('flytimefest');
+  const [orgName, setOrgName] = useState(currentOrganizer?.organizationName || 'Flytime Fest');
+  const [orgType, setOrgType] = useState(currentOrganizer?.organizerType || 'Company');
+  const [orgDesc, setOrgDesc] = useState(currentOrganizer?.description || 'Live event and ticketing management organization.');
+  const [orgCountry, setOrgCountry] = useState(currentOrganizer?.country || "Côte d'Ivoire");
+  const [orgCity, setOrgCity] = useState(currentOrganizer?.city || 'Abidjan');
+  const [orgAddress, setOrgAddress] = useState(currentOrganizer?.address || 'Boulevard de la République, Plateau');
+  const [supportEmail, setSupportEmail] = useState(currentOrganizer?.supportEmail || currentOrganizer?.email || 'contact@ticketa.com');
+  const [phone, setPhone] = useState(currentOrganizer?.phone || '+2250701020304');
+  const [website, setWebsite] = useState(currentOrganizer?.website || 'ticketa.com');
+  const [instagram, setInstagram] = useState(currentOrganizer?.instagram || 'flytimefest');
+  const [facebook, setFacebook] = useState(currentOrganizer?.facebook || 'flytimefest');
+  const [twitter, setTwitter] = useState(currentOrganizer?.twitter || 'flytimefest');
+  const [orgLogoUrl, setOrgLogoUrl] = useState(currentOrganizer?.logoUrl || '');
+
+  const logoFileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Keep org details in sync when currentOrganizer changes
+  React.useEffect(() => {
+    if (currentOrganizer) {
+      if (currentOrganizer.organizationName) setOrgName(currentOrganizer.organizationName);
+      if (currentOrganizer.organizerType) setOrgType(currentOrganizer.organizerType);
+      if (currentOrganizer.description) setOrgDesc(currentOrganizer.description);
+      if (currentOrganizer.country) setOrgCountry(currentOrganizer.country);
+      if (currentOrganizer.city) setOrgCity(currentOrganizer.city);
+      if (currentOrganizer.address) setOrgAddress(currentOrganizer.address);
+      if (currentOrganizer.supportEmail || currentOrganizer.email) setSupportEmail(currentOrganizer.supportEmail || currentOrganizer.email);
+      if (currentOrganizer.phone) setPhone(currentOrganizer.phone);
+      if (currentOrganizer.website) setWebsite(currentOrganizer.website);
+      if (currentOrganizer.instagram) setInstagram(currentOrganizer.instagram);
+      if (currentOrganizer.facebook) setFacebook(currentOrganizer.facebook);
+      if (currentOrganizer.twitter) setTwitter(currentOrganizer.twitter);
+      if (currentOrganizer.logoUrl) setOrgLogoUrl(currentOrganizer.logoUrl);
+    }
+  }, [currentOrganizer]);
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setOrgLogoUrl(reader.result);
+          showToast('Logo image uploaded successfully!');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveOrgProfile = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    updateOrganizerProfile({
+      organizationName: orgName,
+      organizerType: orgType,
+      description: orgDesc,
+      country: orgCountry,
+      city: orgCity,
+      address: orgAddress,
+      supportEmail: supportEmail,
+      email: supportEmail,
+      phone: phone,
+      website: website,
+      instagram: instagram,
+      facebook: facebook,
+      twitter: twitter,
+      logoUrl: orgLogoUrl
+    });
+    showToast('Organization details saved into the database successfully!');
+  };
 
   // Team Members State & Modals
   interface TeamMemberItem {
@@ -80,6 +137,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
     role: 'Admin' | 'Organizer' | 'Finance' | 'Gate Staff';
     status: 'Active' | 'Pending';
     assignedGate?: string;
+    assignedEventId?: string;
+    assignedEventName?: string;
     pin?: string;
   }
 
@@ -92,7 +151,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Filter out old demo members with info@makindeisaiah.com repeated
           const clean = parsed.filter((m: any) => m && m.email);
           if (clean.length > 0) return clean;
         }
@@ -106,6 +164,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
         role: 'Admin',
         status: 'Active',
         assignedGate: 'All Gates',
+        assignedEventId: 'all',
+        assignedEventName: 'All Events',
         pin: '1234'
       }
     ];
@@ -114,12 +174,14 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
   // Modal State
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMemberItem | null>(null);
+  const [memberToDelete, setMemberToDelete] = useState<TeamMemberItem | null>(null);
 
   // Form inputs
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formRole, setFormRole] = useState<'Admin' | 'Organizer' | 'Finance' | 'Gate Staff'>('Gate Staff');
   const [formGate, setFormGate] = useState('Main Gate');
+  const [formEventId, setFormEventId] = useState('all');
   const [formPin, setFormPin] = useState('1234');
 
   const saveTeamList = (newList: TeamMemberItem[]) => {
@@ -133,6 +195,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
     setFormEmail('');
     setFormRole('Gate Staff');
     setFormGate('Main Gate');
+    setFormEventId('all');
     setFormPin(Math.floor(1000 + Math.random() * 9000).toString());
     setIsInviteModalOpen(true);
   };
@@ -143,6 +206,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
     setFormEmail(member.email);
     setFormRole(member.role);
     setFormGate(member.assignedGate || 'Main Gate');
+    setFormEventId(member.assignedEventId || 'all');
     setFormPin(member.pin || '1234');
     setIsInviteModalOpen(true);
   };
@@ -154,6 +218,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
       return;
     }
 
+    const assignedEv = formEventId === 'all' 
+      ? 'All Events' 
+      : (events.find(ev => ev.id === formEventId)?.title || 'All Events');
+
     if (editingMember) {
       const updated = teamMembers.map(m => m.id === editingMember.id ? {
         ...m,
@@ -161,6 +229,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
         email: formEmail.trim().toLowerCase(),
         role: formRole,
         assignedGate: formGate,
+        assignedEventId: formEventId,
+        assignedEventName: assignedEv,
         pin: formPin
       } : m);
       saveTeamList(updated);
@@ -173,6 +243,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
         role: formRole,
         status: 'Active',
         assignedGate: formGate,
+        assignedEventId: formEventId,
+        assignedEventName: assignedEv,
         pin: formPin
       };
       saveTeamList([...teamMembers, newMember]);
@@ -182,14 +254,20 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
     setIsInviteModalOpen(false);
   };
 
-  const handleDeleteMember = (id: string, email: string) => {
-    if (email.toLowerCase() === defaultAdminEmail.toLowerCase()) {
+  const requestDeleteMember = (member: TeamMemberItem) => {
+    if (member.email.toLowerCase() === defaultAdminEmail.toLowerCase()) {
       showToast('Cannot remove primary organizer account.');
       return;
     }
-    const updated = teamMembers.filter(m => m.id !== id);
+    setMemberToDelete(member);
+  };
+
+  const confirmDeleteMember = () => {
+    if (!memberToDelete) return;
+    const updated = teamMembers.filter(m => m.id !== memberToDelete.id);
     saveTeamList(updated);
-    showToast('Team member removed.');
+    showToast(`Team member "${memberToDelete.name}" removed.`);
+    setMemberToDelete(null);
   };
 
   // Toast / notification state
@@ -412,11 +490,26 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
               <h2 className="text-base font-extrabold text-slate-900">{t('organizationInfo')}</h2>
               
               <div className="flex items-center space-x-4 p-3 bg-slate-50 rounded-xl border border-slate-200/80">
-                <div className="w-16 h-16 rounded-xl bg-slate-900 text-white font-black text-xl flex items-center justify-center shadow-md">
-                  FF
+                <input 
+                  type="file" 
+                  ref={logoFileInputRef} 
+                  onChange={handleLogoUpload} 
+                  accept="image/*" 
+                  className="hidden" 
+                />
+                <div className="w-16 h-16 rounded-xl bg-slate-900 text-white font-black text-xl flex items-center justify-center shadow-md overflow-hidden shrink-0 border border-slate-800">
+                  {orgLogoUrl ? (
+                    <img src={orgLogoUrl} alt={orgName} className="w-full h-full object-cover" />
+                  ) : (
+                    orgName ? orgName.slice(0, 2).toUpperCase() : 'FF'
+                  )}
                 </div>
                 <div>
-                  <button className="px-3 py-1.5 bg-[#00C896] text-white rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer">
+                  <button 
+                    type="button"
+                    onClick={() => logoFileInputRef.current?.click()} 
+                    className="px-3 py-1.5 bg-[#00C896] hover:bg-[#00b386] text-white rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition"
+                  >
                     <Upload className="w-3.5 h-3.5" /> {t('uploadNewLogo')}
                   </button>
                   <p className="text-[10px] text-slate-400 mt-1">{t('logoDimensions')}</p>
@@ -507,7 +600,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
               </div>
 
               <button
-                onClick={() => showToast('Organization details updated successfully!')}
+                type="button"
+                onClick={handleSaveOrgProfile}
                 className="w-full py-3 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs transition shadow-md cursor-pointer"
               >
                 {t('saveChanges')}
@@ -545,6 +639,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                     <tr>
                       <th className="py-3 px-4">{t('memberCol')}</th>
                       <th className="py-3 px-4">{t('roleCol')}</th>
+                      <th className="py-3 px-4">Assigned Event</th>
                       <th className="py-3 px-4">Gate / PIN</th>
                       <th className="py-3 px-4">{t('statusColTableHeader')}</th>
                       <th className="py-3 px-4 text-right">{t('actions')}</th>
@@ -574,6 +669,11 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                               {m.role}
                             </span>
                           </td>
+                          <td className="py-3 px-4 text-slate-700 font-medium text-[11px]">
+                            <span className="px-2 py-1 bg-slate-100 rounded-lg text-slate-700 font-bold border border-slate-200">
+                              {m.assignedEventName || 'All Events'}
+                            </span>
+                          </td>
                           <td className="py-3 px-4 text-slate-600 font-mono text-[11px]">
                             <div>{m.assignedGate || 'Main Gate'}</div>
                             {m.pin && <div className="text-[10px] text-slate-400 font-sans">PIN: {m.pin}</div>}
@@ -594,7 +694,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                               <Edit className="w-3.5 h-3.5" />
                             </button>
                             <button
-                              onClick={() => handleDeleteMember(m.id, m.email)}
+                              onClick={() => requestDeleteMember(m)}
                               title="Remove Member"
                               className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer"
                             >
@@ -688,6 +788,23 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                   </div>
 
                   <div>
+                    <label className="block text-slate-700 mb-1">Assigned Event</label>
+                    <select
+                      value={formEventId}
+                      onChange={e => setFormEventId(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 outline-none font-medium"
+                    >
+                      <option value="all">All Events (Full Access)</option>
+                      {events.map(ev => (
+                        <option key={ev.id} value={ev.id}>
+                          {ev.title} ({ev.city || ev.country})
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-[10px] text-slate-400 mt-1">Assign member specifically to one event or all events.</p>
+                  </div>
+
+                  <div>
                     <label className="block text-slate-700 mb-1">Assigned Gate / Entrance</label>
                     <select
                       value={formGate}
@@ -703,7 +820,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                   </div>
 
                   <div>
-                    <label className="block text-slate-700 mb-1">Scanner PIN / Password</label>
+                    <label className="block text-slate-700 mb-1">Scanner PIN Code</label>
                     <input
                       type="text"
                       required
@@ -731,6 +848,44 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          )}
+
+          {/* Delete Team Member Confirmation Pop-up Modal */}
+          {memberToDelete && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn">
+              <div className="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-4">
+                <div className="flex items-center space-x-3 text-rose-600">
+                  <div className="w-10 h-10 rounded-2xl bg-rose-100 flex items-center justify-center shrink-0">
+                    <Trash2 className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-base font-extrabold text-slate-900">Confirm Team Member Deletion</h3>
+                </div>
+
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Are you sure you want to delete <strong className="text-slate-900 font-bold">{memberToDelete.name}</strong> (<span className="font-mono text-slate-500">{memberToDelete.email}</span>)?
+                </p>
+                <div className="p-3 bg-amber-50 rounded-xl border border-amber-200/80 text-[11px] text-amber-800">
+                  ⚠️ This action will immediately revoke their access to the organizer and scanner dashboard.
+                </div>
+
+                <div className="pt-3 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setMemberToDelete(null)}
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={confirmDeleteMember}
+                    className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-extrabold rounded-xl text-xs transition shadow-md cursor-pointer"
+                  >
+                    Confirm Delete
+                  </button>
+                </div>
               </div>
             </div>
           )}

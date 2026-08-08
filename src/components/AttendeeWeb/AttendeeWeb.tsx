@@ -15,7 +15,7 @@ import { exportTicketAsPdf, exportTicketToAppleWallet, printThermalWristband } f
 import { AuthModal } from '../AuthModal';
 import { useLanguage } from '../../utils/translations';
 import { formatEventCurrency } from '../../utils/currency';
-import founderPhoto from '../../assets/images/founder_photo_1786199273077.jpg';
+import founderPhoto from '../../assets/images/founder_real_photo_1786200260378.jpg';
 
 const XIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -1831,32 +1831,396 @@ export const AttendeeWeb: React.FC = () => {
 
         {/* ---------------- 6. HOW IT WORKS / TRUST PAGE ---------------- */}
         {currentView === 'how-it-works' && (
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 animate-fadeIn">
             
-            <div className="text-center max-w-2xl mx-auto space-y-3">
-              <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">{t('guaranteedTicketing')}</span>
-              <h1 className="text-3xl sm:text-4xl font-black text-white">{t('feelConfidentHeader')}</h1>
-              <p className="text-xs sm:text-sm text-slate-300">{t('feelConfidentSub')}</p>
+            {/* 1. HERO SECTION */}
+            <div className="text-center max-w-3xl mx-auto space-y-5">
+              <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-widest">
+                <Sparkles className="w-3.5 h-3.5" />
+                Ticketa — How It Works
+              </span>
+              <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+                Your next experience is just <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">a few clicks away.</span>
+              </h1>
+              <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl mx-auto">
+                Whether you’re attending a concert, conference, festival, or workshop, Ticketa makes discovering, booking, and attending events simple, fast, and secure.
+              </p>
+              <div className="pt-2 flex flex-wrap justify-center gap-3">
+                <button
+                  onClick={() => setCurrentView('home')}
+                  className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition cursor-pointer"
+                >
+                  <span>Explore Events</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setCurrentView('home')}
+                  className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs sm:text-sm border border-slate-800 transition cursor-pointer"
+                >
+                  Find Your Next Event
+                </button>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                { title: t('securePaymentsTitle'), desc: t('securePaymentsDesc'), icon: Lock },
-                { title: t('verifiedOrganizersTitle'), desc: t('verifiedOrganizersDesc'), icon: ShieldCheck },
-                { title: t('liveQrScansTitle'), desc: t('liveQrScansDesc'), icon: QrCode },
-                { title: t('instantDeliveryTitle'), desc: t('instantDeliveryDesc'), icon: Sparkles },
-              ].map((pillar, idx) => {
-                const Icon = pillar.icon;
-                return (
-                  <div key={idx} className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
-                      <Icon className="w-5 h-5" />
+            {/* 2. HOW IT WORKS - 6 SIMPLE STEPS */}
+            <div className="space-y-10">
+              <div className="text-center max-w-2xl mx-auto space-y-2">
+                <h2 className="text-2xl sm:text-3xl font-black text-white">How It Works</h2>
+                <p className="text-xs sm:text-sm text-slate-400">
+                  Going to an event shouldn’t be complicated. Here is how Ticketa works in 6 simple steps:
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                {/* Step 01 */}
+                <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col justify-between space-y-4 hover:border-emerald-500/30 transition relative overflow-hidden group">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 font-mono font-black text-xs flex items-center justify-center border border-emerald-500/20">
+                        01
+                      </span>
+                      <Search className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
                     </div>
-                    <h3 className="text-base font-bold text-white">{pillar.title}</h3>
-                    <p className="text-xs text-slate-400 leading-relaxed">{pillar.desc}</p>
+                    <h3 className="text-lg font-black text-white">Discover an Event</h3>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Browse through a wide variety of live events across different categories:
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {['Concerts', 'Entertainment', 'Sports', 'Conferences', 'Workshops', 'Parties', 'Business Events', 'Festivals'].map((cat, i) => (
+                        <span key={i} className="px-2.5 py-1 bg-slate-950 text-slate-300 rounded-lg text-[10px] font-semibold border border-slate-800/80">
+                          {cat}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                );
-              })}
+                  <button
+                    onClick={() => setCurrentView('home')}
+                    className="pt-3 text-xs font-bold text-emerald-400 flex items-center gap-1 hover:underline cursor-pointer"
+                  >
+                    <span>Browse Events</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Step 02 */}
+                <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col justify-between space-y-4 hover:border-emerald-500/30 transition relative overflow-hidden group">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 font-mono font-black text-xs flex items-center justify-center border border-emerald-500/20">
+                        02
+                      </span>
+                      <Calendar className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
+                    </div>
+                    <h3 className="text-lg font-black text-white">Explore Event Details</h3>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Click on any event to view all the important details before making your decision:
+                    </p>
+                    <div className="space-y-1.5 pt-1 text-[11px] text-slate-300">
+                      {[
+                        'Event name, date & venue location',
+                        'Detailed event description & host info',
+                        'Available ticket tiers & transparent pricing',
+                        'High-res gallery & ticket availability'
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-center gap-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <span>{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 03 */}
+                <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col justify-between space-y-4 hover:border-emerald-500/30 transition relative overflow-hidden group">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 font-mono font-black text-xs flex items-center justify-center border border-emerald-500/20">
+                        03
+                      </span>
+                      <Ticket className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
+                    </div>
+                    <h3 className="text-lg font-black text-white">Choose Your Ticket</h3>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Select the ticket tier that best fits your preference and budget:
+                    </p>
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      {[
+                        { title: 'Regular', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
+                        { title: 'VIP Access', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+                        { title: 'VVIP Table', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
+                        { title: 'Early Bird', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' }
+                      ].map((t, i) => (
+                        <div key={i} className={`p-2 rounded-xl text-center font-bold text-xs border ${t.color}`}>
+                          {t.title}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 04 */}
+                <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col justify-between space-y-4 hover:border-emerald-500/30 transition relative overflow-hidden group">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 font-mono font-black text-xs flex items-center justify-center border border-emerald-500/20">
+                        04
+                      </span>
+                      <ShieldCheck className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
+                    </div>
+                    <h3 className="text-lg font-black text-white">Secure Payment</h3>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Enter your contact details and select a fast, safe payment option.
+                    </p>
+                    <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1.5 text-[11px]">
+                      <div className="flex justify-between text-slate-400">
+                        <span>Event:</span> <span className="text-slate-200 font-medium">Flytime Music Fest</span>
+                      </div>
+                      <div className="flex justify-between text-slate-400">
+                        <span>Tier:</span> <span className="text-emerald-400 font-bold">1x VIP Pass</span>
+                      </div>
+                      <div className="flex justify-between text-slate-400 pt-1 border-t border-slate-800">
+                        <span>Total:</span> <span className="text-white font-black">25,000 XOF</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 05 */}
+                <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col justify-between space-y-4 hover:border-emerald-500/30 transition relative overflow-hidden group">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 font-mono font-black text-xs flex items-center justify-center border border-emerald-500/20">
+                        05
+                      </span>
+                      <Smartphone className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
+                    </div>
+                    <h3 className="text-lg font-black text-white">Instant Digital Pass</h3>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Once payment is confirmed, your ticket is instantly generated, emailed, and saved in your Ticketa account.
+                    </p>
+                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-[11px] text-emerald-300 font-medium flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>Instant SMS & Email Ticket Delivery</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setCurrentView('my-tickets')}
+                    className="pt-2 text-xs font-bold text-emerald-400 flex items-center gap-1 hover:underline cursor-pointer"
+                  >
+                    <span>My Tickets</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Step 06 */}
+                <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-col justify-between space-y-4 hover:border-emerald-500/30 transition relative overflow-hidden group">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 font-mono font-black text-xs flex items-center justify-center border border-emerald-500/20">
+                        06
+                      </span>
+                      <QrCode className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 transition" />
+                    </div>
+                    <h3 className="text-lg font-black text-white">Head to the Event</h3>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Present your digital QR code pass at the venue gate for instant check-in:
+                    </p>
+                    <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-300">
+                      <span>Pass</span> <ChevronRight className="w-3 h-3 text-slate-600" />
+                      <span>QR Code</span> <ChevronRight className="w-3 h-3 text-slate-600" />
+                      <span className="text-emerald-400 font-bold">Check-In 🎉</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* 3. WHY TICKETA SECTION */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 sm:p-10 space-y-8">
+              <div className="text-center max-w-xl mx-auto space-y-2">
+                <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Why Choose Us</span>
+                <h2 className="text-2xl sm:text-3xl font-black text-white">What Makes Ticketa Different?</h2>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[
+                  { title: "Simple & Intuitive", desc: "Designed for effortless event discovery and fast 2-step checkout.", icon: Zap },
+                  { title: "100% Guaranteed Valid", desc: "Every ticket features a unique digital QR code preventing duplicates.", icon: ShieldCheck },
+                  { title: "Digital Wallet", desc: "Keep all your passes organized in one place accessible anytime.", icon: Smartphone },
+                  { title: "Direct Organizer Updates", desc: "Stay updated on event schedules, venue maps, and announcements.", icon: Globe },
+                  { title: "Built for Africa", desc: "Localized currency handling, mobile payment gateways, and multilingual support.", icon: MapPin },
+                  { title: "Zero Hassle Entry", desc: "Lightning fast QR scanners at venue gates prevent long entry queues.", icon: QrCode }
+                ].map((item, idx) => {
+                  const IconC = item.icon;
+                  return (
+                    <div key={idx} className="bg-slate-950 p-5 rounded-2xl border border-slate-800/80 space-y-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                        <IconC className="w-4 h-4" />
+                      </div>
+                      <h3 className="text-base font-bold text-white">{item.title}</h3>
+                      <p className="text-xs text-slate-400 leading-relaxed">{item.desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 4. YOUR TICKETS ALL IN ONE PLACE */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/40 p-8 sm:p-10 rounded-3xl border border-slate-800">
+              <div className="lg:col-span-7 space-y-4">
+                <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                  Attendee Dashboard
+                </span>
+                <h2 className="text-2xl sm:text-4xl font-black text-white leading-tight">
+                  Your Tickets, All in One Place.
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Access your event passes anytime from your smartphone or laptop. Never worry about losing physical paper tickets or email links again.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 text-xs font-semibold text-slate-300">
+                  {[
+                    'View upcoming events & schedules',
+                    'Instant access to digital QR passes',
+                    'Download thermal passes & PDF tickets',
+                    'Send SMS ticket links to phone',
+                    'Review past event order history',
+                    'Manage profile & saved events'
+                  ].map((feat, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>{feat}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="pt-4">
+                  <button
+                    onClick={() => setCurrentView('my-tickets')}
+                    className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold rounded-xl text-xs flex items-center gap-2 transition cursor-pointer shadow-lg shadow-emerald-500/20"
+                  >
+                    <span>Go to My Tickets</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Visual preview box */}
+              <div className="lg:col-span-5 bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4 text-center">
+                <div className="w-full bg-slate-900 p-5 rounded-2xl border border-slate-800 space-y-3">
+                  <div className="flex justify-between items-center text-xs font-bold text-slate-400">
+                    <span>Ticketa Wallet</span>
+                    <span className="text-emerald-400">Active</span>
+                  </div>
+                  <div className="w-32 h-32 mx-auto bg-white p-2 rounded-2xl flex items-center justify-center shadow-lg">
+                    <QrCode className="w-28 h-28 text-slate-950" />
+                  </div>
+                  <div className="text-xs">
+                    <p className="font-bold text-white">Flytime Music Fest 2026</p>
+                    <p className="text-[11px] text-slate-400 font-mono">TKT-8821-VIP</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 5. QR CHECK-IN VISUAL HIGHLIGHT */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-6 text-center">
+              <div className="max-w-2xl mx-auto space-y-2">
+                <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">At the Venue</span>
+                <h2 className="text-2xl sm:text-3xl font-black text-white">Seamless Gate QR Check-In</h2>
+                <p className="text-xs sm:text-sm text-slate-400">
+                  When you arrive at the venue, open your digital pass on your phone and hold the QR code in front of the gate scanner for instant green-light verification.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap justify-center items-center gap-4 pt-2">
+                <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-center w-36 space-y-2">
+                  <Smartphone className="w-8 h-8 text-emerald-400 mx-auto" />
+                  <p className="text-xs font-bold text-white">1. Open Pass</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-slate-600 hidden sm:block" />
+                <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-center w-36 space-y-2">
+                  <QrCode className="w-8 h-8 text-emerald-400 mx-auto" />
+                  <p className="text-xs font-bold text-white">2. Scan Code</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-slate-600 hidden sm:block" />
+                <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800 text-center w-36 space-y-2">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto" />
+                  <p className="text-xs font-bold text-white">3. Verified!</p>
+                </div>
+              </div>
+            </div>
+
+            {/* 6. FREQUENTLY ASKED QUESTIONS */}
+            <div className="space-y-8 max-w-4xl mx-auto">
+              <div className="text-center space-y-2">
+                <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Support & FAQ</span>
+                <h2 className="text-2xl sm:text-3xl font-black text-white">Frequently Asked Questions</h2>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  {
+                    q: "How do I get my ticket after purchase?",
+                    a: "Your ticket is automatically sent to your email address and saved directly in your Ticketa account wallet immediately after payment."
+                  },
+                  {
+                    q: "Do I need to print my ticket?",
+                    a: "No! You can simply present the digital ticket and QR code on your smartphone at the event entrance for fast scanning."
+                  },
+                  {
+                    q: "Can I buy tickets for someone else?",
+                    a: "Yes, during checkout you can enter the recipient’s name and email address so the ticket is assigned directly to them."
+                  },
+                  {
+                    q: "What payment methods are supported?",
+                    a: "Ticketa supports credit/debit cards, direct bank transfer, Apple Pay, Google Pay, Mobile Money, and USSD payment options."
+                  },
+                  {
+                    q: "What if I lose my email ticket?",
+                    a: "Log into your Ticketa account anytime and navigate to 'My Tickets' to access or re-download your QR ticket pass."
+                  },
+                  {
+                    q: "Is my payment secure?",
+                    a: "Yes, all transactions on Ticketa are protected with bank-grade SSL encryption and secure payment gateway processors."
+                  }
+                ].map((faq, i) => (
+                  <div key={i} className="bg-slate-900 p-6 rounded-2xl border border-slate-800 space-y-2 text-left">
+                    <h3 className="text-sm font-bold text-white flex items-start gap-2">
+                      <HelpCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <span>{faq.q}</span>
+                    </h3>
+                    <p className="text-xs text-slate-400 leading-relaxed pl-6">{faq.a}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 7. FINAL CTA */}
+            <div className="bg-gradient-to-r from-emerald-600 to-teal-500 rounded-3xl p-8 sm:p-12 text-center text-slate-950 space-y-5 shadow-2xl relative overflow-hidden">
+              <div className="max-w-2xl mx-auto space-y-3 relative z-10">
+                <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-950">
+                  Ready to Experience Something New?
+                </h2>
+                <p className="text-xs sm:text-sm font-medium text-slate-900 max-w-xl mx-auto">
+                  Find your next concert, conference, or festival today on Ticketa.
+                </p>
+                <div className="pt-2 flex flex-wrap justify-center gap-3">
+                  <button
+                    onClick={() => setCurrentView('home')}
+                    className="px-6 py-3.5 bg-slate-950 hover:bg-slate-900 text-white font-extrabold rounded-xl text-xs sm:text-sm transition shadow-xl cursor-pointer"
+                  >
+                    Explore Events
+                  </button>
+                  <button
+                    onClick={() => setIsAuthModalOpen(true)}
+                    className="px-6 py-3.5 bg-white hover:bg-slate-100 text-slate-950 font-black rounded-xl text-xs sm:text-sm border border-slate-200 transition shadow-md cursor-pointer"
+                  >
+                    Create an Account
+                  </button>
+                </div>
+              </div>
             </div>
 
           </div>

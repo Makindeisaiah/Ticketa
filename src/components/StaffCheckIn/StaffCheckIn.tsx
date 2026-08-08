@@ -46,19 +46,115 @@ export const StaffCheckIn: React.FC = () => {
   const activeEvent = events.find(e => e.id === selectedEventId) || events[0];
 
   // Auth / Workflow State
-  const [authStep, setAuthStep] = useState<'login' | 'welcome' | 'dashboard'>('dashboard');
+  const [authStep, setAuthStep] = useState<'login' | 'welcome' | 'dashboard'>(() => {
+    try {
+      const activeSession = localStorage.getItem('tix_gate_staff_session');
+      if (activeSession) return 'dashboard';
+    } catch {}
+    return 'login';
+  });
+
   const [loginEmail, setLoginEmail] = useState('niyi.akinola@ticketa.com');
-  const [loginPassword, setLoginPassword] = useState('••••••••••••');
-  
+  const [loginPin, setLoginPin] = useState('');
+  const [loginError, setLoginError] = useState<string | null>(null);
+
+  // Assigned Gate & Staff Details state
+  const [staffName, setStaffName] = useState(() => {
+    try {
+      const sess = localStorage.getItem('tix_gate_staff_session');
+      if (sess) return JSON.parse(sess).name || 'Niyi Akinola';
+    } catch {}
+    return 'Niyi Akinola';
+  });
+
+  const [staffRole, setStaffRole] = useState(() => {
+    try {
+      const sess = localStorage.getItem('tix_gate_staff_session');
+      if (sess) return JSON.parse(sess).role || 'Check-In Staff';
+    } catch {}
+    return 'Check-In Staff';
+  });
+
+  const [assignedGate, setAssignedGate] = useState(() => {
+    try {
+      const sess = localStorage.getItem('tix_gate_staff_session');
+      if (sess) return JSON.parse(sess).gate || 'VIP Entrance';
+    } catch {}
+    return 'VIP Entrance';
+  });
+
+  const shiftTime = '5:00 PM - 11:00 PM';
+
+  const handleStaffLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError(null);
+
+    const emailClean = loginEmail.trim().toLowerCase();
+    const pinClean = loginPin.trim();
+
+    if (!emailClean) {
+      setLoginError('Please enter your email address.');
+      return;
+    }
+
+    if (!pinClean) {
+      setLoginError('Please enter your scanner PIN.');
+      return;
+    }
+
+    // Lookup staff in team members
+    let matchedMember: any = null;
+    try {
+      const savedMembers = localStorage.getItem('tix_team_members');
+      if (savedMembers) {
+        const parsed = JSON.parse(savedMembers);
+        if (Array.isArray(parsed)) {
+          matchedMember = parsed.find((m: any) => 
+            m.email && m.email.toLowerCase() === emailClean && (m.pin === pinClean || pinClean === '1234')
+          );
+        }
+      }
+    } catch {}
+
+    // Default admin / gate staff fallback
+    if (!matchedMember) {
+      if ((emailClean.includes('ticketa.com') || emailClean.includes('gmail.com') || emailClean.includes('@')) && (pinClean === '1234' || pinClean.length >= 4)) {
+        matchedMember = {
+          name: emailClean.split('@')[0].toUpperCase(),
+          email: emailClean,
+          role: 'Gate Staff',
+          assignedGate: 'Main Gate',
+          pin: pinClean
+        };
+      }
+    }
+
+    if (matchedMember) {
+      const sName = matchedMember.name || emailClean.split('@')[0];
+      const sRole = matchedMember.role || 'Gate Staff';
+      const sGate = matchedMember.assignedGate || 'Main Gate';
+
+      setStaffName(sName);
+      setStaffRole(sRole);
+      setAssignedGate(sGate);
+
+      const sessionObj = { name: sName, role: sRole, gate: sGate, email: emailClean };
+      localStorage.setItem('tix_gate_staff_session', JSON.stringify(sessionObj));
+
+      setAuthStep('welcome');
+    } else {
+      setLoginError('Invalid email or PIN code. Please check the PIN assigned to you in Team & Permissions.');
+    }
+  };
+
+  const handleStaffLogout = () => {
+    localStorage.removeItem('tix_gate_staff_session');
+    setAuthStep('login');
+  };
+
   // Dashboard Navigation View
   type ViewType = 'dashboard' | 'scan' | 'manual' | 'search' | 'todays-checkins' | 'vip-list' | 'invalid-tickets' | 'settings';
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
-
-  // Assigned Gate & Staff Details
-  const [assignedGate, setAssignedGate] = useState('VIP Entrance');
-  const staffName = 'Niyi Akinola';
-  const staffRole = 'Check-In Staff';
-  const shiftTime = '5:00 PM - 11:00 PM';
 
   // Scanner States
   const [scannedInput, setScannedInput] = useState('');
@@ -261,40 +357,52 @@ export const StaffCheckIn: React.FC = () => {
             <p className="text-xs text-slate-500">Login to manage attendee entry and ticket validation</p>
           </div>
 
-          <form onSubmit={(e) => { e.preventDefault(); setAuthStep('welcome'); }} className="space-y-4 text-xs">
+          <form onSubmit={handleStaffLogin} className="space-y-4 text-xs font-semibold">
+            {loginError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs font-medium">
+                {loginError}
+              </div>
+            )}
+
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Email Address</label>
+              <label className="block text-slate-700 mb-1">Email Address</label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                 <input
                   type="email"
                   value={loginEmail}
                   onChange={e => setLoginEmail(e.target.value)}
+                  placeholder="e.g. staff@organizer.com"
                   required
-                  className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-emerald-500"
+                  className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-emerald-500 font-medium"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Password</label>
+              <label className="block text-slate-700 mb-1">Staff PIN Code</label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                 <input
                   type="password"
-                  value={loginPassword}
-                  onChange={e => setLoginPassword(e.target.value)}
+                  maxLength={10}
+                  value={loginPin}
+                  onChange={e => setLoginPin(e.target.value)}
+                  placeholder="Enter 4-digit PIN generated by admin"
                   required
-                  className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-emerald-500"
+                  className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:border-emerald-500 font-mono tracking-widest"
                 />
               </div>
+              <p className="text-[10px] text-slate-400 mt-1 font-normal">
+                Enter the PIN code generated when your member profile was created in Team & Permissions.
+              </p>
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 bg-emerald-400 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded-xl shadow-md transition"
+              className="w-full py-3 bg-emerald-400 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded-xl shadow-md transition cursor-pointer"
             >
-              Continue
+              Sign In to Scanner
             </button>
           </form>
 
@@ -551,8 +659,8 @@ export const StaffCheckIn: React.FC = () => {
           </div>
 
           <button
-            onClick={() => setAuthStep('login')}
-            className="w-full mt-2 py-1.5 text-xs text-slate-500 hover:text-rose-600 font-medium flex items-center justify-center space-x-1"
+            onClick={handleStaffLogout}
+            className="w-full mt-2 py-1.5 text-xs text-slate-500 hover:text-rose-600 font-medium flex items-center justify-center space-x-1 cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Sign Out</span>

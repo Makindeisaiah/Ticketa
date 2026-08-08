@@ -183,6 +183,7 @@ interface EventContextType {
     verificationStatus?: 'Pending' | 'Verified' | 'Under Review';
     id?: string;
   }) => OrganizerUser;
+  updateOrganizerProfile: (updatedDetails: Partial<OrganizerUser>) => void;
   loginOrganizer: (email: string) => OrganizerUser | null;
   logoutOrganizer: () => void;
   createNewEvent: (eventData: Omit<EventItem, 'id'> | EventItem) => void;
@@ -931,6 +932,44 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return newOrganizer;
   };
 
+  const updateOrganizerProfile = (updatedDetails: Partial<OrganizerUser>) => {
+    if (!currentOrganizer) {
+      // If no organizer is currently set, create or set default organizer
+      const fallbackOrg: OrganizerUser = {
+        id: 'org-default-1',
+        organizationName: updatedDetails.organizationName || 'Flytime Fest',
+        email: updatedDetails.supportEmail || updatedDetails.email || 'contact@ticketa.com',
+        phone: updatedDetails.phone || '+2250701020304',
+        registeredAt: new Date().toISOString().split('T')[0],
+        status: 'Verified',
+        ...updatedDetails
+      };
+      setCurrentOrganizer(fallbackOrg);
+      setOrganizers(prev => [fallbackOrg, ...prev]);
+      localStorage.setItem('tix_current_organizer', JSON.stringify(fallbackOrg));
+      saveOrganizerToFirestore(fallbackOrg);
+      triggerNotification('Organization profile updated successfully!');
+      return;
+    }
+
+    const updatedOrg: OrganizerUser = {
+      ...currentOrganizer,
+      ...updatedDetails
+    };
+
+    setCurrentOrganizer(updatedOrg);
+    const nextOrgs = organizers.map(o => o.id === currentOrganizer.id ? updatedOrg : o);
+    if (!organizers.some(o => o.id === currentOrganizer.id)) {
+      nextOrgs.unshift(updatedOrg);
+    }
+    setOrganizers(nextOrgs);
+    localStorage.setItem('tix_current_organizer', JSON.stringify(updatedOrg));
+
+    saveOrganizerToFirestore(updatedOrg);
+    syncToServerDatabase({ organizers: nextOrgs });
+    triggerNotification('Organization profile updated and saved!');
+  };
+
   const loginOrganizer = (email: string): OrganizerUser | null => {
     const cleanEmail = email.trim().toLowerCase();
     const found = organizers.find(o => o.email.toLowerCase() === cleanEmail);
@@ -1546,6 +1585,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         loginUser,
         logoutUser,
         registerOrganizer,
+        updateOrganizerProfile,
         loginOrganizer,
         logoutOrganizer,
         createNewEvent,

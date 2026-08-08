@@ -115,6 +115,15 @@ export interface OrganizerUser {
   category?: string;
   organizerType?: string;
   country?: string;
+  city?: string;
+  address?: string;
+  description?: string;
+  logoUrl?: string;
+  supportEmail?: string;
+  website?: string;
+  instagram?: string;
+  facebook?: string;
+  twitter?: string;
   registeredAt: string;
   status: 'Active' | 'Verified';
   verificationStatus?: 'Pending' | 'Verified' | 'Under Review';
