@@ -14,6 +14,7 @@ import {
   saveOrderToFirestore, 
   saveTicketToFirestore 
 } from '../lib/firestoreSync';
+import { auth } from '../lib/firebase';
 
 export interface ScanResult {
   success: boolean;
@@ -166,7 +167,7 @@ interface EventContextType {
   clearNotificationLogs: () => void;
 
   // Actions
-  registerUser: (details: { fullName: string; email: string; phone: string; emailVerified?: boolean }) => TicketaUser;
+  registerUser: (details: { fullName: string; email: string; phone: string; emailVerified?: boolean; id?: string }) => TicketaUser;
   loginUser: (email: string) => TicketaUser | null;
   logoutUser: () => void;
   registerOrganizer: (details: { 
@@ -179,6 +180,7 @@ interface EventContextType {
     country?: string;
     payoutAccount?: OrganizerUser['payoutAccount'];
     verificationStatus?: 'Pending' | 'Verified' | 'Under Review';
+    id?: string;
   }) => OrganizerUser;
   loginOrganizer: (email: string) => OrganizerUser | null;
   logoutOrganizer: () => void;
@@ -605,7 +607,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const registerUser = (details: { fullName: string; email: string; phone: string; emailVerified?: boolean }): TicketaUser => {
+  const registerUser = (details: { fullName: string; email: string; phone: string; emailVerified?: boolean; id?: string }): TicketaUser => {
     const cleanEmail = details.email.trim().toLowerCase();
     const cleanPhone = details.phone.trim();
     const cleanName = details.fullName.trim();
@@ -647,7 +649,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     const todayStr = new Date().toISOString().split('T')[0];
-    const newUserId = `usr-${Math.floor(100 + Math.random() * 900)}`;
+    const newUserId = details.id || auth.currentUser?.uid || `usr-${Math.floor(100 + Math.random() * 900)}`;
     const newUser: TicketaUser = {
       id: newUserId,
       fullName: cleanName,
@@ -759,6 +761,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     country?: string;
     payoutAccount?: OrganizerUser['payoutAccount'];
     verificationStatus?: 'Pending' | 'Verified' | 'Under Review';
+    id?: string;
   }): OrganizerUser => {
     const cleanEmail = details.email.trim().toLowerCase();
     const cleanName = details.organizationName.trim();
@@ -789,7 +792,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     const todayStr = new Date().toISOString().split('T')[0];
-    const newOrgId = `org-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newOrgId = details.id || auth.currentUser?.uid || `org-${Math.floor(1000 + Math.random() * 9000)}`;
     const newOrganizer: OrganizerUser = {
       id: newOrgId,
       organizationName: cleanName,

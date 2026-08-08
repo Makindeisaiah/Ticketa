@@ -65,10 +65,17 @@ export function sanitizeForFirestore<T>(obj: T): any {
 
 async function fetchCollectionDocs<T>(path: string): Promise<T[]> {
   try {
-    const snap = await getDocs(collection(db, path));
-    const items: T[] = [];
-    snap.forEach(d => items.push(d.data() as T));
-    return items;
+    const fetchPromise = getDocs(collection(db, path)).then(snap => {
+      const items: T[] = [];
+      snap.forEach(d => items.push(d.data() as T));
+      return items;
+    });
+
+    const timeoutPromise = new Promise<T[]>((resolve) => {
+      setTimeout(() => resolve([]), 3000);
+    });
+
+    return await Promise.race([fetchPromise, timeoutPromise]);
   } catch (error) {
     handleFirestoreError(error, OperationType.GET, path);
     return [];
@@ -101,8 +108,10 @@ export async function saveUserToFirestore(user: TicketaUser) {
   try {
     if (!user || !user.id) return;
     await setDoc(doc(db, 'users', user.id), sanitizeForFirestore(user), { merge: true });
+    console.log(`[Firestore] Saved user: ${user.id} (${user.email})`);
   } catch (err) {
-    console.warn('Firestore saveUser error:', err);
+    console.error(`[Firestore] Failed to save user ${user?.id}:`, err);
+    handleFirestoreError(err, OperationType.WRITE, `users/${user?.id}`);
   }
 }
 
@@ -110,8 +119,10 @@ export async function saveOrganizerToFirestore(organizer: OrganizerUser) {
   try {
     if (!organizer || !organizer.id) return;
     await setDoc(doc(db, 'organizers', organizer.id), sanitizeForFirestore(organizer), { merge: true });
+    console.log(`[Firestore] Saved organizer: ${organizer.id} (${organizer.email})`);
   } catch (err) {
-    console.warn('Firestore saveOrganizer error:', err);
+    console.error(`[Firestore] Failed to save organizer ${organizer?.id}:`, err);
+    handleFirestoreError(err, OperationType.WRITE, `organizers/${organizer?.id}`);
   }
 }
 
@@ -119,8 +130,10 @@ export async function saveEventToFirestore(event: EventItem) {
   try {
     if (!event || !event.id) return;
     await setDoc(doc(db, 'events', event.id), sanitizeForFirestore(event), { merge: true });
+    console.log(`[Firestore] Saved event: ${event.id}`);
   } catch (err) {
-    console.warn('Firestore saveEvent error:', err);
+    console.error(`[Firestore] Failed to save event ${event?.id}:`, err);
+    handleFirestoreError(err, OperationType.WRITE, `events/${event?.id}`);
   }
 }
 
@@ -128,8 +141,10 @@ export async function deleteEventFromFirestore(eventId: string) {
   try {
     if (!eventId) return;
     await deleteDoc(doc(db, 'events', eventId));
+    console.log(`[Firestore] Deleted event: ${eventId}`);
   } catch (err) {
-    console.warn('Firestore deleteEvent error:', err);
+    console.error(`[Firestore] Failed to delete event ${eventId}:`, err);
+    handleFirestoreError(err, OperationType.DELETE, `events/${eventId}`);
   }
 }
 
@@ -137,8 +152,10 @@ export async function saveOrderToFirestore(order: Order) {
   try {
     if (!order || !order.id) return;
     await setDoc(doc(db, 'orders', order.id), sanitizeForFirestore(order), { merge: true });
+    console.log(`[Firestore] Saved order: ${order.id}`);
   } catch (err) {
-    console.warn('Firestore saveOrder error:', err);
+    console.error(`[Firestore] Failed to save order ${order?.id}:`, err);
+    handleFirestoreError(err, OperationType.WRITE, `orders/${order?.id}`);
   }
 }
 
@@ -146,8 +163,10 @@ export async function saveTicketToFirestore(ticket: TicketPass) {
   try {
     if (!ticket || !ticket.ticketCode) return;
     await setDoc(doc(db, 'tickets', ticket.ticketCode), sanitizeForFirestore(ticket), { merge: true });
+    console.log(`[Firestore] Saved ticket: ${ticket.ticketCode}`);
   } catch (err) {
-    console.warn('Firestore saveTicket error:', err);
+    console.error(`[Firestore] Failed to save ticket ${ticket?.ticketCode}:`, err);
+    handleFirestoreError(err, OperationType.WRITE, `tickets/${ticket?.ticketCode}`);
   }
 }
 
@@ -155,8 +174,10 @@ export async function saveQrTicketToFirestore(qrTicket: QrTicket) {
   try {
     if (!qrTicket || !qrTicket.ticketCode) return;
     await setDoc(doc(db, 'qr_tickets', qrTicket.ticketCode), sanitizeForFirestore(qrTicket), { merge: true });
+    console.log(`[Firestore] Saved qr_ticket: ${qrTicket.ticketCode}`);
   } catch (err) {
-    console.warn('Firestore saveQrTicket error:', err);
+    console.error(`[Firestore] Failed to save qr_ticket ${qrTicket?.ticketCode}:`, err);
+    handleFirestoreError(err, OperationType.WRITE, `qr_tickets/${qrTicket?.ticketCode}`);
   }
 }
 
@@ -164,8 +185,10 @@ export async function savePromoToFirestore(promo: PromoCode) {
   try {
     if (!promo || !promo.code) return;
     await setDoc(doc(db, 'promos', promo.code), sanitizeForFirestore(promo), { merge: true });
+    console.log(`[Firestore] Saved promo: ${promo.code}`);
   } catch (err) {
-    console.warn('Firestore savePromo error:', err);
+    console.error(`[Firestore] Failed to save promo ${promo?.code}:`, err);
+    handleFirestoreError(err, OperationType.WRITE, `promos/${promo?.code}`);
   }
 }
 
@@ -173,8 +196,10 @@ export async function saveScanRecordToFirestore(record: OfflineScanRecord) {
   try {
     if (!record || !record.id) return;
     await setDoc(doc(db, 'scan_records', record.id), sanitizeForFirestore(record), { merge: true });
+    console.log(`[Firestore] Saved scan record: ${record.id}`);
   } catch (err) {
-    console.warn('Firestore saveScanRecord error:', err);
+    console.error(`[Firestore] Failed to save scan_record ${record?.id}:`, err);
+    handleFirestoreError(err, OperationType.WRITE, `scan_records/${record?.id}`);
   }
 }
 
@@ -182,8 +207,10 @@ export async function saveNotificationToFirestore(notif: NotificationLog) {
   try {
     if (!notif || !notif.id) return;
     await setDoc(doc(db, 'notifications', notif.id), sanitizeForFirestore(notif), { merge: true });
+    console.log(`[Firestore] Saved notification: ${notif.id}`);
   } catch (err) {
-    console.warn('Firestore saveNotification error:', err);
+    console.error(`[Firestore] Failed to save notification ${notif?.id}:`, err);
+    handleFirestoreError(err, OperationType.WRITE, `notifications/${notif?.id}`);
   }
 }
 

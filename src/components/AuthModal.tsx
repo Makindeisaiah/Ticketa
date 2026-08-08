@@ -9,9 +9,10 @@ import {
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
-  updateProfile 
+  updateProfile,
+  signInWithPopup
 } from 'firebase/auth';
-import { auth } from '../lib/firebase';
+import { auth, googleAuthProvider } from '../lib/firebase';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -57,8 +58,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
 
   if (!isOpen) return null;
 
-  const handleStartSocialAuth = (provider: 'Google' | 'Apple') => {
+  const handleStartSocialAuth = async (provider: 'Google' | 'Apple') => {
     setErrorMsg('');
+    if (provider === 'Google') {
+      try {
+        setIsLoading(true);
+        const userCredential = await signInWithPopup(auth, googleAuthProvider);
+        setIsLoading(false);
+        if (userCredential.user) {
+          const u = userCredential.user;
+          registerUser({
+            id: u.uid,
+            fullName: u.displayName || u.email?.split('@')[0] || 'Google User',
+            email: u.email || '',
+            phone: u.phoneNumber || '+234 800 123 4567',
+            emailVerified: u.emailVerified ?? true
+          });
+          onClose();
+          return;
+        }
+      } catch (err: any) {
+        setIsLoading(false);
+        console.warn("Google popup sign-in notice:", err);
+      }
+    }
     setSocialProvider(provider);
     setSocialName('');
     setSocialEmail('');
@@ -77,6 +100,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
     }
 
     registerUser({
+      id: auth.currentUser?.uid,
       fullName: cleanName,
       email: cleanEmail,
       phone: '+234 800 123 4567',
@@ -133,8 +157,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
         await updateProfile(userCredential.user, { displayName: cleanName });
       }
 
-      // 2. Register User in App State / PostgreSQL database
+      // 2. Register User in App State / Firestore
       registerUser({
+        id: userCredential.user?.uid,
         fullName: cleanName,
         email: cleanEmail,
         phone: cleanPhone,
@@ -157,6 +182,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMo
       } else {
         // Fallback registration if Firebase Auth endpoint is unreachable
         registerUser({
+          id: auth.currentUser?.uid,
           fullName: cleanName,
           email: cleanEmail,
           phone: cleanPhone,

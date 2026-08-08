@@ -436,12 +436,14 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
     }
 
     const cleanEmail = email.trim().toLowerCase();
+    let userUid: string | undefined = undefined;
 
     try {
       if (password) {
         const userCred = await createUserWithEmailAndPassword(auth, cleanEmail, password);
         if (userCred.user) {
           await updateProfile(userCred.user, { displayName: fullName.trim() || organizationName.trim() });
+          userUid = userCred.user.uid;
         }
       }
     } catch (err) {
@@ -449,6 +451,7 @@ export const OrganizerLogin: React.FC<OrganizerLoginProps> = ({ onLoginSuccess }
     }
 
     const orgUser = registerOrganizer({
+      id: userUid || auth.currentUser?.uid,
       organizationName: organizationName.trim(),
       fullName: fullName.trim(),
       email: cleanEmail,
