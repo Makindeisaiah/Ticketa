@@ -15,6 +15,7 @@ import { exportTicketAsPdf, exportTicketToAppleWallet, printThermalWristband } f
 import { AuthModal } from '../AuthModal';
 import { useLanguage } from '../../utils/translations';
 import { formatEventCurrency } from '../../utils/currency';
+import { INITIAL_EVENTS } from '../../data/mockEvents';
 import founderPhoto from '../../assets/images/founder_real_photo_1786200260378.jpg';
 
 const XIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
@@ -177,8 +178,11 @@ export const AttendeeWeb: React.FC = () => {
   // Categories definition
   const categories = ['All', 'Concerts', 'Comedy', 'Tech', 'Festival'];
   
+  // Ensure published events always display on fresh browsers/devices
+  const catalogEvents = (events && events.length > 0) ? events : INITIAL_EVENTS;
+
   // Dynamic Locations from events or defaults
-  const uniqueEventLocations = Array.from(new Set((events || []).map(e => (e && (e.location || e.venueName)) || ''))).filter(Boolean);
+  const uniqueEventLocations = Array.from(new Set(catalogEvents.map(e => (e && (e.location || e.venueName)) || ''))).filter(Boolean);
   const locations = uniqueEventLocations.length > 0 
     ? ['All Locations', ...uniqueEventLocations] 
     : ['All Locations', "Abidjan, Côte d'Ivoire", 'Lagos, Nigeria', 'Accra, Ghana'];
@@ -200,7 +204,7 @@ export const AttendeeWeb: React.FC = () => {
   };
 
   const getCategoryCount = (catName: string) => {
-    return (events || []).filter(e => e && isCategoryMatch(e.category, catName)).length;
+    return catalogEvents.filter(e => e && isCategoryMatch(e.category, catName)).length;
   };
 
   const getCategoryLabel = (catName: string) => {
@@ -216,7 +220,7 @@ export const AttendeeWeb: React.FC = () => {
   };
 
   // Filtered Events logic
-  const filteredEvents = (events || []).filter(e => {
+  const filteredEvents = catalogEvents.filter(e => {
     if (!e) return false;
     const title = e.title || '';
     const location = e.location || '';
