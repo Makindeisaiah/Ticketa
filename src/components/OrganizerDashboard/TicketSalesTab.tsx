@@ -171,7 +171,12 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
       {/* Revenue Performance Chart */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-          <h3 className="text-base font-extrabold text-slate-900">{t('revenuePerformance')}</h3>
+          <div>
+            <h3 className="text-base font-extrabold text-slate-900">{t('revenuePerformance')}</h3>
+            <p className="text-xs text-slate-500 font-semibold mt-0.5">
+              {timeframe === 'daily' ? 'Daily revenue trend' : timeframe === 'weekly' ? 'Weekly revenue breakdown' : 'Monthly revenue growth'}
+            </p>
+          </div>
           <div className="flex p-1 bg-slate-100 rounded-xl text-xs font-bold border border-slate-200/60">
             {(['daily', 'weekly', 'monthly'] as const).map(tf => (
               <button
@@ -179,7 +184,7 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
                 onClick={() => setTimeframe(tf)}
                 className={`px-3 py-1 rounded-lg capitalize transition cursor-pointer ${
                   timeframe === tf
-                    ? 'bg-amber-400 text-slate-900 font-extrabold shadow-sm'
+                    ? 'bg-[#00C896] text-white font-extrabold shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -189,30 +194,83 @@ export const TicketSalesTab: React.FC<TicketSalesTabProps> = ({
           </div>
         </div>
 
-        <div className="h-56 w-full relative pt-2">
-          <svg className="w-full h-full overflow-visible" viewBox="0 0 800 200">
-            <line x1="60" y1="20" x2="780" y2="20" stroke="#E2E8F0" strokeDasharray="4 4" />
-            <line x1="60" y1="80" x2="780" y2="80" stroke="#E2E8F0" strokeDasharray="4 4" />
-            <line x1="60" y1="140" x2="780" y2="140" stroke="#E2E8F0" strokeDasharray="4 4" />
-            <line x1="60" y1="180" x2="780" y2="180" stroke="#E2E8F0" />
+        <div className="h-64 w-full relative pt-2">
+          <svg className="w-full h-full overflow-visible" viewBox="0 0 720 220">
+            {/* Grid Lines & Y Axis Labels */}
+            <line x1="70" y1="20" x2="690" y2="20" stroke="#E2E8F0" strokeDasharray="4 4" />
+            <text x="60" y="24" textAnchor="end" className="text-[10px] fill-slate-400 font-mono font-bold">
+              {formatNaira(totalRevenue > 0 ? totalRevenue : 100000)}
+            </text>
 
+            <line x1="70" y1="75" x2="690" y2="75" stroke="#E2E8F0" strokeDasharray="4 4" />
+            <text x="60" y="79" textAnchor="end" className="text-[10px] fill-slate-400 font-mono font-bold">
+              {formatNaira(totalRevenue > 0 ? Math.round(totalRevenue * 0.66) : 50000)}
+            </text>
+
+            <line x1="70" y1="130" x2="690" y2="130" stroke="#E2E8F0" strokeDasharray="4 4" />
+            <text x="60" y="134" textAnchor="end" className="text-[10px] fill-slate-400 font-mono font-bold">
+              {formatNaira(totalRevenue > 0 ? Math.round(totalRevenue * 0.33) : 10000)}
+            </text>
+
+            <line x1="70" y1="180" x2="690" y2="180" stroke="#CBD5E1" strokeWidth="1.5" />
+            <text x="60" y="184" textAnchor="end" className="text-[10px] fill-slate-400 font-mono font-bold">0</text>
+
+            {/* Area Fill Gradient */}
             <path
-              d="M 100 160 L 200 120 L 300 60 L 400 60 L 500 20 L 600 20 L 700 120 L 700 180 L 100 180 Z"
-              fill="url(#revGrad3)"
+              d={totalRevenue > 0
+                ? "M 100 170 L 210 130 L 320 75 L 430 75 L 540 20 L 650 20 L 650 180 L 100 180 Z"
+                : "M 100 180 L 650 180 L 650 180 L 100 180 Z"
+              }
+              fill="url(#revGradSales)"
             />
             <defs>
-              <linearGradient id="revGrad3" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#00C896" stopOpacity="0.25" />
+              <linearGradient id="revGradSales" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#00C896" stopOpacity="0.35" />
                 <stop offset="100%" stopColor="#00C896" stopOpacity="0.0" />
               </linearGradient>
             </defs>
 
+            {/* Line Path */}
             <path
-              d="M 100 160 L 200 120 L 300 60 L 400 60 L 500 20 L 600 20 L 700 120"
+              d={totalRevenue > 0
+                ? "M 100 170 L 210 130 L 320 75 L 430 75 L 540 20 L 650 20"
+                : "M 100 180 L 650 180"
+              }
               fill="none"
               stroke="#00C896"
-              strokeWidth="3"
+              strokeWidth="3.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
+
+            {/* Point Markers & X Axis Labels */}
+            {(timeframe === 'daily' ? [
+              { x: 100, y: totalRevenue > 0 ? 170 : 180, label: 'Mon' },
+              { x: 210, y: totalRevenue > 0 ? 130 : 180, label: 'Tue' },
+              { x: 320, y: totalRevenue > 0 ? 75 : 180, label: 'Wed' },
+              { x: 430, y: totalRevenue > 0 ? 75 : 180, label: 'Thu' },
+              { x: 540, y: totalRevenue > 0 ? 20 : 180, label: 'Fri' },
+              { x: 650, y: totalRevenue > 0 ? 20 : 180, label: 'Sat' },
+            ] : timeframe === 'weekly' ? [
+              { x: 100, y: totalRevenue > 0 ? 160 : 180, label: 'Wk 1' },
+              { x: 210, y: totalRevenue > 0 ? 120 : 180, label: 'Wk 2' },
+              { x: 320, y: totalRevenue > 0 ? 80 : 180, label: 'Wk 3' },
+              { x: 430, y: totalRevenue > 0 ? 60 : 180, label: 'Wk 4' },
+              { x: 540, y: totalRevenue > 0 ? 30 : 180, label: 'Wk 5' },
+              { x: 650, y: totalRevenue > 0 ? 20 : 180, label: 'Wk 6' },
+            ] : [
+              { x: 100, y: totalRevenue > 0 ? 170 : 180, label: 'Jan' },
+              { x: 210, y: totalRevenue > 0 ? 140 : 180, label: 'Feb' },
+              { x: 320, y: totalRevenue > 0 ? 90 : 180, label: 'Mar' },
+              { x: 430, y: totalRevenue > 0 ? 60 : 180, label: 'Apr' },
+              { x: 540, y: totalRevenue > 0 ? 40 : 180, label: 'May' },
+              { x: 650, y: totalRevenue > 0 ? 20 : 180, label: 'Jun' },
+            ]).map((p, i) => (
+              <g key={i}>
+                <circle cx={p.x} cy={p.y} r="5.5" fill="#00C896" stroke="#FFFFFF" strokeWidth="2.5" className="shadow-sm" />
+                <text x={p.x} y="202" textAnchor="middle" className="text-[10px] fill-slate-500 font-extrabold">{p.label}</text>
+              </g>
+            ))}
           </svg>
         </div>
       </div>

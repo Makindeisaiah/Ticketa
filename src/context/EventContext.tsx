@@ -405,14 +405,65 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('tix_organizers', JSON.stringify(organizers));
   }, [organizers]);
 
-  // Firebase Firestore Database Realtime & Initial Sync Initializer
+  // Firebase Firestore Database Realtime & Initial Sync Initializer + Cross-Tab Instant Sync
   useEffect(() => {
     let isMounted = true;
 
-    const mergeById = <T,>(current: T[], fetched: T[], key: keyof T): T[] => {
-      const map = new Map<string, T>();
-      current.forEach(item => { if (item && item[key]) map.set(String(item[key]), item); });
-      fetched.forEach(item => { if (item && item[key]) map.set(String(item[key]), item); });
+    const mergeEvents = (current: EventItem[], fetched: EventItem[]): EventItem[] => {
+      const map = new Map<string, EventItem>();
+      current.forEach(item => { if (item?.id) map.set(String(item.id), item); });
+      fetched.forEach(fetchedItem => {
+        if (!fetchedItem?.id) return;
+        const existing = map.get(String(fetchedItem.id));
+        if (!existing) {
+          map.set(String(fetchedItem.id), fetchedItem);
+        } else {
+          // Preserve tier sold quantities taking maximum so sales never revert
+          const currentTiers = Array.isArray(existing.ticketTiers) ? existing.ticketTiers : [];
+          const fetchedTiers = Array.isArray(fetchedItem.ticketTiers) ? fetchedItem.ticketTiers : [];
+          const mergedTiers = fetchedTiers.map(ft => {
+            const ext = currentTiers.find(ct => ct.id === ft.id);
+            return {
+              ...ft,
+              soldQuantity: Math.max(ft.soldQuantity || 0, ext?.soldQuantity || 0)
+            };
+          });
+          map.set(String(fetchedItem.id), {
+            ...existing,
+            ...fetchedItem,
+            ticketTiers: mergedTiers.length > 0 ? mergedTiers : currentTiers
+          });
+        }
+      });
+      return Array.from(map.values());
+    };
+
+    const mergeOrders = (current: Order[], fetched: Order[]): Order[] => {
+      const map = new Map<string, Order>();
+      // Put fetched first, then override or preserve current
+      fetched.forEach(item => { if (item?.id) map.set(String(item.id), item); });
+      current.forEach(item => { if (item?.id) map.set(String(item.id), item); });
+      return Array.from(map.values()).sort((a, b) => new Date(b.purchaseDate || 0).getTime() - new Date(a.purchaseDate || 0).getTime());
+    };
+
+    const mergeTickets = (current: TicketPass[], fetched: TicketPass[]): TicketPass[] => {
+      const map = new Map<string, TicketPass>();
+      fetched.forEach(item => { if (item?.ticketCode) map.set(String(item.ticketCode), item); });
+      current.forEach(item => { if (item?.ticketCode) map.set(String(item.ticketCode), item); });
+      return Array.from(map.values());
+    };
+
+    const mergeUsers = (current: TicketaUser[], fetched: TicketaUser[]): TicketaUser[] => {
+      const map = new Map<string, TicketaUser>();
+      fetched.forEach(item => { if (item?.id) map.set(String(item.id), item); });
+      current.forEach(item => { if (item?.id) map.set(String(item.id), item); });
+      return Array.from(map.values());
+    };
+
+    const mergeOrganizers = (current: OrganizerUser[], fetched: OrganizerUser[]): OrganizerUser[] => {
+      const map = new Map<string, OrganizerUser>();
+      fetched.forEach(item => { if (item?.id) map.set(String(item.id), item); });
+      current.forEach(item => { if (item?.id) map.set(String(item.id), item); });
       return Array.from(map.values());
     };
 
@@ -420,37 +471,62 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (!isMounted || !fetchedEvents) return;
       const cleanList = fetchedEvents.filter((e: any) => e && e.id && !deletedEventIdsRef.current.has(e.id));
       if (cleanList.length > 0) {
-        setEvents(prev => mergeById(prev, cleanList, 'id'));
+        setEvents(prev => mergeEvents(prev, cleanList));
       }
     });
 
     const unsubOrders = subscribeToCollection<Order>('orders', (fetchedOrders) => {
       if (!isMounted || !fetchedOrders) return;
       if (fetchedOrders.length > 0) {
-        setOrders(prev => mergeById(prev, fetchedOrders, 'id'));
+        setOrders(prev => mergeOrders(prev, fetchedOrders));
       }
     });
 
     const unsubUsers = subscribeToCollection<TicketaUser>('users', (fetchedUsers) => {
       if (!isMounted || !fetchedUsers) return;
       if (fetchedUsers.length > 0) {
-        setUsers(prev => mergeById(prev, fetchedUsers, 'id'));
+        setUsers(prev => mergeUsers(prev, fetchedUsers));
       }
     });
 
     const unsubOrganizers = subscribeToCollection<OrganizerUser>('organizers', (fetchedOrgs) => {
       if (!isMounted || !fetchedOrgs) return;
       if (fetchedOrgs.length > 0) {
-        setOrganizers(prev => mergeById(prev, fetchedOrgs, 'id'));
+        setOrganizers(prev => mergeOrganizers(prev, fetchedOrgs));
       }
     });
 
     const unsubTickets = subscribeToCollection<TicketPass>('tickets', (fetchedTickets) => {
       if (!isMounted || !fetchedTickets) return;
       if (fetchedTickets.length > 0) {
-        setAllTickets(prev => mergeById(prev, fetchedTickets, 'ticketCode'));
+        setAllTickets(prev => mergeTickets(prev, fetchedTickets));
       }
     });
+
+    // Cross-tab storage event listener
+    const handleStorageEvent = (e: StorageEvent) => {
+      if (!isMounted) return;
+      if (e.key === 'tix_orders' && e.newValue) {
+        try {
+          const parsedOrders = JSON.parse(e.newValue);
+          if (Array.isArray(parsedOrders)) setOrders(prev => mergeOrders(prev, parsedOrders));
+        } catch {}
+      }
+      if (e.key === 'tix_all_tickets' && e.newValue) {
+        try {
+          const parsedTickets = JSON.parse(e.newValue);
+          if (Array.isArray(parsedTickets)) setAllTickets(prev => mergeTickets(prev, parsedTickets));
+        } catch {}
+      }
+      if (e.key === 'tix_events' && e.newValue) {
+        try {
+          const parsedEvents = JSON.parse(e.newValue);
+          if (Array.isArray(parsedEvents)) setEvents(prev => mergeEvents(prev, parsedEvents));
+        } catch {}
+      }
+    };
+
+    window.addEventListener('storage', handleStorageEvent);
 
     return () => {
       isMounted = false;
@@ -459,6 +535,7 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       unsubUsers();
       unsubOrganizers();
       unsubTickets();
+      window.removeEventListener('storage', handleStorageEvent);
     };
   }, []);
 

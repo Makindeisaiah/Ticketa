@@ -51,7 +51,7 @@ interface SettingsTabProps {
 
 export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
   const { t } = useLanguage();
-  const { orders, currentOrganizer } = useEventContext();
+  const { orders, currentOrganizer, events } = useEventContext();
   const calculatedTotalEarnings = orders.reduce((acc, o) => acc + o.totalAmount, 0);
 
   const [activeSubpage, setActiveSubpage] = useState<SettingsSubpage>('grid');
@@ -71,14 +71,125 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
   const [facebook, setFacebook] = useState('flytimefest');
   const [twitter, setTwitter] = useState('flytimefest');
 
-  // Team Members State
-  const [teamMembers, setTeamMembers] = useState([
-    { id: '1', name: 'Makinde Isaiah', email: 'info@makindeisaiah.com', role: 'Admin', status: 'Active' },
-    { id: '2', name: 'Makinde Isaiah', email: 'info@makindeisaiah.com', role: 'Organizer', status: 'Active' },
-    { id: '3', name: 'Makinde Isaiah', email: 'info@makindeisaiah.com', role: 'Finance', status: 'Active' },
-    { id: '4', name: 'Makinde Isaiah', email: 'info@makindeisaiah.com', role: 'Gate Staff', status: 'Pending' },
-    { id: '5', name: 'Makinde Isaiah', email: 'info@makindeisaiah.com', role: 'Support', status: 'Active' },
-  ]);
+  // Team Members State & Modals
+  interface TeamMemberItem {
+    id: string;
+    name: string;
+    email: string;
+    role: 'Admin' | 'Organizer' | 'Finance' | 'Gate Staff';
+    status: 'Active' | 'Pending';
+    assignedGate?: string;
+    pin?: string;
+  }
+
+  const defaultAdminEmail = currentOrganizer?.email || 'makindeisaiah2002@gmail.com';
+  const defaultAdminName = currentOrganizer?.organizationName || 'Organizer Admin';
+
+  const [teamMembers, setTeamMembers] = useState<TeamMemberItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('tix_team_members');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Filter out old demo members with info@makindeisaiah.com repeated
+          const clean = parsed.filter((m: any) => m && m.email);
+          if (clean.length > 0) return clean;
+        }
+      }
+    } catch {}
+    return [
+      {
+        id: 'owner-admin-1',
+        name: defaultAdminName,
+        email: defaultAdminEmail,
+        role: 'Admin',
+        status: 'Active',
+        assignedGate: 'All Gates',
+        pin: '1234'
+      }
+    ];
+  });
+
+  // Modal State
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<TeamMemberItem | null>(null);
+
+  // Form inputs
+  const [formName, setFormName] = useState('');
+  const [formEmail, setFormEmail] = useState('');
+  const [formRole, setFormRole] = useState<'Admin' | 'Organizer' | 'Finance' | 'Gate Staff'>('Gate Staff');
+  const [formGate, setFormGate] = useState('Main Gate');
+  const [formPin, setFormPin] = useState('1234');
+
+  const saveTeamList = (newList: TeamMemberItem[]) => {
+    setTeamMembers(newList);
+    localStorage.setItem('tix_team_members', JSON.stringify(newList));
+  };
+
+  const handleOpenInvite = () => {
+    setEditingMember(null);
+    setFormName('');
+    setFormEmail('');
+    setFormRole('Gate Staff');
+    setFormGate('Main Gate');
+    setFormPin(Math.floor(1000 + Math.random() * 9000).toString());
+    setIsInviteModalOpen(true);
+  };
+
+  const handleOpenEdit = (member: TeamMemberItem) => {
+    setEditingMember(member);
+    setFormName(member.name);
+    setFormEmail(member.email);
+    setFormRole(member.role);
+    setFormGate(member.assignedGate || 'Main Gate');
+    setFormPin(member.pin || '1234');
+    setIsInviteModalOpen(true);
+  };
+
+  const handleSaveMember = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formEmail.trim() || !formEmail.includes('@')) {
+      showToast('Please enter a valid email address.');
+      return;
+    }
+
+    if (editingMember) {
+      const updated = teamMembers.map(m => m.id === editingMember.id ? {
+        ...m,
+        name: formName.trim() || formEmail.split('@')[0],
+        email: formEmail.trim().toLowerCase(),
+        role: formRole,
+        assignedGate: formGate,
+        pin: formPin
+      } : m);
+      saveTeamList(updated);
+      showToast('Team member updated successfully!');
+    } else {
+      const newMember: TeamMemberItem = {
+        id: `team-${Date.now()}`,
+        name: formName.trim() || formEmail.split('@')[0],
+        email: formEmail.trim().toLowerCase(),
+        role: formRole,
+        status: 'Active',
+        assignedGate: formGate,
+        pin: formPin
+      };
+      saveTeamList([...teamMembers, newMember]);
+      showToast(`Invite created and details saved for ${newMember.email}!`);
+    }
+
+    setIsInviteModalOpen(false);
+  };
+
+  const handleDeleteMember = (id: string, email: string) => {
+    if (email.toLowerCase() === defaultAdminEmail.toLowerCase()) {
+      showToast('Cannot remove primary organizer account.');
+      return;
+    }
+    const updated = teamMembers.filter(m => m.id !== id);
+    saveTeamList(updated);
+    showToast('Team member removed.');
+  };
 
   // Toast / notification state
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -413,8 +524,8 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
               <ArrowLeft className="w-3.5 h-3.5" /> {t('backToSettings')} / {t('teamPermissionsTitle')}
             </button>
             <button
-              onClick={() => showToast('Invite link generated!')}
-              className="px-4 py-2 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 shadow-sm cursor-pointer"
+              onClick={handleOpenInvite}
+              className="px-4 py-2 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs flex items-center gap-1.5 shadow-sm cursor-pointer transition"
             >
               <Plus className="w-4 h-4" /> {t('inviteTeamMember')}
             </button>
@@ -422,7 +533,10 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-              <h2 className="text-base font-extrabold text-slate-900">{t('teamMembers')}</h2>
+              <div className="flex justify-between items-center">
+                <h2 className="text-base font-extrabold text-slate-900">{t('teamMembers')}</h2>
+                <span className="text-xs font-bold text-slate-400">{teamMembers.length} Authorized Users</span>
+              </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs font-semibold">
@@ -430,45 +544,65 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                     <tr>
                       <th className="py-3 px-4">{t('memberCol')}</th>
                       <th className="py-3 px-4">{t('roleCol')}</th>
+                      <th className="py-3 px-4">Gate / PIN</th>
                       <th className="py-3 px-4">{t('statusColTableHeader')}</th>
                       <th className="py-3 px-4 text-right">{t('actions')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {teamMembers.map(m => (
-                      <tr key={m.id} className="hover:bg-slate-50">
-                        <td className="py-3 px-4 flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center">
-                            MI
-                          </div>
-                          <div>
-                            <div className="font-bold text-slate-900">{m.name}</div>
-                            <div className="text-[10px] text-slate-400">{m.email}</div>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
-                            m.role === 'Admin' ? 'bg-amber-100 text-amber-800' :
-                            m.role === 'Organizer' ? 'bg-lime-100 text-lime-800' :
-                            m.role === 'Finance' ? 'bg-purple-100 text-purple-800' :
-                            'bg-blue-100 text-blue-800'
-                          }`}>
-                            {m.role}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase ${
-                            m.status === 'Active' ? 'bg-emerald-100 text-[#00C896]' : 'bg-slate-200 text-slate-600'
-                          }`}>
-                            {m.status}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-right space-x-2">
-                          <button className="p-1.5 text-slate-400 hover:text-slate-800"><Edit className="w-3.5 h-3.5" /></button>
-                          <button className="p-1.5 text-slate-400 hover:text-rose-600"><Trash2 className="w-3.5 h-3.5" /></button>
-                        </td>
-                      </tr>
-                    ))}
+                    {teamMembers.map(m => {
+                      const initials = m.name ? m.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'TM';
+                      return (
+                        <tr key={m.id} className="hover:bg-slate-50">
+                          <td className="py-3 px-4 flex items-center space-x-3">
+                            <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0">
+                              {initials}
+                            </div>
+                            <div>
+                              <div className="font-bold text-slate-900">{m.name}</div>
+                              <div className="text-[10px] text-slate-400">{m.email}</div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
+                              m.role === 'Admin' ? 'bg-amber-100 text-amber-800' :
+                              m.role === 'Organizer' ? 'bg-lime-100 text-lime-800' :
+                              m.role === 'Finance' ? 'bg-purple-100 text-purple-800' :
+                              'bg-blue-100 text-blue-800'
+                            }`}>
+                              {m.role}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-slate-600 font-mono text-[11px]">
+                            <div>{m.assignedGate || 'Main Gate'}</div>
+                            {m.pin && <div className="text-[10px] text-slate-400 font-sans">PIN: {m.pin}</div>}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase ${
+                              m.status === 'Active' ? 'bg-emerald-100 text-[#00C896]' : 'bg-slate-200 text-slate-600'
+                            }`}>
+                              {m.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right space-x-1">
+                            <button
+                              onClick={() => handleOpenEdit(m)}
+                              title="Edit Member"
+                              className="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition cursor-pointer"
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteMember(m.id, m.email)}
+                              title="Remove Member"
+                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -490,12 +624,115 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({ onLogout }) => {
                   <p className="text-[10px] text-slate-500">{t('financeRoleDesc')}</p>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                  <div className="font-extrabold text-blue-800">Check-in Staff</div>
-                  <p className="text-[10px] text-slate-500">{t('checkInStaffRoleDesc')}</p>
+                  <div className="font-extrabold text-blue-800">Gate Staff / Scanner</div>
+                  <p className="text-[10px] text-slate-500">Scanner platform access to check in attendees using assigned gate credentials.</p>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Interactive Modal Form for Invite / Edit Team Member */}
+          {isInviteModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn">
+              <div className="bg-white border border-slate-200 w-full max-w-md rounded-3xl p-6 shadow-2xl space-y-5">
+                <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                  <h3 className="text-lg font-black text-slate-900">
+                    {editingMember ? 'Edit Team Member' : 'Invite Team Member'}
+                  </h3>
+                  <button
+                    onClick={() => setIsInviteModalOpen(false)}
+                    className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSaveMember} className="space-y-4 text-xs font-semibold">
+                  <div>
+                    <label className="block text-slate-700 mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Samuel Adewale"
+                      value={formName}
+                      onChange={e => setFormName(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 mb-1">Email Address (Login ID)</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="samuel@eventorganizer.com"
+                      value={formEmail}
+                      onChange={e => setFormEmail(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 mb-1">Role & Permissions</label>
+                    <select
+                      value={formRole}
+                      onChange={e => setFormRole(e.target.value as any)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 outline-none"
+                    >
+                      <option value="Admin">Admin (Full Access)</option>
+                      <option value="Organizer">Organizer (Manage Events & Tickets)</option>
+                      <option value="Finance">Finance (View Sales & Payouts)</option>
+                      <option value="Gate Staff">Gate Staff / Scanner (Check-in Platform)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 mb-1">Assigned Gate / Entrance</label>
+                    <select
+                      value={formGate}
+                      onChange={e => setFormGate(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 outline-none"
+                    >
+                      <option value="All Gates">All Gates / General Access</option>
+                      <option value="Main Gate">Main Gate</option>
+                      <option value="VIP Entrance">VIP Entrance</option>
+                      <option value="Gate A">Gate A</option>
+                      <option value="Gate B">Gate B</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 mb-1">Scanner PIN / Password</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="1234"
+                      value={formPin}
+                      onChange={e => setFormPin(e.target.value)}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 outline-none font-mono"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-1">Staff will use this PIN to log into the scanner platform.</p>
+                  </div>
+
+                  <div className="pt-2 flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsInviteModalOpen(false)}
+                      className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-5 py-2.5 bg-[#00C896] hover:bg-[#00b386] text-white font-extrabold rounded-xl text-xs transition shadow-md cursor-pointer"
+                    >
+                      {editingMember ? 'Save Changes' : 'Send Invite & Save'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

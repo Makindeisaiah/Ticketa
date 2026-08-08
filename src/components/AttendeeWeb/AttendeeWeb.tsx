@@ -64,12 +64,9 @@ export const AttendeeWeb: React.FC = () => {
   const [priceSort, setPriceSort] = useState<'trending' | 'price-low' | 'price-high' | 'date'>('trending');
 
   const handleHeroSearch = () => {
-    if (!searchQuery.trim() && locationFilter === 'All Locations' && dateFilter === 'Any Date') {
-      setSearchError('Please fill in the search term or select a location / date filter before searching.');
-      return;
-    }
     setSearchError('');
     setCurrentView('browse');
+    window.scrollTo({ top: 350, behavior: 'smooth' });
   };
   
   // Selected Event & Checkout Selection State
@@ -231,15 +228,25 @@ export const AttendeeWeb: React.FC = () => {
     const title = e.title || '';
     const location = e.location || '';
     const organizerName = e.organizerName || '';
+    const venueName = e.venueName || '';
+    const description = e.description || '';
+    const category = e.category || '';
     const tags = Array.isArray(e.tags) ? e.tags : [];
-    const query = (searchQuery || '').toLowerCase();
+    const tiers = Array.isArray(e.ticketTiers) ? e.ticketTiers : [];
+    const query = (searchQuery || '').trim().toLowerCase();
 
     const matchesCategory = isCategoryMatch(e.category, selectedCategory);
     const matchesSearch = !query ||
                           title.toLowerCase().includes(query) ||
                           location.toLowerCase().includes(query) ||
+                          venueName.toLowerCase().includes(query) ||
                           organizerName.toLowerCase().includes(query) ||
+                          description.toLowerCase().includes(query) ||
+                          category.toLowerCase().includes(query) ||
+                          (e.country && e.country.toLowerCase().includes(query)) ||
+                          tiers.some(t => t && t.name && t.name.toLowerCase().includes(query)) ||
                           tags.some(t => t && t.toLowerCase().includes(query));
+
     const cleanLocFilter = (locationFilter || 'All Locations').toLowerCase().split(',')[0].trim();
     const matchesLocation = locationFilter === 'All Locations' ||
                             !locationFilter ||
