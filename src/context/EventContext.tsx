@@ -388,6 +388,22 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('tix_users', JSON.stringify(users));
   }, [users]);
 
+  useEffect(() => {
+    localStorage.setItem('tix_events', JSON.stringify(events));
+  }, [events]);
+
+  useEffect(() => {
+    localStorage.setItem('tix_orders', JSON.stringify(orders));
+  }, [orders]);
+
+  useEffect(() => {
+    localStorage.setItem('tix_all_tickets', JSON.stringify(allTickets));
+  }, [allTickets]);
+
+  useEffect(() => {
+    localStorage.setItem('tix_organizers', JSON.stringify(organizers));
+  }, [organizers]);
+
   // Firebase Firestore Database Sync Initializer
   useEffect(() => {
     let isMounted = true;

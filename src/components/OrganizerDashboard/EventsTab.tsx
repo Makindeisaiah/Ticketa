@@ -184,9 +184,24 @@ export const EventsTab: React.FC<EventsTabProps> = ({
           const tiers = Array.isArray(evt?.ticketTiers) ? evt.ticketTiers : [];
           const totalTierCap = tiers.reduce((acc, t) => acc + (t.availableQuantity || 0), 0);
           const eventTickets = allTickets.filter(t => t.eventId === evt.id);
-          const totalTierSold = eventTickets.length || tiers.reduce((acc, t) => acc + (t.soldQuantity || 0), 0);
-          const percentage = totalTierCap > 0 ? Math.round((totalTierSold / totalTierCap) * 100) : 0;
           const eventOrders = orders.filter(o => o.eventId === evt.id);
+          const ticketsFromOrders = eventOrders.reduce((sum, o) => sum + (o.tickets ? o.tickets.length : 0), 0);
+          const tierSoldSum = tiers.reduce((acc, t) => acc + (t.soldQuantity || 0), 0);
+          const totalTierSold = Math.max(eventTickets.length, ticketsFromOrders, tierSoldSum);
+
+          const rawPercentage = totalTierCap > 0 ? (totalTierSold / totalTierCap) * 100 : 0;
+          let percentageDisplay = '0%';
+          let barWidth = 0;
+          if (totalTierSold > 0) {
+            if (rawPercentage < 1) {
+              percentageDisplay = `${rawPercentage.toFixed(1)}%`;
+              barWidth = Math.max(rawPercentage, 2.5);
+            } else {
+              percentageDisplay = `${Math.round(rawPercentage)}%`;
+              barWidth = Math.min(Math.round(rawPercentage), 100);
+            }
+          }
+
           const eventRevenue = eventOrders.reduce((acc, o) => acc + o.totalAmount, 0);
           const displayRev = eventRevenue;
 
@@ -226,12 +241,13 @@ export const EventsTab: React.FC<EventsTabProps> = ({
                     <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-[#00C896] rounded-full transition-all duration-500" 
-                        style={{ width: `${percentage}%` }}
+                        style={{ width: `${barWidth}%` }}
                       ></div>
                     </div>
-                    <span className="text-[10px] font-bold text-slate-500 mt-1 block">
-                      ({percentage}%)
-                    </span>
+                    <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 mt-1">
+                      <span>{totalTierSold.toLocaleString()} / {totalTierCap.toLocaleString()} sold</span>
+                      <span>({percentageDisplay})</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -245,7 +261,7 @@ export const EventsTab: React.FC<EventsTabProps> = ({
                       {totalTierCap.toLocaleString()} <span className="text-[10px] text-slate-500 font-sans">{t('ticketsLabel')}</span>
                     </div>
                     <div className="text-[11px] text-slate-500">
-                      {totalTierSold.toLocaleString()} {t('checkInsLabel')}
+                      {totalTierSold.toLocaleString()} tickets sold
                     </div>
                   </div>
                 </div>

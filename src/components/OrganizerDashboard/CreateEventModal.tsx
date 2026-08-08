@@ -73,10 +73,11 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setStep(1);
+      const defaultOrgName = currentOrganizer?.organizationName || currentOrganizer?.fullName || 'Event Organizer';
       if (editingEvent) {
         setTitle(editingEvent.title || '');
         setCategory(editingEvent.category || 'Concerts');
-        setOrganizerName(editingEvent.organizerName || '');
+        setOrganizerName(editingEvent.organizerName || defaultOrgName);
         setDate(formatIsoDate(editingEvent.date || ''));
         setTime(formatIsoTime(editingEvent.time || ''));
         setVenueName(editingEvent.venueName || '');
@@ -94,7 +95,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
       } else {
         setTitle('');
         setCategory('Concerts');
-        setOrganizerName('');
+        setOrganizerName(defaultOrgName);
         setDate('');
         setTime('');
         setVenueName('');
@@ -107,7 +108,7 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
         ]);
       }
     }
-  }, [isOpen, editingEvent]);
+  }, [isOpen, editingEvent, currentOrganizer]);
 
   if (!isOpen) return null;
 
@@ -295,11 +296,13 @@ export const CreateEventModal: React.FC<CreateEventModalProps> = ({
                   <label className="block text-slate-700 font-bold mb-1">{t('organizerNameLabel')}</label>
                   <input
                     type="text"
-                    value={organizerName}
-                    onChange={e => setOrganizerName(e.target.value)}
+                    value={organizerName || currentOrganizer?.organizationName || currentOrganizer?.fullName || ''}
+                    readOnly
+                    disabled
                     placeholder={t('organizerNamePlaceholder')}
-                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 focus:border-[#00C896] rounded-xl text-slate-900 font-bold outline-none"
+                    className="w-full px-3.5 py-2 bg-slate-100 border border-slate-200 rounded-xl text-slate-600 font-bold outline-none cursor-not-allowed opacity-90"
                   />
+                  <p className="text-[10px] text-slate-400 mt-1">Auto-filled from registered profile (non-editable)</p>
                 </div>
               </div>
 
