@@ -24,6 +24,7 @@ export const StaffCheckIn: React.FC = () => {
     scanAndCheckInTicket, 
     manualCheckInByEmail,
     selectedEventId,
+    setSelectedEventId,
     isOfflineMode,
     setIsOfflineMode,
     offlineQueue,
@@ -44,6 +45,12 @@ export const StaffCheckIn: React.FC = () => {
 
   // Selected Active Event
   const activeEvent = events.find(e => e.id === selectedEventId) || events[0];
+
+  // Filter tickets exclusively for the assigned active event
+  const eventTickets = React.useMemo(() => {
+    if (!activeEvent) return [];
+    return allTickets.filter(t => t.eventId === activeEvent.id);
+  }, [allTickets, activeEvent?.id]);
 
   // Auth / Workflow State
   const [authStep, setAuthStep] = useState<'login' | 'welcome' | 'dashboard'>(() => {
@@ -182,44 +189,17 @@ export const StaffCheckIn: React.FC = () => {
   const [autoLogout, setAutoLogout] = useState('30 Minutes');
   const [showAttendeePhoto, setShowAttendeePhoto] = useState(true);
 
-  // Dynamic Invalid Tickets mock tracking
+  // Dynamic Invalid Tickets tracking
   const [invalidLogs, setInvalidLogs] = useState<Array<{
     id: string;
     attendeeName: string;
     email: string;
     ticketCode: string;
     section: string;
-    reason: 'Duplicate Scan' | 'Expired Ticket' | 'Fake / Invalid QR' | 'Wrong Gate';
+    reason: string;
     timestamp: string;
-  }>>([
-    {
-      id: 'inv-1',
-      attendeeName: 'Kunle Adewale',
-      email: 'kunle.a@example.com',
-      ticketCode: 'TKT-9912-ERR',
-      section: 'Regular',
-      reason: 'Duplicate Scan',
-      timestamp: '10:14 AM'
-    },
-    {
-      id: 'inv-2',
-      attendeeName: 'Blessing Okon',
-      email: 'blessing@example.com',
-      ticketCode: 'TKT-7788-INV',
-      section: 'VIP Table - B',
-      reason: 'Wrong Gate',
-      timestamp: '09:42 AM'
-    },
-    {
-      id: 'inv-3',
-      attendeeName: 'Tunde Bakare',
-      email: 'tunde.b@example.com',
-      ticketCode: 'TKT-0000-FK',
-      section: 'VVIP Access',
-      reason: 'Fake / Invalid QR',
-      timestamp: '08:50 AM'
-    }
-  ]);
+    eventId?: string;
+  }>>([]);
 
   // Play Web Audio chime on scan result
   const playScanChime = (success: boolean) => {
@@ -258,7 +238,37 @@ export const StaffCheckIn: React.FC = () => {
   // Handle Scan Verification
   const executeScan = (codeToScan: string) => {
     if (!codeToScan.trim()) return;
-    const res = scanAndCheckInTicket(codeToScan.trim(), assignedGate);
+    const clean = codeToScan.trim().toUpperCase();
+
+    // Safeguard: Check if pass belongs to another event
+    const foundTicket = allTickets.find(t => t.ticketCode.toUpperCase() === clean);
+    if (foundTicket && activeEvent && foundTicket.eventId !== activeEvent.id) {
+      playScanChime(false);
+      const msg = `Wrong Event: Pass "${foundTicket.ticketCode}" is for "${foundTicket.eventTitle}", not "${activeEvent.title}".`;
+      setInvalidLogs(prev => [
+        {
+          id: `inv-${Date.now()}`,
+          attendeeName: foundTicket.attendeeName,
+          email: foundTicket.attendeeEmail,
+          ticketCode: clean,
+          section: foundTicket.tierName,
+          reason: 'Wrong Event Entry',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          eventId: activeEvent.id
+        },
+        ...prev
+      ]);
+      setLastScanResult({
+        success: false,
+        message: msg,
+        ticket: foundTicket,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      });
+      setScannedInput('');
+      return;
+    }
+
+    const res = scanAndCheckInTicket(clean, assignedGate);
 
     playScanChime(res.success);
 
@@ -269,10 +279,11 @@ export const StaffCheckIn: React.FC = () => {
           id: `inv-${Date.now()}`,
           attendeeName: res.ticket?.attendeeName || 'Unknown Attendee',
           email: res.ticket?.attendeeEmail || 'unknown@guest.com',
-          ticketCode: codeToScan,
+          ticketCode: clean,
           section: res.ticket?.tierName || 'Unassigned',
           reason: res.message.includes('ALREADY') ? 'Duplicate Scan' : 'Fake / Invalid QR',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          eventId: activeEvent?.id
         },
         ...prev
       ]);
@@ -303,19 +314,19 @@ export const StaffCheckIn: React.FC = () => {
     setSelectedAttendeeTicket(prev => prev ? { ...prev, status: 'CHECKED_IN', checkedInAt: new Date().toLocaleTimeString() } : null);
   };
 
-  // Stats calculation
-  const totalCheckIns = allTickets.filter(t => t.status === 'CHECKED_IN').length;
+  // Real Stats calculation filtered exclusively for the active event
+  const totalCheckIns = eventTickets.filter(t => t.status === 'CHECKED_IN').length;
   const validCheckIns = totalCheckIns;
-  const pendingCheckIns = allTickets.filter(t => t.status === 'VALID').length;
-  const invalidTicketsCount = invalidLogs.length;
+  const pendingCheckIns = eventTickets.filter(t => t.status === 'VALID').length;
+  const invalidTicketsCount = invalidLogs.filter(l => !l.eventId || l.eventId === activeEvent?.id).length;
 
   // VIP Tickets calculation
-  const vipTickets = allTickets.filter(t => t.tierName.toLowerCase().includes('vip') || t.tierName.toLowerCase().includes('table') || t.pricePaid >= 100000);
+  const vipTickets = eventTickets.filter(t => t.tierName.toLowerCase().includes('vip') || t.tierName.toLowerCase().includes('table') || t.pricePaid >= 100000);
   const checkedInVips = vipTickets.filter(t => t.status === 'CHECKED_IN');
   const notCheckedInVips = vipTickets.filter(t => t.status === 'VALID');
 
   // Filtered Tickets for Today's Check-Ins
-  const filteredCheckInList = allTickets.filter(t => {
+  const filteredCheckInList = eventTickets.filter(t => {
     if (checkinFilter === 'valid') return t.status === 'CHECKED_IN';
     if (checkinFilter === 'pending') return t.status === 'VALID';
     if (checkinFilter === 'vip') return t.tierName.toLowerCase().includes('vip') || t.tierName.toLowerCase().includes('table');
@@ -327,7 +338,7 @@ export const StaffCheckIn: React.FC = () => {
   });
 
   // Filtered Attendees for Search Page
-  const searchResults = allTickets.filter(t => {
+  const searchResults = eventTickets.filter(t => {
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
     if (searchTab === 'email-phone') return t.attendeeEmail.toLowerCase().includes(q);
@@ -337,7 +348,7 @@ export const StaffCheckIn: React.FC = () => {
   });
 
   // Recent Check-In feed
-  const recentCheckInsFeed = allTickets.filter(t => t.status === 'CHECKED_IN').slice(0, 5);
+  const recentCheckInsFeed = eventTickets.filter(t => t.status === 'CHECKED_IN').slice(0, 5);
 
   // ==================== SCREEN 1: STAFF LOGIN ====================
   if (authStep === 'login') {
@@ -686,15 +697,25 @@ export const StaffCheckIn: React.FC = () => {
                 TIX
               </div>
             )}
-            <div className="min-w-0">
+            <div className="min-w-0 space-y-0.5">
               <div className="flex items-center space-x-2">
-                <h1 className="text-base font-bold text-slate-900 truncate">{activeEvent?.title || 'No Event Selected'}</h1>
-                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                  Active
+                <select
+                  value={activeEvent?.id || ''}
+                  onChange={(e) => setSelectedEventId(e.target.value)}
+                  className="bg-slate-50 border border-slate-300 text-slate-900 text-xs sm:text-sm font-black rounded-xl px-2.5 py-1 focus:ring-2 focus:ring-emerald-500 cursor-pointer max-w-[220px] sm:max-w-[320px] truncate"
+                >
+                  {events.map(ev => (
+                    <option key={ev.id} value={ev.id}>
+                      {ev.title}
+                    </option>
+                  ))}
+                </select>
+                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase shrink-0">
+                  Assigned Event
                 </span>
               </div>
               <p className="text-xs text-slate-500 truncate">
-                {activeEvent?.date || 'N/A'} • {activeEvent?.time || 'N/A'} • {activeEvent?.venueName || 'N/A'}
+                {activeEvent?.date || 'N/A'} • {activeEvent?.time || 'N/A'} • {activeEvent?.venueName || 'N/A'} ({eventTickets.length} Passes)
               </p>
             </div>
           </div>
@@ -866,10 +887,10 @@ export const StaffCheckIn: React.FC = () => {
                     <div className="pt-1 space-y-1.5">
                       <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                         <span>Quick Sample Passes (Click to Test Scan)</span>
-                        <span className="text-emerald-600 font-semibold">{allTickets.length} Passes</span>
+                        <span className="text-emerald-600 font-semibold">{eventTickets.length} Passes</span>
                       </div>
                       <div className="flex flex-wrap gap-1.5">
-                        {allTickets.slice(0, 4).map(tk => (
+                        {eventTickets.slice(0, 4).map(tk => (
                           <button
                             key={tk.ticketCode}
                             type="button"
@@ -1138,10 +1159,10 @@ export const StaffCheckIn: React.FC = () => {
                 <div className="pt-2 space-y-2">
                   <div className="flex justify-between items-center text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                     <span>Quick Sample Passes (Click to Test Scan)</span>
-                    <span className="text-emerald-600 font-semibold">{allTickets.length} Passes</span>
+                    <span className="text-emerald-600 font-semibold">{eventTickets.length} Passes</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    {allTickets.slice(0, 6).map(tk => (
+                    {eventTickets.slice(0, 6).map(tk => (
                       <button
                         key={tk.ticketCode}
                         type="button"

@@ -9,7 +9,7 @@ import {
   Filter, Lock, Share2, Bookmark, Download, ExternalLink, QrCode,
   Building2, ChevronDown, Check, AlertCircle, ArrowLeft, Copy, Smartphone,
   RefreshCw, Layers, FileText, Mail, Printer, Menu, Facebook, Instagram,
-  User, UserPlus, LogIn, LogOut, Languages, Info, Globe, Heart, Zap
+  User, UserPlus, LogIn, LogOut, Languages, Info, Globe, Heart, Zap, HelpCircle
 } from 'lucide-react';
 import { exportTicketAsPdf, exportTicketToAppleWallet, printThermalWristband } from '../../utils/ticketExporter';
 import { AuthModal } from '../AuthModal';
@@ -2006,7 +2006,7 @@ export const AttendeeWeb: React.FC = () => {
                     </div>
                   </div>
                   <button
-                    onClick={() => setCurrentView('my-tickets')}
+                    onClick={() => setCurrentView('orders')}
                     className="pt-2 text-xs font-bold text-emerald-400 flex items-center gap-1 hover:underline cursor-pointer"
                   >
                     <span>My Tickets</span>
@@ -2097,7 +2097,7 @@ export const AttendeeWeb: React.FC = () => {
                 </div>
                 <div className="pt-4">
                   <button
-                    onClick={() => setCurrentView('my-tickets')}
+                    onClick={() => setCurrentView('orders')}
                     className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold rounded-xl text-xs flex items-center gap-2 transition cursor-pointer shadow-lg shadow-emerald-500/20"
                   >
                     <span>Go to My Tickets</span>
@@ -2214,7 +2214,10 @@ export const AttendeeWeb: React.FC = () => {
                     Explore Events
                   </button>
                   <button
-                    onClick={() => setIsAuthModalOpen(true)}
+                    onClick={() => {
+                      setAuthModalMode('signup');
+                      setShowAuthModal(true);
+                    }}
                     className="px-6 py-3.5 bg-white hover:bg-slate-100 text-slate-950 font-black rounded-xl text-xs sm:text-sm border border-slate-200 transition shadow-md cursor-pointer"
                   >
                     Create an Account
