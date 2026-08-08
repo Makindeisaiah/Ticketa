@@ -69,9 +69,16 @@ export const OrganizerDashboard: React.FC = () => {
       if (organizerAuth.name) {
         if (e.organizerName && e.organizerName.toLowerCase() === organizerAuth.name.toLowerCase()) return true;
       }
+      if (organizerAuth.email) {
+        if (currentOrganizer && currentOrganizer.email.toLowerCase() === organizerAuth.email.toLowerCase()) return true;
+      }
+      // Fallback: If event has no organizerId or generic host name, include for active organizer session
+      if (!e.organizerId || e.organizerId === '' || e.organizerName === 'Event Organizer' || e.organizerName === 'Ticketa Host') {
+        return true;
+      }
       return false;
     });
-  }, [events, currentOrganizer, organizerAuth.name]);
+  }, [events, currentOrganizer, organizerAuth]);
 
   const organizerEventIds = React.useMemo(() => new Set(organizerEvents.map(e => e.id)), [organizerEvents]);
   const organizerOrders = React.useMemo(() => orders.filter(o => organizerEventIds.has(o.eventId)), [orders, organizerEventIds]);

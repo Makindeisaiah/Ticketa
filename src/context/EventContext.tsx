@@ -397,22 +397,31 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (!isMounted) return;
 
         if (firestoreData) {
+          const mergeById = <T,>(current: T[], fetched: T[], key: keyof T): T[] => {
+            const map = new Map<string, T>();
+            fetched.forEach(item => { if (item && item[key]) map.set(String(item[key]), item); });
+            current.forEach(item => { if (item && item[key]) map.set(String(item[key]), item); });
+            return Array.from(map.values());
+          };
+
           if (firestoreData.events && firestoreData.events.length > 0) {
             const cleanList = firestoreData.events.filter((e: any) => e && e.id && !deletedEventIdsRef.current.has(e.id));
-            if (cleanList.length > 0) setEvents(cleanList);
+            if (cleanList.length > 0) {
+              setEvents(prev => mergeById(prev, cleanList, 'id'));
+            }
           }
 
           if (firestoreData.orders && firestoreData.orders.length > 0) {
-            setOrders(firestoreData.orders);
+            setOrders(prev => mergeById(prev, firestoreData.orders, 'id'));
           }
           if (firestoreData.users && firestoreData.users.length > 0) {
-            setUsers(firestoreData.users);
+            setUsers(prev => mergeById(prev, firestoreData.users, 'id'));
           }
           if (firestoreData.organizers && firestoreData.organizers.length > 0) {
-            setOrganizers(firestoreData.organizers);
+            setOrganizers(prev => mergeById(prev, firestoreData.organizers, 'id'));
           }
           if (firestoreData.tickets && firestoreData.tickets.length > 0) {
-            setAllTickets(firestoreData.tickets);
+            setAllTickets(prev => mergeById(prev, firestoreData.tickets, 'ticketCode'));
           }
         }
       } catch (err) {
@@ -961,10 +970,18 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     // Update local orders state
-    setOrders(prev => [newOrder, ...prev]);
+    setOrders(prev => {
+      const exists = prev.some(o => o.id === newOrder.id);
+      if (exists) return prev;
+      return [newOrder, ...prev];
+    });
 
     // Update allTickets state so tickets show up immediately in all ticket lists
-    setAllTickets(prev => [...tickets, ...prev]);
+    setAllTickets(prev => {
+      const existingCodes = new Set(prev.map(t => t.ticketCode));
+      const newTickets = tickets.filter(t => !existingCodes.has(t.ticketCode));
+      return [...newTickets, ...prev];
+    });
 
     // Create or update TicketaUser for this attendee
     const cleanEmail = attendeeDetails.email.trim().toLowerCase();
@@ -972,7 +989,8 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const todayDate = new Date().toISOString().split('T')[0];
 
     // Calculate updated total orders and total spent from existing orders + new order
-    const userAllOrders = [newOrder, ...orders].filter(o => 
+    const combinedOrders = [newOrder, ...orders.filter(o => o.id !== newOrder.id)];
+    const userAllOrders = combinedOrders.filter(o => 
       (o.customerEmail && o.customerEmail.toLowerCase() === cleanEmail) || 
       (attendeeDetails.phone && o.customerPhone === attendeeDetails.phone)
     );
@@ -1015,12 +1033,16 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     saveUserToFirestore(targetUser);
     tickets.forEach(t => saveTicketToFirestore(t));
 
+    const combinedEvents = events.map(e => e.id === updatedEventObj.id ? updatedEventObj : e);
+    const combinedUsers = [targetUser, ...users.filter(u => u.id !== targetUser.id)];
+    const combinedTickets = [...tickets, ...allTickets.filter(t => !tickets.some(tk => tk.ticketCode === t.ticketCode))];
+
     // Sync order, updated event, user, and tickets to server database
     syncToServerDatabase({
-      orders: [newOrder, ...orders],
-      events: events.map(e => e.id === updatedEventObj.id ? updatedEventObj : e),
-      users: users.map(u => u.id === targetUser.id ? targetUser : u),
-      tickets: [...tickets, ...allTickets]
+      orders: combinedOrders,
+      events: combinedEvents,
+      users: combinedUsers,
+      tickets: combinedTickets
     });
 
     // Auto-dispatch Email and SMS ticket notifications
