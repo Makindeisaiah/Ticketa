@@ -9,12 +9,13 @@ import {
   Filter, Lock, Share2, Bookmark, Download, ExternalLink, QrCode,
   Building2, ChevronDown, Check, AlertCircle, ArrowLeft, Copy, Smartphone,
   RefreshCw, Layers, FileText, Mail, Printer, Menu, Facebook, Instagram,
-  User, UserPlus, LogIn, LogOut, Languages
+  User, UserPlus, LogIn, LogOut, Languages, Info, Globe, Heart, Zap
 } from 'lucide-react';
 import { exportTicketAsPdf, exportTicketToAppleWallet, printThermalWristband } from '../../utils/ticketExporter';
 import { AuthModal } from '../AuthModal';
 import { useLanguage } from '../../utils/translations';
 import { formatEventCurrency } from '../../utils/currency';
+import founderPhoto from '../../assets/images/founder_photo_1786199273077.jpg';
 
 const XIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -76,14 +77,6 @@ export const AttendeeWeb: React.FC = () => {
   const handleNav = (view: 'home' | 'browse' | 'details' | 'checkout' | 'orders' | 'how-it-works' | 'about') => {
     if (eventId) {
       navigate('/', { replace: true });
-    }
-    if (view === 'about') {
-      setCurrentView('browse');
-      setTimeout(() => {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-      }, 100);
-      setIsMobileMenuOpen(false);
-      return;
     }
     setCurrentView(view);
     setIsMobileMenuOpen(false);
@@ -413,6 +406,14 @@ export const AttendeeWeb: React.FC = () => {
                 >
                   {t('howItWorks')}
                 </button>
+                <button
+                  onClick={() => handleNav('about')}
+                  className={`px-3 py-2 rounded-lg text-xs font-semibold transition ${
+                    currentView === 'about' ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                  }`}
+                >
+                  About Ticketa
+                </button>
               </nav>
             </div>
 
@@ -520,6 +521,16 @@ export const AttendeeWeb: React.FC = () => {
               >
                 <Sparkles className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
                 <span>{t('howItWorks')}</span>
+              </button>
+
+              <button
+                onClick={() => handleNav('about')}
+                className={`flex items-center space-x-3 px-3.5 py-3 rounded-xl text-sm font-semibold transition text-left cursor-pointer ${
+                  currentView === 'about' ? 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <Info className="w-4.5 h-4.5 text-emerald-400 shrink-0" />
+                <span>About Ticketa</span>
               </button>
 
               <button
@@ -1846,6 +1857,243 @@ export const AttendeeWeb: React.FC = () => {
                   </div>
                 );
               })}
+            </div>
+
+          </div>
+        )}
+
+        {/* ---------------- 7. ABOUT TICKETA PAGE ---------------- */}
+        {currentView === 'about' && (
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 animate-fadeIn">
+            
+            {/* 1. Hero */}
+            <div className="text-center max-w-3xl mx-auto space-y-4">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-widest">
+                <Sparkles className="w-3.5 h-3.5" />
+                About Ticketa
+              </span>
+              <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+                We’re building the future of <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">event experiences.</span>
+              </h1>
+              <p className="text-base sm:text-lg font-bold text-slate-300">
+                Making Every Event Experience Simple, Connected, and Memorable.
+              </p>
+              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-2xl mx-auto">
+                Ticketa is a modern event ticketing platform built to make discovering, booking, managing, and experiencing events easier for everyone. From concerts and conferences to parties, workshops, festivals, and community events, Ticketa connects people with experiences that matter.
+              </p>
+            </div>
+
+            {/* 2. Our Story + Founder Card */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+              <div className="absolute -right-20 -top-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+                
+                {/* Story text */}
+                <div className="lg:col-span-7 space-y-4">
+                  <div className="inline-block px-3 py-1 rounded-lg bg-slate-800 text-emerald-400 text-xs font-extrabold uppercase tracking-wider border border-slate-700">
+                    Our Story
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    Built from an idea. Driven by a vision.
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    Ticketa was founded by <strong className="text-white font-bold">Makinde Isaiah Oluwatoyin</strong>, a product designer and software developer who wanted to build something that could solve real problems in the event industry.
+                  </p>
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    The journey started in <strong className="text-emerald-400 font-bold">November 2025</strong>, when Isaiah began working on the idea of creating an event ticketing platform that could bring event discovery, ticketing, payments, and event management into one seamless ecosystem. What started as an idea gradually became a fully functioning product.
+                  </p>
+                  <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                    Using years of experience across product design and software development, Isaiah designed and built Ticketa with the vision of creating a platform that could serve not only Nigeria, but eventually Ghana, Côte d’Ivoire, and the wider African market. Today, Ticketa is built as more than just a place to buy tickets—it’s designed to connect people with experiences.
+                  </p>
+                </div>
+
+                {/* Founder visual profile card */}
+                <div className="lg:col-span-5 bg-slate-950 p-6 rounded-2xl border border-slate-800/90 space-y-4 text-center">
+                  <div className="relative w-36 h-36 mx-auto rounded-2xl overflow-hidden border-2 border-emerald-500/40 p-1 shadow-xl bg-slate-900">
+                    <img 
+                      src={founderPhoto} 
+                      alt="Makinde Isaiah Oluwatoyin - Founder of Ticketa" 
+                      className="w-full h-full object-cover rounded-xl"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-white">Makinde Isaiah Oluwatoyin</h3>
+                    <p className="text-xs font-semibold text-emerald-400">Founder & Lead Product Engineer</p>
+                    <p className="text-[11px] text-slate-400 mt-1 flex items-center justify-center gap-1">
+                      <MapPin className="w-3.5 h-3.5 text-slate-500" /> Lagos, Nigeria • West Africa
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-slate-800 flex justify-center gap-2 text-[10px] text-slate-400 font-mono">
+                    <span className="px-2.5 py-1 bg-slate-900 rounded-lg border border-slate-800">Product Design</span>
+                    <span className="px-2.5 py-1 bg-slate-900 rounded-lg border border-slate-800">Software Engineering</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* 3. Why Choose Ticketa (6 Feature Cards) */}
+            <div className="space-y-6">
+              <div className="text-center max-w-xl mx-auto space-y-2">
+                <h2 className="text-2xl sm:text-3xl font-black text-white">Why Choose Ticketa?</h2>
+                <p className="text-xs sm:text-sm text-slate-400">Designed with purpose to simplify every stage of live events.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {[
+                  {
+                    icon: Search,
+                    title: "Discover Events Easily",
+                    desc: "Find events that match your interests without having to search across different platforms."
+                  },
+                  {
+                    icon: Zap,
+                    title: "Simple & Fast Booking",
+                    desc: "Our ticketing experience is designed to make discovering an event and securing your ticket quick and straightforward."
+                  },
+                  {
+                    icon: ShieldCheck,
+                    title: "Secure Ticketing",
+                    desc: "Your ticket belongs to you. Designed with secure authentication, digital tickets, and QR-based verification for safety."
+                  },
+                  {
+                    icon: Smartphone,
+                    title: "Your Tickets in One Place",
+                    desc: "Keep your event tickets accessible directly from your Ticketa wallet instead of worrying about losing physical tickets."
+                  },
+                  {
+                    icon: Globe,
+                    title: "Built for Africa",
+                    desc: "We’re building Ticketa with Africa in mind, starting with Nigeria, Ghana, and Côte d’Ivoire, expanding beyond the continent."
+                  },
+                  {
+                    icon: Sparkles,
+                    title: "More Than Tickets",
+                    desc: "We don’t just want to help you buy a ticket. We want to help you discover your next unforgettable experience."
+                  }
+                ].map((feat, idx) => {
+                  const IconComp = feat.icon;
+                  return (
+                    <div key={idx} className="bg-slate-900 p-6 rounded-2xl border border-slate-800 hover:border-emerald-500/40 transition space-y-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                        <IconComp className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-base font-bold text-white">{feat.title}</h3>
+                      <p className="text-xs text-slate-400 leading-relaxed">{feat.desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 4. Our Vision & What We Believe */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+              
+              {/* Vision Card */}
+              <div className="lg:col-span-7 bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/40 p-8 rounded-3xl border border-slate-800 space-y-4 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <span className="text-xs font-black text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                    Our Vision
+                  </span>
+                  <h3 className="text-2xl sm:text-3xl font-black text-white leading-tight">
+                    To become Africa’s leading digital event experience platform.
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    We envision a future where anyone can discover an event, purchase a ticket, enter the venue, and enjoy the experience through one simple platform.
+                  </p>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    For attendees, Ticketa makes events easier to discover and access. For organizers, it provides the technology they need to create, manage, promote, and grow their events.
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-slate-800/80 font-black text-emerald-400 text-xs sm:text-sm tracking-wide">
+                  One platform. Thousands of experiences. Millions of possibilities.
+                </div>
+              </div>
+
+              {/* What We Believe (3 Principles) */}
+              <div className="lg:col-span-5 bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-4">
+                <div>
+                  <h3 className="text-xl font-black text-white">What We Believe</h3>
+                  <p className="text-xs text-slate-400 mt-1">People deserve better event experiences. Technology should make life easier.</p>
+                </div>
+
+                <div className="space-y-3 pt-1">
+                  {[
+                    { title: "Simplicity", desc: "Making event discovery and ticketing effortless." },
+                    { title: "Trust", desc: "Building a secure and reliable platform for attendees and organizers." },
+                    { title: "Innovation", desc: "Continuously improving how people discover and experience events." }
+                  ].map((p, i) => (
+                    <div key={i} className="p-3.5 bg-slate-950 rounded-xl border border-slate-800/80 space-y-1">
+                      <div className="font-bold text-emerald-400 text-xs flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                        <span>{p.title}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-normal pl-5">{p.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* 5. Message From Our Founder */}
+            <div className="bg-slate-900 p-8 rounded-3xl border border-slate-800 relative overflow-hidden">
+              <div className="max-w-3xl mx-auto text-center space-y-6 relative z-10">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                  A Message From Our Founder
+                </span>
+
+                <blockquote className="text-sm sm:text-lg font-medium text-slate-200 italic leading-relaxed">
+                  “Ticketa started as an idea, but I always wanted it to become something bigger than just a ticketing platform. I wanted to build technology that solves real problems and creates opportunities for people across Africa. I’m proud of how far we’ve come, but this is only the beginning.”
+                </blockquote>
+
+                <div className="flex items-center justify-center space-x-3 pt-2">
+                  <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500/50 shadow-md">
+                    <img 
+                      src={founderPhoto} 
+                      alt="Makinde Isaiah Oluwatoyin" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="text-left">
+                    <div className="font-black text-white text-sm">Makinde Isaiah Oluwatoyin</div>
+                    <div className="text-xs text-emerald-400 font-semibold">Founder, Ticketa</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 6. Final CTA */}
+            <div className="bg-gradient-to-r from-teal-600 to-emerald-600 rounded-3xl p-8 sm:p-12 text-center text-slate-950 space-y-6 shadow-2xl relative overflow-hidden">
+              <div className="max-w-xl mx-auto space-y-3">
+                <h2 className="text-2xl sm:text-4xl font-black tracking-tight text-slate-950">
+                  Your next experience is waiting.
+                </h2>
+                <p className="text-xs sm:text-sm font-semibold text-slate-900">
+                  Discover what’s happening around you and get your ticket with Ticketa.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <button
+                  onClick={() => handleNav('browse')}
+                  className="w-full sm:w-auto px-6 py-3 bg-slate-950 hover:bg-slate-900 text-white font-extrabold rounded-xl text-xs transition shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>Explore Events</span>
+                  <ArrowRight className="w-4 h-4 text-emerald-400" />
+                </button>
+                <button
+                  onClick={() => {
+                    handleNav('browse');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="w-full sm:w-auto px-6 py-3 bg-white/20 hover:bg-white/30 text-slate-950 border border-slate-950/20 font-extrabold rounded-xl text-xs transition flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>Create an Event</span>
+                  <Sparkles className="w-4 h-4 text-slate-950" />
+                </button>
+              </div>
             </div>
 
           </div>

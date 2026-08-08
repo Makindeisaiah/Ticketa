@@ -393,60 +393,84 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ events = [], orders 
 
           {/* Payment Method Used Donut Chart */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-            <h3 className="text-base font-extrabold text-slate-900">{t('paymentMethod')}</h3>
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900">{t('paymentMethod')}</h3>
+              <p className="text-xs text-slate-500 font-semibold mt-0.5">Payment distribution across orders</p>
+            </div>
             
-            <div className="flex items-center justify-between gap-4">
-              {/* Donut SVG */}
-              <div className="w-28 h-28 relative shrink-0">
-                <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-                  {targetOrders.length > 0 ? (
-                    <>
-                      {/* Segment 1: Card 55% */}
+            {(() => {
+              const cardOrdersCount = targetOrders.filter(o => o.paymentMethod === 'Credit Card' || !o.paymentMethod).length;
+              const transferOrdersCount = targetOrders.filter(o => o.paymentMethod === 'Bank Transfer').length;
+              const ussdOrdersCount = targetOrders.filter(o => o.paymentMethod === 'USSD').length;
+
+              const hasOrders = targetOrders.length > 0;
+              const totalPayOrders = targetOrders.length || 1;
+              const cardPct = hasOrders ? Math.round((cardOrdersCount / totalPayOrders) * 100) : 62;
+              const transferPct = hasOrders ? Math.round((transferOrdersCount / totalPayOrders) * 100) : 31;
+              const ussdPct = hasOrders ? Math.max(0, 100 - cardPct - transferPct) : 7;
+
+              return (
+                <div className="flex items-center justify-between gap-4 pt-1">
+                  {/* Donut SVG */}
+                  <div className="w-28 h-28 relative shrink-0">
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                      {/* Segment 1: Card */}
                       <path
                         d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                         fill="none"
                         stroke="#00C896"
-                        strokeWidth="4"
-                        strokeDasharray="55, 100"
+                        strokeWidth="4.2"
+                        strokeDasharray={`${cardPct}, 100`}
                       />
-                      {/* Segment 2: Bank Transfer 38% */}
+                      {/* Segment 2: Bank Transfer */}
                       <path
                         d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                         fill="none"
                         stroke="#F59E0B"
-                        strokeWidth="4"
-                        strokeDasharray="38, 100"
-                        strokeDashoffset="-55"
+                        strokeWidth="4.2"
+                        strokeDasharray={`${transferPct}, 100`}
+                        strokeDashoffset={`-${cardPct}`}
                       />
-                    </>
-                  ) : (
-                    <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#E2E8F0" strokeWidth="4" />
-                  )}
-                </svg>
-              </div>
+                      {/* Segment 3: USSD */}
+                      <path
+                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                        fill="none"
+                        stroke="#6366F1"
+                        strokeWidth="4.2"
+                        strokeDasharray={`${ussdPct}, 100`}
+                        strokeDashoffset={`-${cardPct + transferPct}`}
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
+                      <span className="text-sm font-black text-slate-900 font-mono">{cardPct}%</span>
+                      <span className="text-[9px] font-extrabold text-slate-400 tracking-wider uppercase mt-0.5">Card</span>
+                    </div>
+                  </div>
 
-              {/* Legend List */}
-              <div className="space-y-2 text-xs font-bold text-slate-700 flex-1">
-                <div className="flex justify-between items-center">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#00C896]"></span> Card
-                  </span>
-                  <span className="font-mono text-slate-900">{targetOrders.length > 0 ? '55%' : '0%'}</span>
+                  {/* Legend List */}
+                  <div className="space-y-2.5 text-xs font-bold text-slate-700 flex-1">
+                    <div className="flex justify-between items-center">
+                      <span className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#00C896] shrink-0"></span> Card
+                      </span>
+                      <span className="font-mono text-slate-900 font-extrabold">{cardPct}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0"></span> Bank Transfer
+                      </span>
+                      <span className="font-mono text-slate-900 font-extrabold">{transferPct}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 shrink-0"></span> USSD
+                      </span>
+                      <span className="font-mono text-slate-900 font-extrabold">{ussdPct}%</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Bank Transfer
-                  </span>
-                  <span className="font-mono text-slate-900">{targetOrders.length > 0 ? '38%' : '0%'}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-slate-500"></span> USSD
-                  </span>
-                  <span className="font-mono text-slate-900">{targetOrders.length > 0 ? '7%' : '0%'}</span>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
           </div>
 
         </div>

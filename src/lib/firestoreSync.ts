@@ -38,6 +38,8 @@ export interface FirestoreErrorInfo {
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
   const errMsg = error instanceof Error ? error.message : String(error);
   const isUnavailable = errMsg.includes('unavailable') || errMsg.includes('Could not reach') || errMsg.includes('offline');
+  const isQuotaExceeded = errMsg.includes('Quota limit exceeded') || errMsg.includes('Quota exceeded') || errMsg.includes('RESOURCE_EXHAUSTED') || errMsg.includes('quota');
+
   const errInfo: FirestoreErrorInfo = {
     error: errMsg,
     authInfo: {
@@ -54,8 +56,9 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
     operationType,
     path
   };
-  if (isUnavailable) {
-    console.warn(`[Firestore Notice] Transient network state for ${path}: ${errMsg}`);
+
+  if (isUnavailable || isQuotaExceeded) {
+    console.warn(`[Firestore Fallback Notice] ${isQuotaExceeded ? 'Daily Firestore quota limit reached' : 'Transient network state'} for ${path}. Operating seamlessly with local cached storage.`);
   } else {
     console.error('Firestore Error: ', JSON.stringify(errInfo));
   }

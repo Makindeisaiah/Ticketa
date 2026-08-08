@@ -30,7 +30,8 @@ import {
   ChevronRight,
   Calendar,
   LogOut,
-  Database
+  Database,
+  X
 } from 'lucide-react';
 
 type SettingsSubpage = 
