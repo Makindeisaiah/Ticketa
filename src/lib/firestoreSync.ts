@@ -3,7 +3,8 @@ import {
   doc, 
   getDocs, 
   setDoc, 
-  deleteDoc 
+  deleteDoc,
+  onSnapshot
 } from 'firebase/firestore';
 import { db, auth } from './firebase';
 import { EventItem, Order, TicketPass, TicketaUser, OrganizerUser, QrTicket, PromoCode, OfflineScanRecord, NotificationLog } from '../types';
@@ -65,20 +66,37 @@ export function sanitizeForFirestore<T>(obj: T): any {
 
 async function fetchCollectionDocs<T>(path: string): Promise<T[]> {
   try {
-    const fetchPromise = getDocs(collection(db, path)).then(snap => {
-      const items: T[] = [];
-      snap.forEach(d => items.push(d.data() as T));
-      return items;
+    const snap = await getDocs(collection(db, path));
+    const items: T[] = [];
+    snap.forEach(d => {
+      if (d.exists()) items.push(d.data() as T);
     });
-
-    const timeoutPromise = new Promise<T[]>((resolve) => {
-      setTimeout(() => resolve([]), 3000);
-    });
-
-    return await Promise.race([fetchPromise, timeoutPromise]);
+    return items;
   } catch (error) {
     handleFirestoreError(error, OperationType.GET, path);
     return [];
+  }
+}
+
+export function subscribeToCollection<T>(path: string, callback: (items: T[]) => void): () => void {
+  try {
+    const unsubscribe = onSnapshot(
+      collection(db, path),
+      (snap) => {
+        const items: T[] = [];
+        snap.forEach(d => {
+          if (d.exists()) items.push(d.data() as T);
+        });
+        callback(items);
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, path);
+      }
+    );
+    return unsubscribe;
+  } catch (err) {
+    console.warn(`[Firestore] Failed to subscribe to ${path}:`, err);
+    return () => {};
   }
 }
 

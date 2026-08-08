@@ -6,6 +6,7 @@ import {
 import { INITIAL_EVENTS, INITIAL_ORDERS, INITIAL_PROMOS, EVENT_IMAGE_OVERRIDE_MAP } from '../data/mockEvents';
 import { 
   loadAllFromFirestore, 
+  subscribeToCollection,
   syncAllToFirestore, 
   saveUserToFirestore, 
   saveOrganizerToFirestore, 
@@ -404,51 +405,60 @@ export const EventProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('tix_organizers', JSON.stringify(organizers));
   }, [organizers]);
 
-  // Firebase Firestore Database Sync Initializer
+  // Firebase Firestore Database Realtime & Initial Sync Initializer
   useEffect(() => {
     let isMounted = true;
-    async function initFirestoreData() {
-      try {
-        const firestoreData = await loadAllFromFirestore();
-        if (!isMounted) return;
 
-        if (firestoreData) {
-          const mergeById = <T,>(current: T[], fetched: T[], key: keyof T): T[] => {
-            const map = new Map<string, T>();
-            fetched.forEach(item => { if (item && item[key]) map.set(String(item[key]), item); });
-            current.forEach(item => { if (item && item[key]) map.set(String(item[key]), item); });
-            return Array.from(map.values());
-          };
+    const mergeById = <T,>(current: T[], fetched: T[], key: keyof T): T[] => {
+      const map = new Map<string, T>();
+      current.forEach(item => { if (item && item[key]) map.set(String(item[key]), item); });
+      fetched.forEach(item => { if (item && item[key]) map.set(String(item[key]), item); });
+      return Array.from(map.values());
+    };
 
-          if (firestoreData.events && firestoreData.events.length > 0) {
-            const cleanList = firestoreData.events.filter((e: any) => e && e.id && !deletedEventIdsRef.current.has(e.id));
-            if (cleanList.length > 0) {
-              setEvents(prev => mergeById(prev, cleanList, 'id'));
-            }
-          }
-
-          if (firestoreData.orders && firestoreData.orders.length > 0) {
-            setOrders(prev => mergeById(prev, firestoreData.orders, 'id'));
-          }
-          if (firestoreData.users && firestoreData.users.length > 0) {
-            setUsers(prev => mergeById(prev, firestoreData.users, 'id'));
-          }
-          if (firestoreData.organizers && firestoreData.organizers.length > 0) {
-            setOrganizers(prev => mergeById(prev, firestoreData.organizers, 'id'));
-          }
-          if (firestoreData.tickets && firestoreData.tickets.length > 0) {
-            setAllTickets(prev => mergeById(prev, firestoreData.tickets, 'ticketCode'));
-          }
-        }
-      } catch (err) {
-        console.warn('Firestore initial load notice:', err);
+    const unsubEvents = subscribeToCollection<EventItem>('events', (fetchedEvents) => {
+      if (!isMounted || !fetchedEvents) return;
+      const cleanList = fetchedEvents.filter((e: any) => e && e.id && !deletedEventIdsRef.current.has(e.id));
+      if (cleanList.length > 0) {
+        setEvents(prev => mergeById(prev, cleanList, 'id'));
       }
-    }
+    });
 
-    initFirestoreData();
+    const unsubOrders = subscribeToCollection<Order>('orders', (fetchedOrders) => {
+      if (!isMounted || !fetchedOrders) return;
+      if (fetchedOrders.length > 0) {
+        setOrders(prev => mergeById(prev, fetchedOrders, 'id'));
+      }
+    });
+
+    const unsubUsers = subscribeToCollection<TicketaUser>('users', (fetchedUsers) => {
+      if (!isMounted || !fetchedUsers) return;
+      if (fetchedUsers.length > 0) {
+        setUsers(prev => mergeById(prev, fetchedUsers, 'id'));
+      }
+    });
+
+    const unsubOrganizers = subscribeToCollection<OrganizerUser>('organizers', (fetchedOrgs) => {
+      if (!isMounted || !fetchedOrgs) return;
+      if (fetchedOrgs.length > 0) {
+        setOrganizers(prev => mergeById(prev, fetchedOrgs, 'id'));
+      }
+    });
+
+    const unsubTickets = subscribeToCollection<TicketPass>('tickets', (fetchedTickets) => {
+      if (!isMounted || !fetchedTickets) return;
+      if (fetchedTickets.length > 0) {
+        setAllTickets(prev => mergeById(prev, fetchedTickets, 'ticketCode'));
+      }
+    });
 
     return () => {
       isMounted = false;
+      unsubEvents();
+      unsubOrders();
+      unsubUsers();
+      unsubOrganizers();
+      unsubTickets();
     };
   }, []);
 

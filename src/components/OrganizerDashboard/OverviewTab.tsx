@@ -52,7 +52,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   const calculatedRevenue = orders.reduce((acc, o) => acc + o.totalAmount, 0);
   const totalRevenueDisplay = calculatedRevenue;
   
-  const totalTicketSoldDisplay = allTickets.length;
+  const ticketsFromOrdersCount = orders.reduce((acc, o) => acc + (o.tickets ? o.tickets.length : 0), 0);
+  const totalTicketSoldDisplay = Math.max(allTickets.length, ticketsFromOrdersCount);
   const totalTicketCapacity = events.reduce((acc, evt) => {
     const tiers = Array.isArray(evt?.ticketTiers) ? evt.ticketTiers : [];
     return acc + tiers.reduce((tAcc, t) => tAcc + (t.availableQuantity || 0), 0);
